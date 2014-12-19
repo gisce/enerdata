@@ -43,6 +43,11 @@ with description('Adding a measure'):
         with failure:
             m = EnergyMeasure(date(2013, 1, 1), TariffPeriod('P1', 'te'), 0)
             self.meter.add_measure(m)
+    with it('don\'t accepts mesasures which date is greater than end date'):
+        self.meter.end_date = date(2014, 2, 1)
+        m = EnergyMeasure(date(2014, 2, 2), TariffPeriod('P1', 'te'), 0)
+        with failure:
+            self.meter.add_measure(m)
 
     with context('Energy'):
         with it('should be added in energy measures list'):
