@@ -3,7 +3,7 @@ from enerdata.contracts import TariffPeriod
 
 class Measure(object):
     def __init__(self, date, period, measure):
-        self.date = date,
+        self.date = date
         assert isinstance(period, TariffPeriod)
         self.period = period
         self.measure = measure
