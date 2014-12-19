@@ -51,7 +51,7 @@ with description('Modifying a contract'):
         assert m.state == 'draft'
 
     with context('If overwrite is False'):
-        with it('shoud append the modification'):
+        with it('should append the modification'):
             c = Contract()
             m = Modification()
             c.modify(m)
