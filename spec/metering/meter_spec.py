@@ -36,7 +36,6 @@ with description('Adding a measure'):
     with it('only accepts EnergyMeasure or PowerMeasure'):
         with failure:
             m = Measure(date(2014, 1, 1), TariffPeriod('P1', 'te'), 0)
-            print "AAAA", type(m.date)
             self.meter.add_measure(m)
     with it('don\'t accepts measures which date is before start date'):
         self.meter.start_date = date(2014, 1, 1)
