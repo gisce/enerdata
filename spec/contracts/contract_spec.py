@@ -23,6 +23,42 @@ with description('Creating a modification'):
             m = Modification(date(2014, 1, 1))
             assert m.start_date == date(2014, 1, 1)
 
+with description('A contract'):
+    with it('should return the intervals of modifications'):
+        c = Contract()
+        m1 = Modification(date(2014, 1, 1))
+        m1.contracted_power = 10
+        c.modify(m1)
+        m2 = Modification(date(2014, 2, 1))
+        m2.contracted_power = 11.5
+        c.modify(m2)
+        m3 = Modification(date(2014, 3, 1))
+        m3.contracted_pwoer = 11.5
+        c.modify(m3)
+        assert len(c.modifications) == 3
+        mods = c.get_intervals(date(2013, 1, 1), date(2014, 1, 6))
+        assert len(mods) == 1
+        assert mods == [m1]
+        mods = c.get_intervals(date(2014, 1, 1), date(2014, 1, 31))
+        assert len(mods) == 1
+        assert mods == [m1]
+        mods = c.get_intervals(date(2014, 1, 1), date(2014, 2, 1))
+        assert len(mods) == 2
+        assert mods == [m1, m2]
+        mods = c.get_intervals(date(2014, 1, 1), date(2014, 3, 1))
+        assert len(mods) == 3
+        assert mods == [m1, m2, m3]
+        mods = c.get_intervals(date(2014, 3, 3), date(2014, 3, 7))
+        assert len(mods) == 1
+        assert mods == [m3]
+        mods = c.get_intervals(date(2020, 1, 1), date(2020, 1, 31))
+        assert len(mods) == 1
+        assert mods == [m3]
+        mods = c.get_intervals(date(2013, 1, 1), date(2013, 1, 31))
+        assert len(mods) == 0
+        assert mods == []
+
+
 
 with description('Modifying a contract'):
     with it('should fail if is not a Modification instance'):

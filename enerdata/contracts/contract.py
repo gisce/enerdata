@@ -38,6 +38,16 @@ class Contract(object):
             self.modifications.append(modcontract)
         self.contracted_power = modcontract.contracted_power
 
+    def get_intervals(self, start_date, end_date, changes=None):
+        mods = []
+        for m in self.modifications:
+            if m.start_date <= start_date and (
+                m.end_date is None or m.end_date >= end_date):
+                mods.append(m)
+            elif m.start_date >= start_date and m.start_date <= end_date:
+                mods.append(m)
+        return mods
+
     def get_changes(self, modification):
         changes = {}
         local_vals = vars(self)
