@@ -59,7 +59,8 @@ class Contract(object):
         return changes
 
 
-class Modification(Contract):
+
+class Modification(object):
     def __init__(self, start_date=None):
         if start_date is None:
             start_date = date.today()
