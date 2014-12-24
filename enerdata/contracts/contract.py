@@ -37,7 +37,7 @@ class Contract(object):
                 old_mod.state = 'down'
                 modcontract.version = old_mod.version + 1
             self.modifications.append(modcontract)
-        self.contracted_power = modcontract.contracted_power
+        self.apply_modification(modcontract)
 
     def get_intervals(self, start_date, end_date, changes=None):
         mods = []
@@ -59,7 +59,13 @@ class Contract(object):
                     changes[attr] = {'old': local_vals[attr], 'new': value}
         return changes
 
+    def apply_changes(self, changes):
+        for attr, value in changes.iteritems():
+            setattr(self, attr, value['new'])
 
+    def apply_modification(self, modification):
+        changes = self.get_changes(modification)
+        self.apply_changes(changes)
 
 class Modification(object):
     def __init__(self, start_date=None):

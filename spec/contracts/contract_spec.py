@@ -86,6 +86,23 @@ with description('Modifying a contract'):
         changes = {'contracted_power': {'old': 1, 'new': 10}}
         assert c.get_changes(m) == changes
 
+    with it('should apply changes'):
+        c = Contract()
+        c.contracted_power = 1
+        m = Modification()
+        m.contracted_power = 10
+        changes = c.get_changes(m)
+        c.apply_changes(changes)
+        assert c.contracted_power == 10
+
+    with it('should apply a modification'):
+        c = Contract()
+        c.contracted_power = 1
+        m = Modification()
+        m.contracted_power = 10
+        c.apply_modification(m)
+        assert c.contracted_power == 10
+
     with it('should create in draft state'):
         m = Modification()
         assert m.state == 'draft'
