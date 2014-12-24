@@ -35,6 +35,7 @@ class Contract(object):
                 old_mod.next = modcontract
                 modcontract.previous = old_mod
                 old_mod.state = 'down'
+                modcontract.version = old_mod.version + 1
             self.modifications.append(modcontract)
         self.contracted_power = modcontract.contracted_power
 
@@ -70,3 +71,4 @@ class Modification(object):
         self.next = None
         self.contracted_power = 0
         self.state = 'draft'
+        self.version = 1

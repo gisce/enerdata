@@ -23,6 +23,10 @@ with description('Creating a modification'):
             m = Modification(date(2014, 1, 1))
             assert m.start_date == date(2014, 1, 1)
 
+    with it('should create with code 1'):
+        m = Modification()
+        assert m.version == 1
+
 with description('A contract'):
     with it('should return the intervals of modifications'):
         c = Contract()
@@ -125,6 +129,14 @@ with description('Modifying a contract'):
             m2 = Modification(date(2015, 1, 1))
             c.modify(m2)
             assert m2.previous.state == 'down'
+
+        with it('should increment the code of the modcontractual if has a previous modification'):
+            c = Contract()
+            m = Modification(date(2014, 1, 1))
+            c.modify(m)
+            m2 = Modification(date(2015, 1, 1))
+            c.modify(m2)
+            assert m2.version == m.version + 1
 
     with context('If overwrite is True'):
         with it('should overwrite the last modification'):
