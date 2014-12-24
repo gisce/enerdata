@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 
+
 CONTRACT_STATES = [
     'draft',
     'validate',
@@ -12,6 +13,14 @@ CONTRACT_STATES = [
     'off',
     'down'
 ]
+
+
+class Interval(object):
+    def __init__(self, start, end, modification, changes):
+        self.start = start
+        self.end = end
+        self.modification = modification
+        self.changes = changes
 
 
 class Contract(object):
@@ -39,15 +48,38 @@ class Contract(object):
             self.modifications.append(modcontract)
         self.apply_modification(modcontract)
 
-    def get_intervals(self, start_date, end_date, changes=None):
+    def get_modifications(self, start_date, end_date):
         mods = []
+        # Get the modifications between dates
         for m in self.modifications:
             if m.start_date <= start_date and (
-                m.end_date is None or m.end_date >= end_date):
+                    m.end_date is None or m.end_date >= end_date):
                 mods.append(m)
-            elif m.start_date >= start_date and m.start_date <= end_date:
+            elif start_date <= m.start_date <= end_date:
                 mods.append(m)
         return mods
+
+    def get_intervals(self, start_date, end_date, changes=None):
+        intervals = []
+        # Get the modifications between dates
+        previous_mod = None
+        for m in self.get_modifications(start_date, end_date):
+            diff = {}
+            if previous_mod:
+                diff = previous_mod.diff(m, changes)
+            if diff or previous_mod is None:
+                mod_end_date = m.end_date or end_date
+                interval = Interval(
+                    start=max(start_date, m.start_date),
+                    end=min(mod_end_date, end_date),
+                    changes=diff,
+                    modification=m
+                )
+                intervals.append(interval)
+            else:
+                intervals[-1].end = min(m.end_date, end_date)
+            previous_mod = m
+        return intervals
 
     def get_changes(self, modification):
         changes = {}
@@ -67,6 +99,7 @@ class Contract(object):
         changes = self.get_changes(modification)
         self.apply_changes(changes)
 
+
 class Modification(object):
     def __init__(self, start_date=None):
         if start_date is None:
@@ -78,3 +111,18 @@ class Modification(object):
         self.contracted_power = 0
         self.state = 'draft'
         self.version = 1
+
+    def diff(self, modification, filter=None):
+        changes = {}
+        local_vals = vars(self)
+        if modification is None:
+            mod_vals = local_vals.copy()
+        else:
+            mod_vals = vars(modification)
+        if filter is not None:
+            mod_vals = dict((k, v) for k, v in mod_vals.items() if k in filter)
+        for attr, value in mod_vals.iteritems():
+            if attr in local_vals:
+                if value != local_vals[attr]:
+                    changes[attr] = {'old': local_vals[attr], 'new': value}
+        return changes
