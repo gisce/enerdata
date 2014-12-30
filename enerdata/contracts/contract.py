@@ -61,7 +61,6 @@ class Contract(object):
 
     def get_intervals(self, start_date, end_date, changes=None):
         intervals = []
-        # Get the modifications between dates
         previous_mod = None
         for m in self.get_modifications(start_date, end_date):
             diff = {}
