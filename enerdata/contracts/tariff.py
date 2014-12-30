@@ -1,3 +1,6 @@
+import calendar
+
+
 def check_range_hours(hours):
     before = (0, 0)
     for range_hours in sorted(hours):
@@ -72,6 +75,24 @@ class Tariff(object):
     def get_number_of_periods(self):
         return len([p for p in self.periods if p.type == 'te'])
 
+    def get_period_by_date(self, datetime, station, holidays=None):
+        if holidays is None:
+            holidays = []
+        date = datetime.date()
+        if (calendar.weekday(date.year, date.month, date.day) in (5, 6)
+                or date in holidays):
+            holiday = True
+        else:
+            holiday = False
+        for period in self.periods:
+            if period.holiday == holiday:
+                for range_h in getattr(period, '%s_hours' % station):
+                    if range_h[0] <= datetime.hour < range_h[1]:
+                        return period
+        return None
+
+
+
 
 class TariffPeriod(object):
     """Tariff period.
@@ -116,6 +137,7 @@ class T20A(Tariff):
         self.min_power = 0
         self.max_power = 10
         self.type = 'BT'
+
 
 class T20DHA(Tariff):
     def __init__(self):

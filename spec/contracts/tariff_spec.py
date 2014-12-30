@@ -1,6 +1,7 @@
 from expects.testing import failure
 from expects import *
 from enerdata.contracts.tariff import *
+from datetime import datetime
 
 with description('Create a period'):
     with it('accepts "te"'):
@@ -95,3 +96,22 @@ with context('A tariff'):
                 TariffPeriod('P6', 'te', holiday=True, winter_hours=[(0, 8)], summer_hours=[(1, 8)])
             )
         expect(set_periods).to(raise_error(ValueError, 'The sum of hours in summer (in holidays) must be 24h: [(1, 8), (8, 11), (11, 15), (15, 24)]'))
+
+    with it('should find the period by datetime'):
+        self.tariff.periods = (
+            TariffPeriod('P1', 'te', winter_hours=[(18, 22)], summer_hours=[(11, 15)]),
+            TariffPeriod('P2', 'te', winter_hours=[(8, 18), (22, 24)], summer_hours=[(8, 11), (15, 24)]),
+            TariffPeriod('P3', 'te', winter_hours=[(0, 8)], summer_hours=[(0, 8)]),
+            TariffPeriod('P4', 'te', holiday=True, winter_hours=[(18, 22)], summer_hours=[(11, 15)]),
+            TariffPeriod('P5', 'te', holiday=True, winter_hours=[(8, 18), (22, 24)], summer_hours=[(8, 11), (15, 24)]),
+            TariffPeriod('P6', 'te', holiday=True, winter_hours=[(0, 8)], summer_hours=[(0, 8)])
+        )
+        dt = datetime(2014, 12, 27, 18, 0, 0)
+        period = self.tariff.get_period_by_date(dt, 'winter')
+        assert period.code == 'P4'
+        dt = datetime(2014, 12, 27, 17, 0, 0)
+        period = self.tariff.get_period_by_date(dt, 'winter')
+        assert period.code == 'P5'
+        dt = datetime(2014, 12, 27, 1, 0, 0)
+        period = self.tariff.get_period_by_date(dt, 'winter')
+        assert period.code == 'P6'
