@@ -56,8 +56,8 @@ with context('A tariff'):
         assert isinstance(self.tariff.periods, tuple)
     with it('should return the number of periods of te'):
         self.tariff.periods = (
-            TariffPeriod('1', 'te', summer_hours=[(12, 22)]),
-            TariffPeriod('2', 'te', summer_hours=[(0, 12), (22, 24)])
+            TariffPeriod('1', 'te', winter_hours=[(12, 22)], summer_hours=[(13, 23)]),
+            TariffPeriod('2', 'te', winter_hours=[(0, 12), (22, 24)], summer_hours=[(0, 13), (23, 24)])
         )
         assert self.tariff.get_number_of_periods() == 2
     with it('should return the periods of energy'):
@@ -74,4 +74,24 @@ with context('A tariff'):
                 TariffPeriod('1', 'te', summer_hours=[(12, 22)]),
                 TariffPeriod('2', 'te', summer_hours=[(0, 12), (22, 23)])
             )
-        expect(set_periods).to(raise_error(ValueError, 'The range of hours must be 24h'))
+        expect(set_periods).to(raise_error(ValueError))
+
+    with it('should check range of hours'):
+        def set_periods():
+            self.tariff.periods = (
+                TariffPeriod('1', 'te', summer_hours=[(13, 23)]),
+                TariffPeriod('2', 'te', summer_hours=[(0, 12), (22, 24)])
+            )
+        expect(set_periods).to(raise_error(ValueError))
+
+    with it('should check range and hours if a holiday period is defined'):
+        def set_periods():
+            self.tariff.periods = (
+                TariffPeriod('P1', 'te', winter_hours=[(18, 22)], summer_hours=[(11, 15)]),
+                TariffPeriod('P2', 'te', winter_hours=[(8, 18), (22, 24)], summer_hours=[(8, 11), (15, 24)]),
+                TariffPeriod('P3', 'te', winter_hours=[(0, 8)], summer_hours=[(0, 8)]),
+                TariffPeriod('P4', 'te', holiday=True, winter_hours=[(18, 22)], summer_hours=[(11, 15)]),
+                TariffPeriod('P5', 'te', holiday=True, winter_hours=[(8, 18), (22, 24)], summer_hours=[(8, 11), (15, 24)]),
+                TariffPeriod('P6', 'te', holiday=True, winter_hours=[(0, 8)], summer_hours=[(1, 8)])
+            )
+        expect(set_periods).to(raise_error(ValueError, 'The sum of hours in summer (in holidays) must be 24h: [(1, 8), (8, 11), (11, 15), (15, 24)]'))

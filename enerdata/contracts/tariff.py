@@ -28,11 +28,38 @@ class Tariff(object):
     @periods.setter
     def periods(self, value):
         self._periods = value
-        hours = 0
+        hours = {
+            'holidays': [],
+            'no_holidays': []
+        }
         for period in self.energy_periods.values():
-            hours += period.total_summer_hours
-        if hours != 24:
-            raise ValueError('The range of hours must be 24h')
+            if period.holiday:
+                hours['holidays'].append(period)
+            else:
+                hours['no_holidays'].append(period)
+
+        for station in ('summer', 'winter'):
+            for holiday in (False, True):
+                total_hours = 0
+                range_hours = []
+                for period in self.energy_periods.values():
+                    if period.holiday == holiday:
+                        total_hours += getattr(period, 'total_%s_hours' % station)
+                        range_hours += getattr(period, '%s_hours' % station)
+                range_hours = sorted(range_hours)
+                if total_hours != 24:
+                    if (holiday and total_hours) or not holiday:
+                        raise ValueError(
+                            'The sum of hours in %s%s must be 24h: %s'
+                            % (station, holiday and ' (in holidays)' or '',
+                            range_hours)
+                        )
+                if not check_range_hours(range_hours):
+                    raise ValueError(
+                        'Invalid range of hours in %s%s: %s'
+                        % (station, holiday and ' (in holidays)' or '',
+                           range_hours)
+                    )
 
     @property
     def energy_periods(self):
@@ -61,6 +88,7 @@ class TariffPeriod(object):
         if not check_range_hours(summer_hours):
             raise ValueError('Invalid summer hours')
         self.summer_hours = summer_hours
+        self.holiday = kwargs.pop('holiday', False)
 
     @property
     def total_summer_hours(self):
