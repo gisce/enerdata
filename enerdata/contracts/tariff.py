@@ -75,10 +75,10 @@ class Tariff(object):
     def get_number_of_periods(self):
         return len([p for p in self.periods if p.type == 'te'])
 
-    def get_period_by_date(self, datetime, station, holidays=None):
+    def get_period_by_date(self, date_time, station, holidays=None):
         if holidays is None:
             holidays = []
-        date = datetime.date()
+        date = date_time.date()
         if (calendar.weekday(date.year, date.month, date.day) in (5, 6)
                 or date in holidays):
             holiday = True
@@ -87,7 +87,7 @@ class Tariff(object):
         for period in self.periods:
             if period.holiday == holiday:
                 for range_h in getattr(period, '%s_hours' % station):
-                    if range_h[0] <= datetime.hour < range_h[1]:
+                    if range_h[0] <= date_time.hour < range_h[1]:
                         return period
         return None
 
