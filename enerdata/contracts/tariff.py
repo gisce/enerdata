@@ -133,18 +133,28 @@ class T20A(Tariff):
             TariffPeriod('P1', 'te'),
             TariffPeriod('P1', 'tp')
         )
-        self.ocsum = 'XXX'
         self.min_power = 0
         self.max_power = 10
         self.type = 'BT'
 
 
-class T20DHA(Tariff):
+class T20DHA(T20A):
     def __init__(self):
         self.code = '2.0DHA'
         self.periods = (
-            TariffPeriod('P1', 'te', winter_hours=[(12, 22)], summer_hours=[(13, 23)]),
-            TariffPeriod('P2', 'te', winter_hours=[(0, 12), (22, 24)], summer_hours=[(0, 13), (23, 24)])
+            TariffPeriod(
+                'P1', 'te',
+                winter_hours=[(12, 22)],
+                summer_hours=[(13, 23)]
+            ),
+            TariffPeriod(
+                'P2', 'te',
+                winter_hours=[(0, 12), (22, 24)],
+                summer_hours=[(0, 13), (23, 24)]
+            ),
+            TariffPeriod(
+                'P1', 'tp'
+            )
         )
 
 
