@@ -1,14 +1,14 @@
-from datetime import date
-
-from enerdata.profiles.tariff import ProfileTariff
 from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import T20DHA
 
 
-with description("A Profile tariff"):
-    with it("must return the sum of coefs for each period"):
-        t = type('T20DHA', (ProfileTariff, T20DHA), {})()
-        assert t.sum_cofs(date(2014, 1, 1), date(2014, 1, 31)) == {'P1': 0, 'P2': 0}
+with description("Utils"):
+    with it('should know if summer or winter'):
+        assert get_station(datetime(2014, 1, 1)) == 'winter'
+        assert get_station(datetime(2014, 4, 1)) == 'summer'
+        assert get_station(datetime(2014, 10, 26, 2)) == 'winter'
+        assert get_station(datetime(2014, 3, 30, 2)) == 'summer'
+        assert get_station(TIMEZONE.localize(datetime(2014, 10, 26, 2), is_dst=True)) == 'summer'
 
 
 with description("A coeficient"):
@@ -21,6 +21,13 @@ with description("A coeficient"):
             day += timedelta(hours=1)
             cofs.append((TIMEZONE.normalize(day), {'A': 0, 'B': 0}))
         self.cofs = cofs
+
+    with it("must return the sum of coefs for each period"):
+        c = Coefficients(self.cofs)
+        t = T20DHA()
+        t.cof = 'A'
+        assert c.get_coefs_by_tariff(t, date(2014, 1, 1), date(2014, 1, 31)) == {'P1': 0, 'P2': 0}
+
 
     with it('should insert coeficients if empty'):
         c = Coefficients()
