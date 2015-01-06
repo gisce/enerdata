@@ -115,6 +115,3 @@ with context('A tariff'):
         dt = datetime(2014, 12, 27, 1, 0, 0)
         period = self.tariff.get_period_by_date(dt, 'winter')
         assert period.code == 'P6'
-
-    with _it('Refactor get the period without station using timezones'):
-        pass

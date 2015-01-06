@@ -2,14 +2,6 @@ from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import T20DHA
 
 
-with description("Utils"):
-    with it('should know if summer or winter'):
-        assert get_station(datetime(2014, 1, 1)) == 'winter'
-        assert get_station(datetime(2014, 4, 1)) == 'summer'
-        assert get_station(datetime(2014, 10, 26, 2)) == 'winter'
-        assert get_station(datetime(2014, 3, 30, 2)) == 'summer'
-        assert get_station(TIMEZONE.localize(datetime(2014, 10, 26, 2), is_dst=True)) == 'summer'
-
 
 with description("A coeficient"):
     with before.all:

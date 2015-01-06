@@ -2,21 +2,10 @@ import bisect
 from datetime import datetime, date, timedelta
 from itertools import islice
 
-import pytz
 from enerdata.contracts.tariff import Tariff
+from enerdata.datetime.timezone import TIMEZONE
+from enerdata.datetime.station import get_station
 
-
-TIMEZONE = pytz.timezone('Europe/Madrid')
-
-
-def get_station(dt):
-    assert isinstance(dt, datetime)
-    if not dt.tzinfo:
-        dt = TIMEZONE.localize(dt)
-    if TIMEZONE.normalize(dt).dst():
-        return 'summer'
-    else:
-        return 'winter'
 
 
 class Coefficients(object):
@@ -63,14 +52,9 @@ class Coefficients(object):
         sum_cofs = dict.fromkeys(tariff.energy_periods.keys(), 0)
         for hour, coef in self.get_range(start, end):
             if len(sum_cofs) > 1:
-                station = get_station(hour)
-                period = tariff.get_period_by_date(hour, station, holidays)
+                period = tariff.get_period_by_date(hour, holidays)
                 p_name = period.code
             else:
                 p_name = sum_cofs.keys()[0]
             sum_cofs[p_name] += coef[tariff.cof]
         return sum_cofs
-
-
-
-
