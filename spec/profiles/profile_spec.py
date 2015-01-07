@@ -52,6 +52,9 @@ with description("A coeficient"):
         c = Coefficients(self.cofs)
         cofs = c.get_range(date(2014, 10, 26), date(2014, 10, 26))
         assert len(cofs) == 25
+        assert cofs[1][0] == TIMEZONE.localize(datetime(2014, 10, 26, 2), is_dst=True)
+        assert cofs[2][0] == TIMEZONE.localize(datetime(2014, 10, 26, 2), is_dst=False)
 
         cofs = c.get_range(date(2014, 3, 30), date(2014, 3, 30))
         assert len(cofs) == 23
+        assert cofs[1][0] == TIMEZONE.normalize(TIMEZONE.localize(datetime(2014, 3, 30, 2)))
