@@ -88,13 +88,15 @@ class Tariff(object):
         else:
             holiday = False
         for period in self.periods:
-            if period.holiday == holiday:
+            if period.holiday == holiday or not self.has_holidays_periods:
                 for range_h in getattr(period, '%s_hours' % station):
                     if range_h[0] <= date_time.hour < range_h[1]:
                         return period
         return None
 
-
+    @property
+    def has_holidays_periods(self):
+        return any(p.holiday for p in self.energy_periods.values())
 
 
 class TariffPeriod(object):
