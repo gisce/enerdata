@@ -32,17 +32,12 @@ class Coefficients(object):
         end += timedelta(days=1)
         end = TIMEZONE.localize(datetime(
             end.year, end.month, end.day), is_dst=True
-        )
-        try:
-            pos = bisect.bisect_left(self.coefs, (start, {}))
-        except ValueError:
+        ) + timedelta(seconds=1)
+        pos = bisect.bisect_left(self.coefs, (start, {}))
+        if pos == len(self.coefs):
             raise ValueError('start date not found in coefficients')
-        result = []
-        for day in islice(self.coefs, pos, None):
-            if day[0] > end:
-                break
-            result.append(self.coefs[1])
-        return result
+        end_pos = bisect.bisect_right(self.coefs, (end, {}))
+        return self.coefs[pos:end_pos]
 
     def get_coefs_by_tariff(self, tariff, start, end):
         assert isinstance(tariff, Tariff)
