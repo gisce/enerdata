@@ -18,8 +18,8 @@ class Coefficients(object):
 
     def insert_coefs(self, coefs):
         pos_0 = bisect.bisect_left(self.coefs, coefs[0])
-        post_1 = bisect.bisect_right(self.coefs, coefs[-1])
-        del self.coefs[pos_0:post_1]
+        pos_1 = bisect.bisect_right(self.coefs, coefs[-1])
+        del self.coefs[pos_0:pos_1]
         self.coefs.extend(coefs)
 
     def get_range(self, start, end):
