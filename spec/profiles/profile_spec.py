@@ -14,6 +14,16 @@ with description("A coeficient"):
             cofs.append((TIMEZONE.normalize(day), {'A': 0, 'B': 0}))
         self.cofs = cofs
 
+    with it("must read and sum the hours of the file"):
+        cofs = REEProfile.get(2014, 10)
+        # We have one hour more in October
+        assert len(cofs) == (31 * 24) + 1
+        # The first second hour in the 26th of October is DST
+        assert cofs[(24 * 25) + 1][0].dst() == timedelta(seconds=3600)
+        # The second second hour in the 26th of October is not DST
+        assert cofs[(24 * 25) + 2][0].dst() == timedelta(0)
+
+
     with it("must return the sum of coefs for each period"):
         c = Coefficients(self.cofs)
         t = T20DHA()
