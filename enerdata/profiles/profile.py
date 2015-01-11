@@ -95,11 +95,16 @@ class REEProfile(object):
     HOST = 'www.ree.es'
     PATH = '/sites/default/files/simel/perff'
 
+    _CACHE = {}
+
     @classmethod
     def get(cls, year, month):
         import csv
         import httplib
-        perff_file = 'PERFF_%(year)s%(month)02i.gz' % locals()
+        key = '%(year)s%(month)02i' % locals()
+        if key in cls._CACHE:
+            return cls_CACHE[key]
+        perff_file = 'PERFF_%(key)s.gz' % locals()
         try:
             conn = httplib.HTTPConnection(cls.HOST)
             conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
@@ -129,6 +134,7 @@ class REEProfile(object):
                             'A': vals[5], 'B': vals[6], 'C': vals[7], 'D': vals[8]
                         })
                     )
+                cls._CACHE[key] = cofs
                 return cofs
             else:
                 raise Exception('Profiles from REE not found')

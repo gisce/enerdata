@@ -15,6 +15,7 @@ with description("A coeficient"):
         self.cofs = cofs
 
     with it("must read and sum the hours of the file"):
+        # TODO: Move this test to integration test with REE
         cofs = REEProfile.get(2014, 10)
         # We have one hour more in October
         assert len(cofs) == (31 * 24) + 1
@@ -22,6 +23,7 @@ with description("A coeficient"):
         assert cofs[(24 * 25) + 1][0].dst() == timedelta(seconds=3600)
         # The second second hour in the 26th of October is not DST
         assert cofs[(24 * 25) + 2][0].dst() == timedelta(0)
+        assert REEProfile._CACHE['201410'] == cofs
 
 
     with it("must return the sum of coefs for each period"):
