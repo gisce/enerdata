@@ -92,14 +92,17 @@ class Profiler(object):
 
 class REEProfile(object):
 
+    HOST = 'www.ree.es'
+    PATH = '/sites/default/files/simel/perff'
+
     @classmethod
     def get(cls, year, month):
         import csv
         import httplib
         perff_file = 'PERFF_%(year)s%(month)02i.gz' % locals()
         try:
-            conn = httplib.HTTPConnection('www.ree.es')
-            conn.request('GET', '/sites/default/files/simel/perff/%s' % perff_file)
+            conn = httplib.HTTPConnection(cls.HOST)
+            conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
             r = conn.getresponse()
             if r.msg.type == 'application/x-gzip':
                 import gzip
