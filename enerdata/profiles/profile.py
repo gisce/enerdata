@@ -103,7 +103,7 @@ class REEProfile(object):
         import httplib
         key = '%(year)s%(month)02i' % locals()
         if key in cls._CACHE:
-            return cls_CACHE[key]
+            return cls._CACHE[key]
         perff_file = 'PERFF_%(key)s.gz' % locals()
         try:
             conn = httplib.HTTPConnection(cls.HOST)
