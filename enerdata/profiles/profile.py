@@ -5,6 +5,7 @@ from StringIO import StringIO
 
 from enerdata.contracts.tariff import Tariff
 from enerdata.datetime.timezone import TIMEZONE
+from enerdata.metering.measure import Measure
 from enerdata.datetime.station import get_station
 
 
@@ -62,20 +63,26 @@ class Profiler(object):
         self.coefficient = coefficient
 
     def profile(self, tariff, measures):
-        #{'PX': [(datetime(XXXX-XX-XX), 100), (datetime(XXXX-XX-XX), 110)]}
-        measures = dict(
-            (m.code, (m.date, m.consumption)) for m in sorted(measures)
-        )
-        start, end = measures.values()[0][0], measures.values()[0][-1]
+        #{'PX': [(date(XXXX-XX-XX), 100), (date(XXXX-XX-XX), 110)]}
+        _measures = list(measures)
+        measures = {}
+        for m in sorted(_measures):
+            measures.setdefault(m.period.code, [])
+            measures[m.period.code].append(m)
+        start, end = measures.values()[0][0].date, measures.values()[0][-1].date
         sum_cofs = self.coefficient.get_coefs_by_tariff(tariff, start, end)
         drag = 0
-        for hour, cof in self.coeficient.get_range(start, end):
+        for hour, cof in self.coefficient.get_range(start, end):
             # TODO: Implement holidays
             period = tariff.get_period_by_date(hour)
-            pos = bisect.bisect_left(measures[period.code], hour)
-            consumption = measures[period.code][pos][1]
+            d = hour.date()
+            if hour.hour == 0:
+                d -= timedelta(days=1)
+            fake_m = Measure(d, period, 0)
+            pos = bisect.bisect_left(measures[period.code], fake_m)
+            consumption = measures[period.code][pos].consumption
             cof = cof[tariff.cof]
-            hour_c = ((consumption * cof) / sum_cofs) + drag
+            hour_c = ((consumption * cof) / sum_cofs[period.code]) + drag
             aprox = round(hour_c)
             drag = hour_c - aprox
             yield (
@@ -84,8 +91,9 @@ class Profiler(object):
                     'aprox': aprox,
                     'drag': drag,
                     'consumption': consumption,
-                    'consumption_date': measures[period.code][pos][0],
-                    'sum_cofs': sum_cofs
+                    'consumption_date': measures[period.code][pos].date,
+                    'sum_cofs': sum_cofs[period.code],
+                    'cof': cof
                 }
             )
 

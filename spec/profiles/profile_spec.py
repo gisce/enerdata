@@ -1,5 +1,6 @@
 from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import T20DHA
+from enerdata.metering.measure import *
 
 
 
@@ -70,3 +71,34 @@ with description("A coeficient"):
         cofs = c.get_range(date(2014, 3, 30), date(2014, 3, 30))
         assert len(cofs) == 23
         assert cofs[1][0] == TIMEZONE.normalize(TIMEZONE.localize(datetime(2014, 3, 30, 2)))
+
+
+with description("When profiling"):
+
+    with it('the total energy must be the sum of the profiled energy'):
+        c = Coefficients(REEProfile.get(2014, 10))
+        profiler = Profiler(c)
+        measures = [
+            EnergyMeasure(
+                date(2014, 9, 30),
+                TariffPeriod('P1', 'te'), 307, consumption=145
+            ),
+            EnergyMeasure(
+                date(2014, 9, 30),
+                TariffPeriod('P2', 'te'), 108, consumption=10
+            ),
+            EnergyMeasure(
+                date(2014, 10, 31),
+                TariffPeriod('P1', 'te'), 540, consumption=233
+            ),
+            EnergyMeasure(
+                date(2014, 10, 31),
+                TariffPeriod('P2', 'te'), 150, consumption=42
+            )
+        ]
+        t = T20DHA()
+        t.cof = 'A'
+        prof = list(profiler.profile(t, measures))
+        assert len(prof) == (31 * 24) + 1
+        consum = sum([i[1]['aprox'] for i in prof])
+        assert consum == 233 + 42
