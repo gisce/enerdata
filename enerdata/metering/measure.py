@@ -22,11 +22,11 @@ class Measure(object):
 
 
 class EnergyMeasure(Measure):
-    def __init__(self, date, period, measure, mtype='A'):
+    def __init__(self, date, period, measure, mtype='A', consumption=0):
         assert period.type == 'te'
         super(EnergyMeasure, self).__init__(date, period, measure)
         self.type = mtype
-        self.consumption = 0
+        self.consumption = consumption
 
     def __repr__(self):
         return '<EnergyMeasure: [%s] %s - %s: %s>' % (

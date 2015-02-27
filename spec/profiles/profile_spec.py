@@ -1,5 +1,6 @@
 from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import T20DHA
+from enerdata.metering.measure import *
 
 
 
@@ -13,6 +14,18 @@ with description("A coeficient"):
             day += timedelta(hours=1)
             cofs.append((TIMEZONE.normalize(day), {'A': 0, 'B': 0}))
         self.cofs = cofs
+
+    with it("must read and sum the hours of the file"):
+        # TODO: Move this test to integration test with REE
+        cofs = REEProfile.get(2014, 10)
+        # We have one hour more in October
+        assert len(cofs) == (31 * 24) + 1
+        # The first second hour in the 26th of October is DST
+        assert cofs[(24 * 25) + 1][0].dst() == timedelta(seconds=3600)
+        # The second second hour in the 26th of October is not DST
+        assert cofs[(24 * 25) + 2][0].dst() == timedelta(0)
+        assert REEProfile._CACHE['201410'] == cofs
+
 
     with it("must return the sum of coefs for each period"):
         c = Coefficients(self.cofs)
@@ -58,3 +71,34 @@ with description("A coeficient"):
         cofs = c.get_range(date(2014, 3, 30), date(2014, 3, 30))
         assert len(cofs) == 23
         assert cofs[1][0] == TIMEZONE.normalize(TIMEZONE.localize(datetime(2014, 3, 30, 2)))
+
+
+with description("When profiling"):
+
+    with it('the total energy must be the sum of the profiled energy'):
+        c = Coefficients(REEProfile.get(2014, 10))
+        profiler = Profiler(c)
+        measures = [
+            EnergyMeasure(
+                date(2014, 9, 30),
+                TariffPeriod('P1', 'te'), 307, consumption=145
+            ),
+            EnergyMeasure(
+                date(2014, 9, 30),
+                TariffPeriod('P2', 'te'), 108, consumption=10
+            ),
+            EnergyMeasure(
+                date(2014, 10, 31),
+                TariffPeriod('P1', 'te'), 540, consumption=233
+            ),
+            EnergyMeasure(
+                date(2014, 10, 31),
+                TariffPeriod('P2', 'te'), 150, consumption=42
+            )
+        ]
+        t = T20DHA()
+        t.cof = 'A'
+        prof = list(profiler.profile(t, measures))
+        assert len(prof) == (31 * 24) + 1
+        consum = sum([i[1]['aprox'] for i in prof])
+        assert consum == 233 + 42
