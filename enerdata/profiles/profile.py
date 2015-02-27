@@ -130,9 +130,9 @@ class REEProfile(object):
                     day += timedelta(hours=n_hour)
                     n_hour += 1
                     cofs.append(
-                        (TIMEZONE.normalize(day), {
-                            'A': vals[5], 'B': vals[6], 'C': vals[7], 'D': vals[8]
-                        })
+                        (TIMEZONE.normalize(day), dict(
+                            (k, float(vals[i])) for i, k in enumerate('ABCD', 5)
+                        ))
                     )
                 cls._CACHE[key] = cofs
                 return cofs
