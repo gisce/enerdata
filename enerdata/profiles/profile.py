@@ -39,7 +39,8 @@ class Coefficients(object):
         return self.coefs[pos:end_pos]
 
     def get_coefs_by_tariff(self, tariff, start, end):
-        assert isinstance(tariff, Tariff)
+        assert hasattr(tariff, 'get_period_by_date')
+        assert hasattr(tariff, 'energy_periods')
         assert isinstance(start, date)
         assert isinstance(end, date)
         holidays = []
