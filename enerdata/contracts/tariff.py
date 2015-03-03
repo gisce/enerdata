@@ -22,7 +22,7 @@ def check_range_hours(hours):
 class Tariff(object):
     """Energy DSO Tariff.
     """
-    def __init__(self, code):
+    def __init__(self, code=None):
         self.code = code
         self._periods = tuple()
 
@@ -133,6 +133,7 @@ class TariffPeriod(object):
 
 class T20A(Tariff):
     def __init__(self):
+        super(T20A, self).__init__()
         self.code = '2.0A'
         self.periods = (
             TariffPeriod('P1', 'te'),
@@ -145,6 +146,7 @@ class T20A(Tariff):
 
 class T20DHA(T20A):
     def __init__(self):
+        super(T20DHA, self).__init__()
         self.code = '2.0DHA'
         self.periods = (
             TariffPeriod(
@@ -161,3 +163,103 @@ class T20DHA(T20A):
                 'P1', 'tp'
             )
         )
+
+
+class T20DHS(T20DHA):
+    def __init__(self):
+        super(T20DHS, self).__init__()
+        self.code = '2.0DHS'
+        self.periods = (
+            TariffPeriod(
+                'P1', 'te',
+                winter_hours=[(13, 23)],
+                summer_hours=[(13, 23)]
+            ),
+            TariffPeriod(
+                'P2', 'te',
+                winter_hours=[(0, 1), (7, 13), (23, 24)],
+                summer_hours=[(0, 1), (7, 13), (23, 24)]
+            ),
+            TariffPeriod(
+                'P3', 'te',
+                winter_hours=[(1, 7)],
+                summer_hours=[(1, 7)]
+            ),
+            TariffPeriod(
+                'P1', 'tp'
+            )
+        )
+
+
+class T21A(T20A):
+    def __init__(self):
+        super(T21A, self).__init__()
+        self.code = '2.1A'
+        self.min_power = 10
+        self.max_power = 15
+
+
+class T21DHA(T20DHA):
+    def __init__(self):
+        super(T21DHA, self).__init__()
+        self.code = '2.1DHA'
+        self.min_power = 10
+        self.max_power = 15
+
+
+class T21DHS(T20DHS):
+    def __init__(self):
+        super(T21DHS, self).__init__()
+        self.code = '2.1DHS'
+        self.min_power = 10
+        self.max_power = 15
+
+
+class T30A(Tariff):
+    def __init__(self):
+        self.code = '3.0A'
+        self.periods = (
+            TariffPeriod(
+                'P1', 'te',
+                winter_hours=[(18, 22)],
+                summer_hours=[(11, 15)]
+            ),
+            TariffPeriod(
+                'P2', 'te',
+                winter_hours=[(8, 18), (22, 24)],
+                summer_hours=[(8, 11), (15, 24)]
+            ),
+            TariffPeriod(
+                'P3', 'te',
+                winter_hours=[(0, 8)],
+                summer_hours=[(0, 8)]
+            ),
+            TariffPeriod(
+                'P4', 'te',
+                holiday=True,
+                winter_hours=[(18, 22)],
+                summer_hours=[(11, 15)]
+            ),
+            TariffPeriod(
+                'P5', 'te',
+                holiday=True,
+                winter_hours=[(8, 18), (22, 24)],
+                summer_hours=[(8, 11), (15, 24)]
+            ),
+            TariffPeriod(
+                'P6', 'te',
+                holiday=True,
+                winter_hours=[(0, 8)],
+                summer_hours=[(0, 8)]
+            ),
+            TariffPeriod(
+                'P1', 'tp'
+            ),
+            TariffPeriod(
+                'P2', 'tp'
+            ),
+            TariffPeriod(
+                'P3', 'tp'
+            )
+        )
+        super(T30A, self).__init__()
