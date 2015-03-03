@@ -1,13 +1,10 @@
 import bisect
 from datetime import datetime, date, timedelta
-from itertools import islice
+from multiprocessing import Lock
 from StringIO import StringIO
 
-from enerdata.contracts.tariff import Tariff
 from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure
-from enerdata.datetime.station import get_station
-
 
 
 class Coefficients(object):
@@ -102,11 +99,13 @@ class REEProfile(object):
 
     HOST = 'www.ree.es'
     PATH = '/sites/default/files/simel/perff'
+    down_lock = Lock()
 
     _CACHE = {}
 
     @classmethod
     def get(cls, year, month):
+        cls.down_lock.acquire()
         import csv
         import httplib
         key = '%(year)s%(month)02i' % locals()
@@ -148,3 +147,4 @@ class REEProfile(object):
                 raise Exception('Profiles from REE not found')
         finally:
             conn.close()
+            cls.down_lock.release()
