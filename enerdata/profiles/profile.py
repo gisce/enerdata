@@ -106,14 +106,15 @@ class REEProfile(object):
 
     @classmethod
     def get(cls, year, month):
-        cls.down_lock.acquire()
-        import csv
-        import httplib
-        key = '%(year)s%(month)02i' % locals()
-        if key in cls._CACHE:
-            return cls._CACHE[key]
-        perff_file = 'PERFF_%(key)s.gz' % locals()
         try:
+            cls.down_lock.acquire()
+            import csv
+            import httplib
+            key = '%(year)s%(month)02i' % locals()
+            conn = None
+            if key in cls._CACHE:
+                return cls._CACHE[key]
+            perff_file = 'PERFF_%(key)s.gz' % locals()
             conn = httplib.HTTPConnection(cls.HOST)
             conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
             r = conn.getresponse()
@@ -147,5 +148,6 @@ class REEProfile(object):
             else:
                 raise Exception('Profiles from REE not found')
         finally:
-            conn.close()
+            if conn is not None:
+                conn.close()
             cls.down_lock.release()
