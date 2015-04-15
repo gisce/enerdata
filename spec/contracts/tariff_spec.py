@@ -115,3 +115,17 @@ with context('A tariff'):
         dt = datetime(2014, 12, 27, 1, 0, 0)
         period = self.tariff.get_period_by_date(dt, 'winter')
         assert period.code == 'P6'
+
+with context('3.0A tariff'):
+    with before.all:
+        self.tariff = T30A()
+        self.periods = self.tariff.energy_periods
+    with it("should return 6 energy periods"):
+        assert len(self.periods) == 6
+    with it("should contain P1 to P6 periods"):
+        assert 'P1' in self.periods.keys()
+        assert 'P2' in self.periods.keys()
+        assert 'P3' in self.periods.keys()
+        assert 'P4' in self.periods.keys()
+        assert 'P5' in self.periods.keys()
+        assert 'P6' in self.periods.keys()
