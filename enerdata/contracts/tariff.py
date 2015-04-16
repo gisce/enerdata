@@ -217,7 +217,11 @@ class T21DHS(T20DHS):
 
 class T30A(Tariff):
     def __init__(self):
+        super(T30A, self).__init__()
         self.code = '3.0A'
+        self.min_power = 15
+        self.max_power = 99999
+        self.type = 'BT'
         self.periods = (
             TariffPeriod(
                 'P1', 'te',
@@ -262,4 +266,3 @@ class T30A(Tariff):
                 'P3', 'tp'
             )
         )
-        super(T30A, self).__init__()
