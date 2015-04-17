@@ -76,6 +76,9 @@ class Profiler(object):
             d = hour.date()
             if hour.hour == 0:
                 d -= timedelta(days=1)
+            # To take the first measure
+            if d == start:
+                d += timedelta(days=1)
             fake_m = Measure(d, period, 0)
             pos = bisect.bisect_left(measures[period.code], fake_m)
             consumption = measures[period.code][pos].consumption
