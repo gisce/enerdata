@@ -87,10 +87,12 @@ class Tariff(object):
             holiday = True
         else:
             holiday = False
+        # Map hour 0 to 24
+        hour = date_time.hour or 24
         for period in self.periods:
             if period.holiday == holiday or not self.has_holidays_periods:
                 for range_h in getattr(period, '%s_hours' % station):
-                    if range_h[0] <= date_time.hour < range_h[1]:
+                    if range_h[0] < hour <= range_h[1]:
                         return period
         return None
 
