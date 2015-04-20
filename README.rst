@@ -4,7 +4,8 @@ Enerdata
 
 A set of energy models
 
-[![Build Status](http://ci.gisce.net/api/badge/github.com/gisce/enerdata/status.svg?branch=master)](http://ci.gisce.net/github.com/gisce/enerda)
+.. image:: http://ci.gisce.net/api/badge/github.com/gisce/enerdata/status.svg?branch=master
+    :target: http://ci.gisce.net/github.com/gisce/enerdata
 
 ---
 TDD
