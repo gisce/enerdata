@@ -60,7 +60,15 @@ class Profiler(object):
     def __init__(self, coefficient):
         self.coefficient = coefficient
 
-    def profile(self, tariff, measures):
+    def profile(self, tariff, measures, drag_method='hour'):
+        """
+        :param tariff:
+        :param measures:
+        :param drag_method: 'hour' means drag is passed to the next hour
+                            'period' means drag is passed to the next hour for
+                            the same period
+        :return:
+        """
         #{'PX': [(date(XXXX-XX-XX), 100), (date(XXXX-XX-XX), 110)]}
         _measures = list(measures)
         measures = {}
@@ -69,10 +77,15 @@ class Profiler(object):
             measures[m.period.code].append(m)
         start, end = measures.values()[0][0].date, measures.values()[0][-1].date
         sum_cofs = self.coefficient.get_coefs_by_tariff(tariff, start, end)
-        drag = 0
+        drag = {}
         for hour, cof in self.coefficient.get_range(start, end):
             # TODO: Implement holidays
             period = tariff.get_period_by_date(hour)
+            if drag_method == 'hour':
+                dp = 'hour'
+            else:
+                dp = period.code
+            drag.setdefault(dp, 0)
             d = hour.date()
             if hour.hour == 0:
                 d -= timedelta(days=1)
@@ -83,18 +96,19 @@ class Profiler(object):
             pos = bisect.bisect_left(measures[period.code], fake_m)
             consumption = measures[period.code][pos].consumption
             cof = cof[tariff.cof]
-            hour_c = ((consumption * cof) / sum_cofs[period.code]) + drag
+            hour_c = ((consumption * cof) / sum_cofs[period.code]) + drag[dp]
             aprox = round(hour_c)
-            drag = hour_c - aprox
+            drag[dp] = hour_c - aprox
             yield (
                 hour,
                 {
                     'aprox': aprox,
-                    'drag': drag,
+                    'drag': drag[dp],
                     'consumption': consumption,
                     'consumption_date': measures[period.code][pos].date,
                     'sum_cofs': sum_cofs[period.code],
-                    'cof': cof
+                    'cof': cof,
+                    'period': period.code
                 }
             )
 

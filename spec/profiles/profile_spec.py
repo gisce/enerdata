@@ -1,5 +1,5 @@
 from enerdata.profiles.profile import *
-from enerdata.contracts.tariff import T20DHA
+from enerdata.contracts.tariff import T20DHA, T30A
 from enerdata.metering.measure import *
 
 
@@ -102,3 +102,74 @@ with description("When profiling"):
         assert len(prof) == (31 * 24) + 1
         consum = sum([i[1]['aprox'] for i in prof])
         assert consum == 233 + 42
+
+    with it('should be the same per period if drag per period is used'):
+        c = Coefficients()
+        c.insert_coefs(REEProfile.get(2015, 2))
+        c.insert_coefs(REEProfile.get(2015, 3))
+        profiler = Profiler(c)
+        measures = [
+            EnergyMeasure(
+                date(2015, 2, 17),
+                TariffPeriod('P1', 'te'), 0, consumption=0
+            ),
+            EnergyMeasure(
+                date(2015, 2, 17),
+                TariffPeriod('P2', 'te'), 0, consumption=0
+            ),
+            EnergyMeasure(
+                date(2015, 2, 17),
+                TariffPeriod('P3', 'te'), 0, consumption=0
+            ),
+            EnergyMeasure(
+                date(2015, 2, 17),
+                TariffPeriod('P4', 'te'), 0, consumption=0
+            ),
+            EnergyMeasure(
+                date(2015, 2, 17),
+                TariffPeriod('P5', 'te'), 0, consumption=0
+            ),
+            EnergyMeasure(
+                date(2015, 2, 17),
+                TariffPeriod('P6', 'te'), 0, consumption=0
+            ),
+            EnergyMeasure(
+                date(2015, 3, 18),
+                TariffPeriod('P1', 'te'), 0, consumption=282
+            ),
+            EnergyMeasure(
+                date(2015, 3, 18),
+                TariffPeriod('P2', 'te'), 0, consumption=156
+            ),
+            EnergyMeasure(
+                date(2015, 3, 18),
+                TariffPeriod('P3', 'te'), 0, consumption=325
+            ),
+            EnergyMeasure(
+                date(2015, 3, 18),
+                TariffPeriod('P4', 'te'), 0, consumption=56
+            ),
+            EnergyMeasure(
+                date(2015, 3, 18),
+                TariffPeriod('P5', 'te'), 0, consumption=643
+            ),
+            EnergyMeasure(
+                date(2015, 3, 18),
+                TariffPeriod('P6', 'te'), 0, consumption=32
+            )
+        ]
+        t = T30A()
+        t.cof = 'C'
+        prof = list(profiler.profile(t, measures, drag_method='period'))
+        cons = {}
+        for p in prof:
+            period = p[1]['period']
+            cons.setdefault(period, 0)
+            cons[period] += p[1]['aprox']
+
+        assert cons['P1'] == 282
+        assert cons['P2'] == 156
+        assert cons['P3'] == 325
+        assert cons['P4'] == 56
+        assert cons['P5'] == 643
+        assert cons['P6'] == 32
