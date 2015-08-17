@@ -1,4 +1,5 @@
 import bisect
+from collections import namedtuple
 from datetime import datetime, date, timedelta
 from multiprocessing import Lock
 from StringIO import StringIO
@@ -8,7 +9,6 @@ from enerdata.metering.measure import Measure
 
 
 class Coefficients(object):
-
     def __init__(self, coefs=None):
         if coefs is None:
             coefs = []
@@ -56,7 +56,6 @@ class Coefficients(object):
 
 
 class Profiler(object):
-
     def __init__(self, coefficient):
         self.coefficient = coefficient
 
@@ -69,7 +68,7 @@ class Profiler(object):
                             the same period
         :return:
         """
-        #{'PX': [(date(XXXX-XX-XX), 100), (date(XXXX-XX-XX), 110)]}
+        # {'PX': [(date(XXXX-XX-XX), 100), (date(XXXX-XX-XX), 110)]}
         _measures = list(measures)
         measures = {}
         for m in sorted(_measures):
@@ -114,7 +113,6 @@ class Profiler(object):
 
 
 class REEProfile(object):
-
     HOST = 'www.ree.es'
     PATH = '/sites/default/files/simel/perff'
     down_lock = Lock()
@@ -168,3 +166,40 @@ class REEProfile(object):
             if conn is not None:
                 conn.close()
             cls.down_lock.release()
+
+
+ProfileHour = namedtuple('ProfileHour', ['date', 'measure', 'valid'])
+
+
+class Profile(object):
+    """A Profile object representing hours and consumption.
+    """
+
+    def __init__(self, start, end, measures):
+        self.measures = measures[:]
+        self.gaps = []
+        self.start_date = start
+        self.end_date = end + timedelta(hours=1)
+
+        measures_by_date = dict([(m.date, m.measure) for m in measures])
+        while start < end:
+            if measures_by_date.pop(TIMEZONE.normalize(start), None) is None:
+                self.gaps.append(start)
+            start += timedelta(hours=1)
+
+    @property
+    def n_hours(self):
+        return int((self.end_date - self.start_date).total_seconds() / 3600)
+
+    @property
+    def n_hours_measures(self):
+        return len(self.measures)
+
+    @property
+    def total_consumption(self):
+        return sum(x[1] for x in self.measures)
+
+    def __repr__(self):
+        return '<Profile ({} - {}) {}h {}kWh>'.format(
+            self.start_date, self.end_date, self.n_hours, self.total_consumption
+        )

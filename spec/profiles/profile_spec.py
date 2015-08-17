@@ -1,6 +1,7 @@
 from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import T20DHA, T30A
 from enerdata.metering.measure import *
+from expects import *
 
 
 
@@ -173,3 +174,31 @@ with description("When profiling"):
         assert cons['P4'] == 56
         assert cons['P5'] == 643
         assert cons['P6'] == 32
+
+with description('A profile'):
+    with before.all:
+        import random
+        measures = []
+        start = TIMEZONE.localize(datetime(2015, 3, 1, 1))
+        end = TIMEZONE.localize(datetime(2015, 4, 1, 0))
+        start_idx = start
+        while start_idx <= end:
+            measures.append(ProfileHour(
+                TIMEZONE.normalize(start_idx), random.randint(0, 10), True
+            ))
+            start_idx += timedelta(hours=1)
+        self.profile = Profile(start, end, measures)
+
+    with it('has to known the number of hours'):
+        n_hours = self.profile.n_hours
+        # See https://github.com/jaimegildesagredo/expects/issues/34
+        # expect(n_hours).to(be(743))
+        assert n_hours == 743
+
+
+    with it('has to be displayed with useful information'):
+        expr = (
+            '<Profile \(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+\d{2}:\d{2} - '
+            '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+\d{2}:\d{2}\) \d+h \d+kWh>'
+        )
+        expect(self.profile.__repr__()).to(match(expr))
