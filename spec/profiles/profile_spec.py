@@ -202,3 +202,8 @@ with description('A profile'):
             '2015-04-01 00:00:00\+\d{2}:\d{2}\) \d+h \d+kWh>'
         )
         expect(self.profile.__repr__()).to(match(expr))
+
+
+    with it('has sum hours per period the same as total hours'):
+        hours_per_period = get_hours_per_period(self.profile, T20DHA())
+        assert sum(hours_per_period.values()) == self.profile.n_hours

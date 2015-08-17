@@ -1,9 +1,10 @@
 import bisect
-from collections import namedtuple
+from collections import namedtuple, Counter
 from datetime import datetime, date, timedelta
 from multiprocessing import Lock
 from StringIO import StringIO
 
+from enerdata.contracts.tariff import Tariff
 from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure
 
@@ -205,3 +206,15 @@ class Profile(object):
         return '<Profile ({} - {}) {}h {}kWh>'.format(
             self.start_date, self.end_date, self.n_hours, self.total_consumption
         )
+
+
+def get_hours_per_period(profile, tariff):
+    assert isinstance(tariff, Tariff)
+    assert isinstance(profile, Profile)
+    start_idx = profile.start_date
+    hours_per_period = Counter()
+    while start_idx <= profile.end_date:
+        period = tariff.get_period_by_date(start_idx)
+        hours_per_period[period.code] += 1
+        start_idx += timedelta(hours=1)
+    return hours_per_period
