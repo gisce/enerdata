@@ -208,13 +208,20 @@ class Profile(object):
         )
 
 
-def get_hours_per_period(profile, tariff):
+def get_hours_per_period(profile, tariff, only_valid=False):
     assert isinstance(tariff, Tariff)
     assert isinstance(profile, Profile)
-    start_idx = profile.start_date
     hours_per_period = Counter()
-    while start_idx <= profile.end_date:
-        period = tariff.get_period_by_date(start_idx)
-        hours_per_period[period.code] += 1
-        start_idx += timedelta(hours=1)
+    if only_valid:
+        for m in profile.measures:
+            if m.valid:
+                period = tariff.get_period_by_date(m.date)
+                hours_per_period[period.code] += 1
+    else:
+        start_idx = profile.start_date
+        end = profile.end_date
+        while start_idx <= end:
+            period = tariff.get_period_by_date(start_idx)
+            hours_per_period[period.code] += 1
+            start_idx += timedelta(hours=1)
     return hours_per_period
