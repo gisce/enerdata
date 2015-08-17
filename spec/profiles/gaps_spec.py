@@ -35,13 +35,16 @@ with description('A profile with gaps'):
 
 
     with it('has sum hours per period the same as total hours'):
-        hours_per_period = get_hours_per_period(self.profile, T20DHA())
+        hours_per_period = self.profile.get_hours_per_period(T20DHA())
         assert sum(hours_per_period.values()) == self.profile.n_hours
 
     with it('has sum valid hours per period from measures'):
-        hours_per_period = get_hours_per_period(
-            self.profile, T20DHA(), only_valid=True
+        hours_per_period = self.profile.get_hours_per_period(
+            T20DHA(), only_valid=True
         )
         total_hours = self.profile.n_hours_measures - self.number_invalid_hours
         assert sum(hours_per_period.values()) == total_hours
 
+    with it('shouldn\'t have estimable hours'):
+        estimable_hours = self.profile.get_estimable_hours(T20DHA())
+        expect(sum(estimable_hours.values())).to(be_above(0))

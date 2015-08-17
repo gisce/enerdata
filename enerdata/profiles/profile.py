@@ -202,37 +202,42 @@ class Profile(object):
     def total_consumption(self):
         return sum(x[1] for x in self.measures)
 
+    def get_hours_per_period(self, tariff, only_valid=False):
+        assert isinstance(tariff, Tariff)
+        hours_per_period = Counter()
+        if only_valid:
+            for m in self.measures:
+                if m.valid:
+                    period = tariff.get_period_by_date(m.date)
+                    hours_per_period[period.code] += 1
+        else:
+            start_idx = self.start_date
+            end = self.end_date
+            while start_idx <= end:
+                period = tariff.get_period_by_date(start_idx)
+                hours_per_period[period.code] += 1
+                start_idx += timedelta(hours=1)
+        return hours_per_period
+
+    def get_consumption_per_period(self, tariff):
+        assert isinstance(tariff, Tariff)
+        consumption_per_period = Counter()
+        for m in self.measures:
+            if m.valid:
+                period = tariff.get_period_by_date(m.date)
+                consumption_per_period[period.code] += m.measure
+        return consumption_per_period
+
+    def get_estimable_hours(self, tariff):
+        assert isinstance(tariff, Tariff)
+        total_hours = self.get_hours_per_period(tariff)
+        valid_hours = self.get_hours_per_period(tariff, only_valid=True)
+        estimable_hours = {}
+        for period in total_hours.keys():
+            estimable_hours[period] = total_hours[period] - valid_hours[period]
+        return estimable_hours
+
     def __repr__(self):
         return '<Profile ({} - {}) {}h {}kWh>'.format(
             self.start_date, self.end_date, self.n_hours, self.total_consumption
         )
-
-
-def get_hours_per_period(profile, tariff, only_valid=False):
-    assert isinstance(tariff, Tariff)
-    assert isinstance(profile, Profile)
-    hours_per_period = Counter()
-    if only_valid:
-        for m in profile.measures:
-            if m.valid:
-                period = tariff.get_period_by_date(m.date)
-                hours_per_period[period.code] += 1
-    else:
-        start_idx = profile.start_date
-        end = profile.end_date
-        while start_idx <= end:
-            period = tariff.get_period_by_date(start_idx)
-            hours_per_period[period.code] += 1
-            start_idx += timedelta(hours=1)
-    return hours_per_period
-
-
-def get_consumption_per_period(profile, tariff):
-    assert isinstance(tariff, Tariff)
-    assert isinstance(profile, Profile)
-    consumption_per_period = Counter()
-    for m in profile.measures:
-        if m.valid:
-            period = tariff.get_period_by_date(m.date)
-            consumption_per_period[period.code] += m.measure
-    return consumption_per_period

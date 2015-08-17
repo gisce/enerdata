@@ -205,14 +205,18 @@ with description('A profile'):
 
 
     with it('has to sum hours per period the same as total hours'):
-        hours_per_period = get_hours_per_period(self.profile, T20DHA())
+        hours_per_period = self.profile.get_hours_per_period(T20DHA())
         assert sum(hours_per_period.values()) == self.profile.n_hours
 
-        hours_per_period = get_hours_per_period(
-            self.profile, T20DHA(), only_valid=True
+        hours_per_period = self.profile.get_hours_per_period(
+            T20DHA(), only_valid=True
         )
         assert sum(hours_per_period.values()) == self.profile.n_hours
 
     with it('has to sum the consumption per period equal as total consumption'):
-        consumption_per_period = get_consumption_per_period(self.profile, T20DHA())
+        consumption_per_period = self.profile.get_consumption_per_period(T20DHA())
         assert sum(consumption_per_period.values()) == self.profile.total_consumption
+
+    with it('shouldn\'t have estimable hours'):
+        estimable_hours = self.profile.get_estimable_hours(T20DHA())
+        expect(sum(estimable_hours.values())).to(equal(0))
