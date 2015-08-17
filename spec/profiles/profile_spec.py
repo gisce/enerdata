@@ -204,7 +204,7 @@ with description('A profile'):
         expect(self.profile.__repr__()).to(match(expr))
 
 
-    with it('has sum hours per period the same as total hours'):
+    with it('has to sum hours per period the same as total hours'):
         hours_per_period = get_hours_per_period(self.profile, T20DHA())
         assert sum(hours_per_period.values()) == self.profile.n_hours
 
@@ -212,3 +212,7 @@ with description('A profile'):
             self.profile, T20DHA(), only_valid=True
         )
         assert sum(hours_per_period.values()) == self.profile.n_hours
+
+    with it('has to sum the consumption per period equal as total consumption'):
+        consumption_per_period = get_consumption_per_period(self.profile, T20DHA())
+        assert sum(consumption_per_period.values()) == self.profile.total_consumption

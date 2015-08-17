@@ -225,3 +225,14 @@ def get_hours_per_period(profile, tariff, only_valid=False):
             hours_per_period[period.code] += 1
             start_idx += timedelta(hours=1)
     return hours_per_period
+
+
+def get_consumption_per_period(profile, tariff):
+    assert isinstance(tariff, Tariff)
+    assert isinstance(profile, Profile)
+    consumption_per_period = Counter()
+    for m in profile.measures:
+        if m.valid:
+            period = tariff.get_period_by_date(m.date)
+            consumption_per_period[period.code] += m.measure
+    return consumption_per_period
