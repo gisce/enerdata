@@ -198,7 +198,7 @@ with description('A profile'):
 
     with it('has to be displayed with useful information'):
         expr = (
-            '<Profile \(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+\d{2}:\d{2} - '
-            '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\+\d{2}:\d{2}\) \d+h \d+kWh>'
+            '<Profile \(2015-03-01 01:00:00\+\d{2}:\d{2} - '
+            '2015-04-01 00:00:00\+\d{2}:\d{2}\) \d+h \d+kWh>'
         )
         expect(self.profile.__repr__()).to(match(expr))

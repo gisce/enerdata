@@ -12,7 +12,7 @@ with description('A profile with gaps'):
         gap_end = TIMEZONE.localize(datetime(2015, 3, 16))
         start_idx = start
         self.gaps = []
-        while start_idx < end:
+        while start_idx <= end:
             if gap_start < start_idx < gap_end:
                 self.gaps.append(start_idx)
                 start_idx += timedelta(hours=1)

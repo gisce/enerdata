@@ -179,17 +179,19 @@ class Profile(object):
         self.measures = measures[:]
         self.gaps = []
         self.start_date = start
-        self.end_date = end + timedelta(hours=1)
+        self.end_date = end
 
         measures_by_date = dict([(m.date, m.measure) for m in measures])
-        while start < end:
+        # End is included
+        while start <= end:
             if measures_by_date.pop(TIMEZONE.normalize(start), None) is None:
                 self.gaps.append(start)
             start += timedelta(hours=1)
 
     @property
     def n_hours(self):
-        return int((self.end_date - self.start_date).total_seconds() / 3600)
+        # End date is included, we have to sum one hour
+        return int((self.end_date - self.start_date).total_seconds() / 3600) + 1
 
     @property
     def n_hours_measures(self):
