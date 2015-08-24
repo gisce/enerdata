@@ -44,11 +44,10 @@ class Coefficients(object):
         assert hasattr(tariff, 'energy_periods')
         assert isinstance(start, date)
         assert isinstance(end, date)
-        holidays = []
         sum_cofs = dict.fromkeys(tariff.energy_periods.keys(), 0)
         for hour, coef in self.get_range(start, end):
             if len(sum_cofs) > 1:
-                period = tariff.get_period_by_date(hour, holidays)
+                period = tariff.get_period_by_date(hour)
                 p_name = period.code
             else:
                 p_name = sum_cofs.keys()[0]

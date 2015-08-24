@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='enerdata',
-    version='0.1.3',
+    version='0.2.0',
     packages=find_packages(),
     url='http://code.gisce.net',
     license='MIT',
