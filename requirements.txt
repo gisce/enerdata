@@ -1,1 +1,3 @@
 pytz
+# Waiting for https://github.com/novapost/workalendar/pull/114 be merged
+https://github.com/gisce/workalendar/archive/spain.zip
