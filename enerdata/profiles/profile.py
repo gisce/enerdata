@@ -16,6 +16,10 @@ class Coefficients(object):
         assert isinstance(coefs, list)
         self.coefs = list(coefs)
 
+    def _check_pos(self, pos):
+        if pos == len(self.coefs):
+            raise ValueError('start date not found in coefficients')
+
     def insert_coefs(self, coefs):
         pos_0 = bisect.bisect_left(self.coefs, coefs[0])
         pos_1 = bisect.bisect_right(self.coefs, coefs[-1])
@@ -34,8 +38,7 @@ class Coefficients(object):
             end.year, end.month, end.day), is_dst=True
         ) + timedelta(seconds=1)
         pos = bisect.bisect_left(self.coefs, (start, {}))
-        if pos == len(self.coefs):
-            raise ValueError('start date not found in coefficients')
+        self._check_pos(pos)
         end_pos = bisect.bisect_right(self.coefs, (end, {}))
         return self.coefs[pos:end_pos]
 

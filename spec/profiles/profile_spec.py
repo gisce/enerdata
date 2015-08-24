@@ -27,6 +27,13 @@ with description("A coeficient"):
         assert cofs[(24 * 25) + 2][0].dst() == timedelta(0)
         assert REEProfile._CACHE['201410'] == cofs
 
+    with it("must fail if the position does not exist"):
+        c = Coefficients(self.cofs)
+        def get_range_error():
+            c.get_range(date(2015, 1, 1), date(2015, 2, 1))
+
+        expect(get_range_error).to(raise_error(ValueError, 'start date not found in coefficients'))
+
 
     with it("must return the sum of coefs for each period"):
         c = Coefficients(self.cofs)
