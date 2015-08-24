@@ -1,4 +1,5 @@
 import bisect
+import logging
 from collections import namedtuple, Counter
 from datetime import datetime, date, timedelta
 from multiprocessing import Lock
@@ -7,6 +8,9 @@ from StringIO import StringIO
 from enerdata.contracts.tariff import Tariff
 from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure
+
+logger = logging.getLogger(__name__)
+
 
 class Coefficent(namedtuple('Coefficient', ['hour', 'cof'])):
     def __lt__(self, other):
@@ -36,8 +40,14 @@ class Coefficients(object):
     def insert_coefs(self, coefs):
         pos_0 = bisect.bisect_left(self.coefs, Coefficent(coefs[0][0], {}))
         pos_1 = bisect.bisect_right(self.coefs, Coefficent(coefs[-1][0], {}))
+        logger.debug('Deleting from {start}({pos_0}) to {end}({pos_1})'.format(
+            start=coefs[0][0], end=coefs[-1][0], pos_0=pos_0, pos_1=pos_1
+        ))
         del self.coefs[pos_0:pos_1]
         for c in reversed(coefs):
+            logger.debug('Inserting {c} into {pos_0}'.format(
+                c=c, pos_0=pos_0
+            ))
             self.coefs.insert(pos_0, c)
 
     def get(self, dt):
