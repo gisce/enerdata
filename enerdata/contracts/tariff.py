@@ -1,6 +1,7 @@
 import calendar
 
 from enerdata.datetime.station import get_station
+from enerdata.datetime.holidays import get_holidays
 
 
 def check_range_hours(hours):
@@ -77,11 +78,10 @@ class Tariff(object):
     def get_number_of_periods(self):
         return len([p for p in self.periods if p.type == 'te'])
 
-    def get_period_by_date(self, date_time, holidays=None):
+    def get_period_by_date(self, date_time):
         station = get_station(date_time)
-        if holidays is None:
-            holidays = []
         date = date_time.date()
+        holidays = get_holidays(date.year)
         if (calendar.weekday(date.year, date.month, date.day) in (5, 6)
                 or date in holidays):
             holiday = True

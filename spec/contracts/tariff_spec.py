@@ -106,14 +106,23 @@ with context('A tariff'):
             TariffPeriod('P5', 'te', holiday=True, winter_hours=[(8, 18), (22, 24)], summer_hours=[(8, 11), (15, 24)]),
             TariffPeriod('P6', 'te', holiday=True, winter_hours=[(0, 8)], summer_hours=[(0, 8)])
         )
-        dt = datetime(2014, 12, 27, 19, 0, 0)
-        period = self.tariff.get_period_by_date(dt, 'winter')
+        dt = datetime(2015, 12, 24, 19, 0, 0)
+        period = self.tariff.get_period_by_date(dt)
+        assert period.code == 'P1'
+        dt = datetime(2015, 12, 25, 19, 0, 0)
+        period = self.tariff.get_period_by_date(dt)
         assert period.code == 'P4'
-        dt = datetime(2014, 12, 27, 17, 0, 0)
-        period = self.tariff.get_period_by_date(dt, 'winter')
+        dt = datetime(2015, 12, 27, 19, 0, 0)
+        period = self.tariff.get_period_by_date(dt)
+        assert period.code == 'P4'
+        dt = datetime(2015, 12, 27, 19, 0, 0)
+        period = self.tariff.get_period_by_date(dt)
+        assert period.code == 'P4'
+        dt = datetime(2015, 12, 27, 17, 0, 0)
+        period = self.tariff.get_period_by_date(dt)
         assert period.code == 'P5'
-        dt = datetime(2014, 12, 27, 1, 0, 0)
-        period = self.tariff.get_period_by_date(dt, 'winter')
+        dt = datetime(2015, 12, 27, 1, 0, 0)
+        period = self.tariff.get_period_by_date(dt)
         assert period.code == 'P6'
 
 with context('3.0A tariff'):
