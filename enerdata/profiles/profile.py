@@ -8,6 +8,19 @@ from enerdata.contracts.tariff import Tariff
 from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure
 
+class Coefficent(namedtuple('Coefficient', ['hour', 'cof'])):
+    def __lt__(self, other):
+        return self.hour < other.hour
+
+    def __le__(self, other):
+        return self.hour <= other.hour
+
+    def __gt__(self, other):
+        return self.hour > other.hour
+
+    def __ge__(self, other):
+        return self.hour >= other.hour
+
 
 class Coefficients(object):
     def __init__(self, coefs=None):
@@ -21,10 +34,11 @@ class Coefficients(object):
             raise ValueError('start date not found in coefficients')
 
     def insert_coefs(self, coefs):
-        pos_0 = bisect.bisect_left(self.coefs, coefs[0])
-        pos_1 = bisect.bisect_right(self.coefs, coefs[-1])
+        pos_0 = bisect.bisect_left(self.coefs, Coefficent(coefs[0][0], {}))
+        pos_1 = bisect.bisect_right(self.coefs, Coefficent(coefs[-1][0], {}))
         del self.coefs[pos_0:pos_1]
-        self.coefs.extend(coefs)
+        for c in reversed(coefs):
+            self.coefs.insert(pos_0, c)
 
     def get_range(self, start, end):
         assert isinstance(start, date)
@@ -37,9 +51,9 @@ class Coefficients(object):
         end = TIMEZONE.localize(datetime(
             end.year, end.month, end.day), is_dst=True
         ) + timedelta(seconds=1)
-        pos = bisect.bisect_left(self.coefs, (start, {}))
+        pos = bisect.bisect_left(self.coefs, Coefficent(start, {}))
         self._check_pos(pos)
-        end_pos = bisect.bisect_right(self.coefs, (end, {}))
+        end_pos = bisect.bisect_right(self.coefs, Coefficent(end, {}))
         return self.coefs[pos:end_pos]
 
     def get_coefs_by_tariff(self, tariff, start, end):
@@ -156,8 +170,8 @@ class REEProfile(object):
                     day = TIMEZONE.localize(dt, is_dst=bool(not int(vals[4])))
                     day += timedelta(hours=n_hour)
                     n_hour += 1
-                    cofs.append(
-                        (TIMEZONE.normalize(day), dict(
+                    cofs.append(Coefficent(
+                        TIMEZONE.normalize(day), dict(
                             (k, float(vals[i])) for i, k in enumerate('ABCD', 5)
                         ))
                     )

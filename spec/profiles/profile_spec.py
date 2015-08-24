@@ -13,7 +13,7 @@ with description("A coeficient"):
         day = start
         while day < end:
             day += timedelta(hours=1)
-            cofs.append((TIMEZONE.normalize(day), {'A': 0, 'B': 0}))
+            cofs.append(Coefficent(TIMEZONE.normalize(day), {'A': 0, 'B': 0}))
         self.cofs = cofs
 
     with it("must read and sum the hours of the file"):
