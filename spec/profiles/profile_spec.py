@@ -80,6 +80,14 @@ with description("A coeficient"):
         assert len(cofs) == 23
         assert cofs[1][0] == TIMEZONE.normalize(TIMEZONE.localize(datetime(2014, 3, 30, 2)))
 
+    with it('should return a coefficent hour'):
+        c = Coefficients(self.cofs)
+        dt = TIMEZONE.localize(datetime(2014, 12, 23, 0))
+        cof = Coefficent(dt, {'A': 0.001, 'B': 0.001})
+        c.insert_coefs((cof, ))
+        dt = datetime(2014, 12, 23, 0)
+        assert c.get(dt) is cof
+
 
 with description("When profiling"):
 

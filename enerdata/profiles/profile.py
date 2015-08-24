@@ -40,6 +40,14 @@ class Coefficients(object):
         for c in reversed(coefs):
             self.coefs.insert(pos_0, c)
 
+    def get(self, dt):
+        assert isinstance(dt, datetime)
+        dt = TIMEZONE.localize(dt)
+        pos = bisect.bisect_left(self.coefs, Coefficent(dt, {}))
+        logger.debug(pos)
+        self._check_pos(pos)
+        return self.coefs[pos]
+
     def get_range(self, start, end):
         assert isinstance(start, date)
         assert isinstance(end, date)
