@@ -7,7 +7,7 @@ with description('A profile with gaps'):
         import random
         measures = []
         start = TIMEZONE.localize(datetime(2015, 3, 1, 1))
-        end = TIMEZONE.localize(datetime(2015, 4, 1, 1))
+        end = TIMEZONE.localize(datetime(2015, 4, 1, 0))
 
         gap_start = TIMEZONE.localize(datetime(2015, 3, 15))
         gap_end = TIMEZONE.localize(datetime(2015, 3, 16))
@@ -80,3 +80,20 @@ with description('A profile with gaps'):
 
         total_energy = sum(balance.values())
         expect(profile_estimated.total_consumption).to(equal(total_energy))
+
+
+    with context('Is an empty profile'):
+        with it('has to generate all the profile estimating'):
+            balance = Counter()
+            tariff = T20DHA()
+            tariff.cof = 'A'
+            profile = Profile(
+                self.profile.start_date, self.profile.end_date, []
+            )
+            for ph in self.complete_profile:
+                period = tariff.get_period_by_date(ph.date)
+                balance[period.code] += ph.measure
+            profile_estimated = profile.estimate(tariff, balance)
+
+            total_energy = sum(balance.values())
+            expect(profile_estimated.total_consumption).to(equal(total_energy))
