@@ -14,7 +14,10 @@ with description('A profile with gaps'):
         start_idx = start
         self.gaps = []
         self.number_invalid_hours = 0
+        self.complete_profile = []
         while start_idx <= end:
+            energy = random.randint(0, 10)
+            self.complete_profile.append(ProfileHour(start_idx, energy, True))
             if gap_start < start_idx < gap_end:
                 self.gaps.append(start_idx)
                 start_idx += timedelta(hours=1)
@@ -22,10 +25,11 @@ with description('A profile with gaps'):
             if random.randint(0, 10) > 8:
                 valid = False
                 self.number_invalid_hours += 1
+                self.gaps.append(start_idx)
             else:
                 valid = True
             measures.append(ProfileHour(
-                TIMEZONE.normalize(start_idx), random.randint(0, 10), valid
+                TIMEZONE.normalize(start_idx), energy, valid
             ))
             start_idx += timedelta(hours=1)
         self.profile = Profile(start, end, measures)
@@ -48,3 +52,31 @@ with description('A profile with gaps'):
     with it('shouldn\'t have estimable hours'):
         estimable_hours = self.profile.get_estimable_hours(T20DHA())
         expect(sum(estimable_hours.values())).to(be_above(0))
+
+    with it('has to be the same the balance and the consumption + estimable'):
+        tariff = T20DHA()
+        balance = Counter()
+        for ph in self.complete_profile:
+            period = tariff.get_period_by_date(ph.date)
+            balance[period.code] += ph.measure
+
+        total = sum(balance.values())
+        consumption = self.profile.get_consumption_per_period(tariff)
+        estimable = self.profile.get_estimable_consumption(tariff, balance)
+        for period in consumption:
+            energy = consumption[period] + estimable[period]
+            expect(energy).to(equal(balance[period]))
+
+
+    with it('has to estimate energy for the gaps'):
+        # Calculate the balance
+        balance = Counter()
+        tariff = T20DHA()
+        tariff.cof = 'A'
+        for ph in self.complete_profile:
+            period = tariff.get_period_by_date(ph.date)
+            balance[period.code] += ph.measure
+        profile_estimated = self.profile.estimate(tariff, balance)
+
+        total_energy = sum(balance.values())
+        expect(profile_estimated.total_consumption).to(equal(total_energy))
