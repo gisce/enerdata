@@ -1,6 +1,7 @@
 from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import T20DHA, T30A
 from enerdata.metering.measure import *
+from expects import *
 
 
 
@@ -12,7 +13,7 @@ with description("A coeficient"):
         day = start
         while day < end:
             day += timedelta(hours=1)
-            cofs.append((TIMEZONE.normalize(day), {'A': 0, 'B': 0}))
+            cofs.append(Coefficent(TIMEZONE.normalize(day), {'A': 0, 'B': 0}))
         self.cofs = cofs
 
     with it("must read and sum the hours of the file"):
@@ -25,6 +26,13 @@ with description("A coeficient"):
         # The second second hour in the 26th of October is not DST
         assert cofs[(24 * 25) + 2][0].dst() == timedelta(0)
         assert REEProfile._CACHE['201410'] == cofs
+
+    with it("must fail if the position does not exist"):
+        c = Coefficients(self.cofs)
+        def get_range_error():
+            c.get_range(date(2015, 1, 1), date(2015, 2, 1))
+
+        expect(get_range_error).to(raise_error(ValueError, 'start date not found in coefficients'))
 
 
     with it("must return the sum of coefs for each period"):
@@ -71,6 +79,14 @@ with description("A coeficient"):
         cofs = c.get_range(date(2014, 3, 30), date(2014, 3, 30))
         assert len(cofs) == 23
         assert cofs[1][0] == TIMEZONE.normalize(TIMEZONE.localize(datetime(2014, 3, 30, 2)))
+
+    with it('should return a coefficent hour'):
+        c = Coefficients(self.cofs)
+        dt = TIMEZONE.localize(datetime(2014, 12, 23, 0))
+        cof = Coefficent(dt, {'A': 0.001, 'B': 0.001})
+        c.insert_coefs((cof, ))
+        dt = datetime(2014, 12, 23, 0)
+        assert c.get(dt) is cof
 
 
 with description("When profiling"):
@@ -173,3 +189,49 @@ with description("When profiling"):
         assert cons['P4'] == 56
         assert cons['P5'] == 643
         assert cons['P6'] == 32
+
+with description('A profile'):
+    with before.all:
+        import random
+        measures = []
+        start = TIMEZONE.localize(datetime(2015, 3, 1, 1))
+        end = TIMEZONE.localize(datetime(2015, 4, 1, 0))
+        start_idx = start
+        while start_idx <= end:
+            measures.append(ProfileHour(
+                TIMEZONE.normalize(start_idx), random.randint(0, 10), True
+            ))
+            start_idx += timedelta(hours=1)
+        self.profile = Profile(start, end, measures)
+
+    with it('has to known the number of hours'):
+        n_hours = self.profile.n_hours
+        # See https://github.com/jaimegildesagredo/expects/issues/34
+        # expect(n_hours).to(be(743))
+        assert n_hours == 743
+
+
+    with it('has to be displayed with useful information'):
+        expr = (
+            '<Profile \(2015-03-01 01:00:00\+\d{2}:\d{2} - '
+            '2015-04-01 00:00:00\+\d{2}:\d{2}\) \d+h \d+kWh>'
+        )
+        expect(self.profile.__repr__()).to(match(expr))
+
+
+    with it('has to sum hours per period the same as total hours'):
+        hours_per_period = self.profile.get_hours_per_period(T20DHA())
+        assert sum(hours_per_period.values()) == self.profile.n_hours
+
+        hours_per_period = self.profile.get_hours_per_period(
+            T20DHA(), only_valid=True
+        )
+        assert sum(hours_per_period.values()) == self.profile.n_hours
+
+    with it('has to sum the consumption per period equal as total consumption'):
+        consumption_per_period = self.profile.get_consumption_per_period(T20DHA())
+        assert sum(consumption_per_period.values()) == self.profile.total_consumption
+
+    with it('shouldn\'t have estimable hours'):
+        estimable_hours = self.profile.get_estimable_hours(T20DHA())
+        expect(sum(estimable_hours.values())).to(equal(0))

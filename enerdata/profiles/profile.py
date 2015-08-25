@@ -1,25 +1,64 @@
 import bisect
+import logging
+from collections import namedtuple, Counter
 from datetime import datetime, date, timedelta
 from multiprocessing import Lock
 from StringIO import StringIO
+from dateutil.relativedelta import relativedelta
 
+from enerdata.contracts.tariff import Tariff
 from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure
 
+logger = logging.getLogger(__name__)
+
+
+class Coefficent(namedtuple('Coefficient', ['hour', 'cof'])):
+    def __lt__(self, other):
+        return self.hour < other.hour
+
+    def __le__(self, other):
+        return self.hour <= other.hour
+
+    def __gt__(self, other):
+        return self.hour > other.hour
+
+    def __ge__(self, other):
+        return self.hour >= other.hour
+
 
 class Coefficients(object):
-
     def __init__(self, coefs=None):
         if coefs is None:
             coefs = []
         assert isinstance(coefs, list)
         self.coefs = list(coefs)
 
+    def _check_pos(self, pos):
+        if pos == len(self.coefs):
+            raise ValueError('start date not found in coefficients')
+
     def insert_coefs(self, coefs):
-        pos_0 = bisect.bisect_left(self.coefs, coefs[0])
-        pos_1 = bisect.bisect_right(self.coefs, coefs[-1])
+        pos_0 = bisect.bisect_left(self.coefs, Coefficent(coefs[0][0], {}))
+        pos_1 = bisect.bisect_right(self.coefs, Coefficent(coefs[-1][0], {}))
+        logger.debug('Deleting from {start}({pos_0}) to {end}({pos_1})'.format(
+            start=coefs[0][0], end=coefs[-1][0], pos_0=pos_0, pos_1=pos_1
+        ))
         del self.coefs[pos_0:pos_1]
-        self.coefs.extend(coefs)
+        for c in reversed(coefs):
+            logger.debug('Inserting {c} into {pos_0}'.format(
+                c=c, pos_0=pos_0
+            ))
+            self.coefs.insert(pos_0, c)
+
+    def get(self, dt):
+        assert isinstance(dt, datetime)
+        if dt.dst() is None:
+            dt = TIMEZONE.localize(dt)
+        dt = TIMEZONE.normalize(dt)
+        pos = bisect.bisect_left(self.coefs, Coefficent(dt, {}))
+        self._check_pos(pos)
+        return self.coefs[pos]
 
     def get_range(self, start, end):
         assert isinstance(start, date)
@@ -32,10 +71,9 @@ class Coefficients(object):
         end = TIMEZONE.localize(datetime(
             end.year, end.month, end.day), is_dst=True
         ) + timedelta(seconds=1)
-        pos = bisect.bisect_left(self.coefs, (start, {}))
-        if pos == len(self.coefs):
-            raise ValueError('start date not found in coefficients')
-        end_pos = bisect.bisect_right(self.coefs, (end, {}))
+        pos = bisect.bisect_left(self.coefs, Coefficent(start, {}))
+        self._check_pos(pos)
+        end_pos = bisect.bisect_right(self.coefs, Coefficent(end, {}))
         return self.coefs[pos:end_pos]
 
     def get_coefs_by_tariff(self, tariff, start, end):
@@ -55,7 +93,6 @@ class Coefficients(object):
 
 
 class Profiler(object):
-
     def __init__(self, coefficient):
         self.coefficient = coefficient
 
@@ -68,7 +105,7 @@ class Profiler(object):
                             the same period
         :return:
         """
-        #{'PX': [(date(XXXX-XX-XX), 100), (date(XXXX-XX-XX), 110)]}
+        # {'PX': [(date(XXXX-XX-XX), 100), (date(XXXX-XX-XX), 110)]}
         _measures = list(measures)
         measures = {}
         for m in sorted(_measures):
@@ -113,7 +150,6 @@ class Profiler(object):
 
 
 class REEProfile(object):
-
     HOST = 'www.ree.es'
     PATH = '/sites/default/files/simel/perff'
     down_lock = Lock()
@@ -154,8 +190,8 @@ class REEProfile(object):
                     day = TIMEZONE.localize(dt, is_dst=bool(not int(vals[4])))
                     day += timedelta(hours=n_hour)
                     n_hour += 1
-                    cofs.append(
-                        (TIMEZONE.normalize(day), dict(
+                    cofs.append(Coefficent(
+                        TIMEZONE.normalize(day), dict(
                             (k, float(vals[i])) for i, k in enumerate('ABCD', 5)
                         ))
                     )
@@ -167,3 +203,154 @@ class REEProfile(object):
             if conn is not None:
                 conn.close()
             cls.down_lock.release()
+
+
+class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid'])):
+    def __lt__(self, other):
+        return self.date < other.date
+
+    def __le__(self, other):
+        return self.date <= other.date
+
+    def __gt__(self, other):
+        return self.date > other.date
+
+    def __ge__(self, other):
+        return self.date >= other.date
+
+
+class Profile(object):
+    """A Profile object representing hours and consumption.
+    """
+
+    def __init__(self, start, end, measures):
+        self.measures = measures[:]
+        self.gaps = []  # Containing the gaps and invalid measures
+        self.start_date = start
+        self.end_date = end
+
+        measures_by_date = dict(
+            [(m.date, m.measure) for m in measures if m.valid]
+        )
+        # End is included
+        while start <= end:
+            if measures_by_date.pop(TIMEZONE.normalize(start), None) is None:
+                self.gaps.append(start)
+            start += timedelta(hours=1)
+
+    @property
+    def n_hours(self):
+        # End date is included, we have to sum one hour
+        return int((self.end_date - self.start_date).total_seconds() / 3600) + 1
+
+    @property
+    def n_hours_measures(self):
+        return len(self.measures)
+
+    @property
+    def total_consumption(self):
+        return sum(x[1] for x in self.measures)
+
+    def get_hours_per_period(self, tariff, only_valid=False):
+        assert isinstance(tariff, Tariff)
+        hours_per_period = Counter()
+        if only_valid:
+            for m in self.measures:
+                if m.valid:
+                    period = tariff.get_period_by_date(m.date)
+                    hours_per_period[period.code] += 1
+        else:
+            start_idx = self.start_date
+            end = self.end_date
+            while start_idx <= end:
+                period = tariff.get_period_by_date(start_idx)
+                hours_per_period[period.code] += 1
+                start_idx += timedelta(hours=1)
+        return hours_per_period
+
+    def get_consumption_per_period(self, tariff):
+        assert isinstance(tariff, Tariff)
+        consumption_per_period = Counter()
+        if not self.measures:
+            for period in tariff.energy_periods:
+                consumption_per_period[period] = 0
+        for m in self.measures:
+            if m.valid:
+                period = tariff.get_period_by_date(m.date)
+                consumption_per_period[period.code] += m.measure
+        return consumption_per_period
+
+    def get_estimable_hours(self, tariff):
+        assert isinstance(tariff, Tariff)
+        total_hours = self.get_hours_per_period(tariff)
+        valid_hours = self.get_hours_per_period(tariff, only_valid=True)
+        estimable_hours = {}
+        for period in total_hours.keys():
+            estimable_hours[period] = total_hours[period] - valid_hours[period]
+        return estimable_hours
+
+    def get_estimable_consumption(self, tariff, balance):
+        assert isinstance(tariff, Tariff)
+        consumption_per_period = self.get_consumption_per_period(tariff)
+        estimable = {}
+        for period in consumption_per_period:
+            estimable[period] = balance[period] - consumption_per_period[period]
+        return estimable
+
+    def estimate(self, tariff, balance):
+        assert isinstance(tariff, Tariff)
+        logger.debug('Estimating for tariff: {0}'.format(
+            tariff.code
+        ))
+        measures = [x for x in self.measures if x.valid]
+        start = self.start_date
+        end = self.end_date
+        cofs = []
+        while start < end:
+            logger.debug('Downloading coefficients for {0}/{1}'.format(
+                start.month, start.year
+            ))
+            cofs.extend(REEProfile.get(start.year, start.month))
+            start += relativedelta(months=1)
+        cofs = Coefficients(cofs)
+        cofs_per_period = Counter()
+        for gap in self.gaps:
+            period = tariff.get_period_by_date(gap)
+            gap_cof = cofs.get(gap)
+            cofs_per_period[period.code] += gap_cof.cof[tariff.cof]
+
+        logger.debug('Coefficients per period calculated: {}'.format(
+            cofs_per_period
+        ))
+
+        energy_per_period = self.get_estimable_consumption(tariff, balance)
+        energy_per_period_rem = energy_per_period.copy()
+
+        drag = Counter()
+
+        for idx, gap in enumerate(self.gaps):
+            logger.debug('Gap {}/{}'.format(
+                idx + 1, len(self.gaps)
+            ))
+            drag_key = period.code
+            period = tariff.get_period_by_date(gap)
+            gap_cof = cofs.get(gap).cof[tariff.cof]
+            energy = energy_per_period[period.code]
+            gap_energy = (energy * gap_cof) / cofs_per_period[period.code] + drag[drag_key]
+            aprox = round(gap_energy)
+            drag[drag_key] = gap_energy - aprox
+            energy_per_period_rem[period.code] -= gap_energy
+            logger.debug('Energy for hour {} is {}. {} Energy {}/{}'.format(
+                gap, aprox, period.code,
+                energy_per_period_rem[period.code], energy
+            ))
+            pos = bisect.bisect_left(measures, ProfileHour(gap, 0, True))
+            profile_hour = ProfileHour(TIMEZONE.normalize(gap), aprox, True)
+            measures.insert(pos, profile_hour)
+
+        return Profile(self.start_date, self.end_date, measures)
+
+    def __repr__(self):
+        return '<Profile ({} - {}) {}h {}kWh>'.format(
+            self.start_date, self.end_date, self.n_hours, self.total_consumption
+        )
