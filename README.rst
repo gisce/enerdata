@@ -17,4 +17,10 @@ With this library we try to do TDD.
 
   $ export PYTHONPATH="."
   $ mamba
-  
+
+or if you are working with a virtualenv
+
+.. code-block:: bash
+
+  $ pip install -e .
+  $ mamba
