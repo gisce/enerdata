@@ -97,3 +97,82 @@ with description('A profile with gaps'):
 
             total_energy = sum(balance.values())
             expect(profile_estimated.total_consumption).to(equal(total_energy))
+
+    with context('If the balance is less than profile'):
+        with it('has to fill with 0 the gaps'):
+            balance = Counter()
+            tariff = T20DHA()
+            tariff.cof = 'A'
+
+            balance = self.profile.get_hours_per_period(tariff, only_valid=True)
+            for period in balance:
+                balance[period] -= 10
+
+            profile_estimated = self.profile.estimate(tariff, balance)
+            logging.disable(level=logging.INFO)
+            expect(profile_estimated.n_hours).to(equal(len(self.complete_profile)))
+
+            for gap in self.profile.gaps:
+                pos = bisect.bisect_left(
+                    profile_estimated.measures,
+                    ProfileHour(gap, 0, True)
+                )
+                measure = profile_estimated.measures[pos]
+                expect(measure.measure).to(equal(0))
+
+            total_energy = sum(balance.values())
+            expect(profile_estimated.total_consumption).to(equal(total_energy))
+
+
+
+with description('A complete profile with different energy than balance'):
+    with before.all:
+        import random
+        measures = []
+        start = TIMEZONE.localize(datetime(2015, 3, 1, 1))
+        end = TIMEZONE.localize(datetime(2015, 4, 1, 0))
+
+        gap_start = TIMEZONE.localize(datetime(2015, 3, 15))
+        gap_end = TIMEZONE.localize(datetime(2015, 3, 16))
+        start_idx = start
+        self.gaps = []
+        self.complete_profile = []
+        while start_idx <= end:
+            energy = random.randint(0, 10)
+            self.complete_profile.append(ProfileHour(start_idx, energy, True))
+            if gap_start < start_idx < gap_end:
+                energy = random.randint(0, 10)
+            else:
+                valid = True
+            measures.append(ProfileHour(
+                TIMEZONE.normalize(start_idx), energy, valid
+            ))
+            start_idx += timedelta(hours=1)
+        self.profile = Profile(start, end, measures)
+
+    with it('There are no gaps'):
+        complete_hours = Counter()
+        tariff = T20DHA()
+
+        # There is no gaps
+        expect(self.profile.gaps).to(contain_exactly(*self.gaps))
+
+        profile_hours = self.profile.get_hours_per_period(
+            tariff, only_valid=True
+        )
+
+        for ph in self.complete_profile:
+            period = tariff.get_period_by_date(ph.date)
+            complete_hours[period.code] += 1
+
+        for period in complete_hours:
+            expect(profile_hours[period]).to(equal(complete_hours[period]))
+
+    with it('doen\'t have to estimate'):
+        tariff = T20DHA()
+        balance = Counter()
+        for ph in self.complete_profile:
+            period = tariff.get_period_by_date(ph.date)
+            balance[period.code] += ph.measure
+        profile = self.profile.estimate(tariff, balance)
+        expect(profile.n_hours).to(equal(self.profile.n_hours))
