@@ -1,3 +1,5 @@
+from __future__ import division
+
 import bisect
 import logging
 from collections import namedtuple, Counter
@@ -6,6 +8,7 @@ from multiprocessing import Lock
 from StringIO import StringIO
 from dateutil.relativedelta import relativedelta
 
+from enerdata.profiles import Dragger
 from enerdata.contracts.tariff import Tariff
 from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure
@@ -326,7 +329,7 @@ class Profile(object):
         energy_per_period = self.get_estimable_consumption(tariff, balance)
         energy_per_period_rem = energy_per_period.copy()
 
-        drag = Counter()
+        dragger = Dragger()
 
         for idx, gap in enumerate(self.gaps):
             logger.debug('Gap {}/{}'.format(
@@ -336,9 +339,12 @@ class Profile(object):
             period = tariff.get_period_by_date(gap)
             gap_cof = cofs.get(gap).cof[tariff.cof]
             energy = energy_per_period[period.code]
-            gap_energy = (energy * gap_cof) / cofs_per_period[period.code] + drag[drag_key]
-            aprox = round(gap_energy)
-            drag[drag_key] = gap_energy - aprox
+            # If the balance[period] < energy_profile[period] fill with 0
+            # the gaps
+            if energy < 0:
+                energy = 0
+            gap_energy = (energy * gap_cof) / cofs_per_period[period.code]
+            aprox = dragger.drag(gap_energy, key=drag_key)
             energy_per_period_rem[period.code] -= gap_energy
             logger.debug('Energy for hour {} is {}. {} Energy {}/{}'.format(
                 gap, aprox, period.code,
@@ -348,7 +354,22 @@ class Profile(object):
             profile_hour = ProfileHour(TIMEZONE.normalize(gap), aprox, True)
             measures.insert(pos, profile_hour)
 
-        return Profile(self.start_date, self.end_date, measures)
+        # Adjust values
+        profile = Profile(self.start_date, self.end_date, measures)
+        dragger = Dragger()
+        if profile.total_consumption != sum(balance.values()):
+            energy_per_period = profile.get_consumption_per_period(tariff)
+            for idx, measure in enumerate(profile.measures):
+                period = tariff.get_period_by_date(measure.date).code
+                profile.measures[idx] = ProfileHour(
+                    measure.date,
+                    dragger.drag(measure.measure * (
+                        balance[period] / energy_per_period[period]
+                    )),
+                    True
+                )
+
+        return profile
 
     def __repr__(self):
         return '<Profile ({} - {}) {}h {}kWh>'.format(
