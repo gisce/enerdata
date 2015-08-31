@@ -142,7 +142,7 @@ with description('Profiles integration with third party data'):
                 period = tariff.get_period_by_date(ph['timestamp'])
                 balance[period.code] += ph['ai']
 
-            with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
+            with vcr.use_cassette('spec/fixtures/ree/201505.yaml'):
                 profile_estimated = profile.estimate(tariff, balance)
             total_energy = sum(balance.values())
             expect(profile_estimated.total_consumption).to(equal(total_energy))
