@@ -118,7 +118,7 @@ class Profiler(object):
             measures[m.period.code].append(m)
         start, end = measures.values()[0][0].date, measures.values()[0][-1].date
         sum_cofs = self.coefficient.get_coefs_by_tariff(tariff, start, end)
-        drag = {}
+        dragger = Dragger()
         for hour, cof in self.coefficient.get_range(start, end):
             # TODO: Implement holidays
             period = tariff.get_period_by_date(hour)
@@ -126,7 +126,6 @@ class Profiler(object):
                 dp = 'hour'
             else:
                 dp = period.code
-            drag.setdefault(dp, 0)
             d = hour.date()
             if hour.hour == 0:
                 d -= timedelta(days=1)
@@ -137,14 +136,13 @@ class Profiler(object):
             pos = bisect.bisect_left(measures[period.code], fake_m)
             consumption = measures[period.code][pos].consumption
             cof = cof[tariff.cof]
-            hour_c = ((consumption * cof) / sum_cofs[period.code]) + drag[dp]
-            aprox = round(hour_c)
-            drag[dp] = hour_c - aprox
+            hour_c = ((consumption * cof) / sum_cofs[period.code])
+            aprox = dragger.drag(hour_c, key=dp)
             yield (
                 hour,
                 {
                     'aprox': aprox,
-                    'drag': drag[dp],
+                    'drag': dragger[dp],
                     'consumption': consumption,
                     'consumption_date': measures[period.code][pos].date,
                     'sum_cofs': sum_cofs[period.code],
