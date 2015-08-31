@@ -160,6 +160,17 @@ class REEProfile(object):
     _CACHE = {}
 
     @classmethod
+    def get_range(cls, start, end):
+        cofs = []
+        while start < end:
+            logger.debug('Downloading coefficients for {0}/{1}'.format(
+                start.month, start.year
+            ))
+            cofs.extend(REEProfile.get(start.year, start.month))
+            start += relativedelta(months=1)
+        return cofs
+
+    @classmethod
     def get(cls, year, month):
         try:
             cls.down_lock.acquire()
@@ -311,13 +322,7 @@ class Profile(object):
         measures = [x for x in self.measures if x.valid]
         start = self.start_date
         end = self.end_date
-        cofs = []
-        while start < end:
-            logger.debug('Downloading coefficients for {0}/{1}'.format(
-                start.month, start.year
-            ))
-            cofs.extend(REEProfile.get(start.year, start.month))
-            start += relativedelta(months=1)
+        cofs = REEProfile.get_range(start, end)
         cofs = Coefficients(cofs)
         cofs_per_period = Counter()
         for gap in self.gaps:
