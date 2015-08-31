@@ -179,10 +179,14 @@ class REEProfile(object):
             key = '%(year)s%(month)02i' % locals()
             conn = None
             if key in cls._CACHE:
+                logger.debug('Using CACHE for REEProfile {}'.format(key))
                 return cls._CACHE[key]
             perff_file = 'PERFF_%(key)s.gz' % locals()
             conn = httplib.HTTPConnection(cls.HOST)
             conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
+            logger.debug('Downloading REEProfile from {}/{}'.format(
+                cls.PATH, perff_file
+            ))
             r = conn.getresponse()
             if r.msg.type == 'application/x-gzip':
                 import gzip
