@@ -2,6 +2,7 @@ from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import *
 
 from expects import *
+import vcr
 
 
 class TGProfileHour(namedtuple('TGProfileHour',
@@ -141,7 +142,8 @@ with description('Profiles integration with third party data'):
                 period = tariff.get_period_by_date(ph['timestamp'])
                 balance[period.code] += ph['ai']
 
-            profile_estimated = profile.estimate(tariff, balance)
+            with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
+                profile_estimated = profile.estimate(tariff, balance)
             total_energy = sum(balance.values())
             expect(profile_estimated.total_consumption).to(equal(total_energy))
 
@@ -170,7 +172,8 @@ with description('Profiles integration with third party data'):
                 period = tariff.get_period_by_date(ph['timestamp'])
                 balance[period.code] += ph['ai']
 
-            profile = profile.estimate(tariff, balance)
+            with vcr.use_cassette('spec/fixtures/ree/201505.yaml'):
+                profile = profile.estimate(tariff, balance)
 
             # Fake balance to adjust the profile
             for ph in self.measures:

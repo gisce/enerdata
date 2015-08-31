@@ -2,6 +2,7 @@ from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import T20DHA, T30A
 from enerdata.metering.measure import *
 from expects import *
+import vcr
 
 
 
@@ -18,14 +19,15 @@ with description("A coeficient"):
 
     with it("must read and sum the hours of the file"):
         # TODO: Move this test to integration test with REE
-        cofs = REEProfile.get(2014, 10)
-        # We have one hour more in October
-        assert len(cofs) == (31 * 24) + 1
-        # The first second hour in the 26th of October is DST
-        assert cofs[(24 * 25) + 1][0].dst() == timedelta(seconds=3600)
-        # The second second hour in the 26th of October is not DST
-        assert cofs[(24 * 25) + 2][0].dst() == timedelta(0)
-        assert REEProfile._CACHE['201410'] == cofs
+        with vcr.use_cassette('spec/fixtures/ree/201410.yaml'):
+            cofs = REEProfile.get(2014, 10)
+            # We have one hour more in October
+            assert len(cofs) == (31 * 24) + 1
+            # The first second hour in the 26th of October is DST
+            assert cofs[(24 * 25) + 1][0].dst() == timedelta(seconds=3600)
+            # The second second hour in the 26th of October is not DST
+            assert cofs[(24 * 25) + 2][0].dst() == timedelta(0)
+            assert REEProfile._CACHE['201410'] == cofs
 
     with it("must fail if the position does not exist"):
         c = Coefficients(self.cofs)
@@ -121,8 +123,10 @@ with description("When profiling"):
 
     with it('should be the same per period if drag per period is used'):
         c = Coefficients()
-        c.insert_coefs(REEProfile.get(2015, 2))
-        c.insert_coefs(REEProfile.get(2015, 3))
+        with vcr.use_cassette('spec/fixtures/ree/201502.yaml'):
+            c.insert_coefs(REEProfile.get(2015, 2))
+        with vcr.use_cassette('spec/fixtures/ree/201503.yaml'):
+            c.insert_coefs(REEProfile.get(2015, 3))
         profiler = Profiler(c)
         measures = [
             EnergyMeasure(

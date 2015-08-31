@@ -1,6 +1,8 @@
 from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import *
 from expects import *
+import vcr
+
 
 with description('A profile with gaps'):
     with before.all:
@@ -76,7 +78,8 @@ with description('A profile with gaps'):
         for ph in self.complete_profile:
             period = tariff.get_period_by_date(ph.date)
             balance[period.code] += ph.measure
-        profile_estimated = self.profile.estimate(tariff, balance)
+        with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
+            profile_estimated = self.profile.estimate(tariff, balance)
 
         total_energy = sum(balance.values())
         expect(profile_estimated.total_consumption).to(equal(total_energy))
@@ -93,7 +96,8 @@ with description('A profile with gaps'):
             for ph in self.complete_profile:
                 period = tariff.get_period_by_date(ph.date)
                 balance[period.code] += ph.measure
-            profile_estimated = profile.estimate(tariff, balance)
+            with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
+                profile_estimated = profile.estimate(tariff, balance)
 
             total_energy = sum(balance.values())
             expect(profile_estimated.total_consumption).to(equal(total_energy))
@@ -107,8 +111,8 @@ with description('A profile with gaps'):
             balance = self.profile.get_hours_per_period(tariff, only_valid=True)
             for period in balance:
                 balance[period] -= 10
-
-            profile_estimated = self.profile.estimate(tariff, balance)
+            with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
+                profile_estimated = self.profile.estimate(tariff, balance)
             logging.disable(level=logging.INFO)
             expect(profile_estimated.n_hours).to(equal(len(self.complete_profile)))
 
@@ -174,5 +178,6 @@ with description('A complete profile with different energy than balance'):
         for ph in self.complete_profile:
             period = tariff.get_period_by_date(ph.date)
             balance[period.code] += ph.measure
-        profile = self.profile.estimate(tariff, balance)
+        with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
+            profile = self.profile.estimate(tariff, balance)
         expect(profile.n_hours).to(equal(self.profile.n_hours))
