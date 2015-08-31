@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 
 class Coefficent(namedtuple('Coefficient', ['hour', 'cof'])):
+    __slots__ = ()
+
     def __lt__(self, other):
         return self.hour < other.hour
 
@@ -209,6 +211,9 @@ class REEProfile(object):
 
 
 class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid'])):
+
+    __slots__ = ()
+
     def __lt__(self, other):
         return self.date < other.date
 
