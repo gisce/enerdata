@@ -122,3 +122,69 @@ with description('Profiles integration with third party data'):
             expect(profile.gaps).to(contain(*[
                 TIMEZONE.localize(x) for x in self.gaps
             ]))
+
+        with it('has to fix the gaps'):
+            ph_measures = []
+            start = TIMEZONE.localize(datetime(2015, 5, 1, 1))
+            end = TIMEZONE.localize(datetime(2015, 6, 1, 0))
+            for measure in self.measures:
+                ph = convert_to_profilehour(measure)
+                ph_measures.append(ph)
+
+            profile = Profile(start, end, ph_measures)
+
+            balance = Counter()
+            tariff = T20DHA()
+            tariff.cof = 'A'
+
+            for ph in self.measures:
+                period = tariff.get_period_by_date(ph['timestamp'])
+                balance[period.code] += ph['ai']
+
+            profile_estimated = profile.estimate(tariff, balance)
+            total_energy = sum(balance.values())
+            expect(profile_estimated.total_consumption).to(equal(total_energy))
+
+            # All the measures have the meta if are adjusted
+            for measure in profile_estimated.measures:
+                if isinstance(measure, ProfileHour):
+                    expect(profile.gaps).to(contain(measure.date))
+                    expect(measure._asdict()).to_not(have_key('meta'))
+
+        with it('has to adjust the balance'):
+            ph_measures = []
+            start = TIMEZONE.localize(datetime(2015, 5, 1, 1))
+            end = TIMEZONE.localize(datetime(2015, 6, 1, 0))
+            for measure in self.measures:
+                ph = convert_to_profilehour(measure)
+                ph_measures.append(ph)
+
+            profile = Profile(start, end, ph_measures)
+
+            balance = Counter()
+            tariff = T20DHA()
+            tariff.cof = 'A'
+
+            # Fix the gaps
+            for ph in self.measures:
+                period = tariff.get_period_by_date(ph['timestamp'])
+                balance[period.code] += ph['ai']
+
+            profile = profile.estimate(tariff, balance)
+
+            # Fake balance to adjust the profile
+            for ph in self.measures:
+                period = tariff.get_period_by_date(ph['timestamp'])
+                balance[period.code] += ph['ai'] + 1
+
+            profile_estimated = profile.estimate(tariff, balance)
+
+            total_energy = sum(balance.values())
+            expect(profile_estimated.total_consumption).to(equal(total_energy))
+
+            # All the measures have the meta if are adjusted
+            for measure in profile_estimated.measures:
+                if isinstance(measure, TGProfileHour):
+                    expect(measure._asdict()).to(have_key('meta'))
+                    if measure.measure > 0:
+                        expect(measure.measure).to(be_above(measure.meta['ai']))
