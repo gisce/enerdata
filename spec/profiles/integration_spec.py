@@ -1,6 +1,24 @@
 from enerdata.profiles.profile import *
+from enerdata.contracts.tariff import *
 
 from expects import *
+
+
+class TGProfileHour(namedtuple('TGProfileHour',
+                               ProfileHour._fields + ('meta', ))):
+    __slots__ = ()
+
+    def __lt__(self, other):
+        return self.date < other.date
+
+    def __le__(self, other):
+        return self.date <= other.date
+
+    def __gt__(self, other):
+        return self.date > other.date
+
+    def __ge__(self, other):
+        return self.date >= other.date
 
 
 def localize_season(dt, season):
@@ -9,10 +27,11 @@ def localize_season(dt, season):
 
 
 def convert_to_profilehour(measure):
-    ph = ProfileHour(
+    ph = TGProfileHour(
         localize_season(measure['timestamp'], measure['season']),
         measure['ai'],
-        measure['valid']
+        measure['valid'],
+        meta=measure
     )
     return ph
 
