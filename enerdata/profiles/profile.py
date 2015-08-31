@@ -366,13 +366,12 @@ class Profile(object):
             energy_per_period = profile.get_consumption_per_period(tariff)
             for idx, measure in enumerate(profile.measures):
                 period = tariff.get_period_by_date(measure.date).code
-                profile.measures[idx] = ProfileHour(
-                    measure.date,
-                    dragger.drag(measure.measure * (
-                        balance[period] / energy_per_period[period]
-                    )),
-                    True
-                )
+                values = measure._asdict()
+                values['valid'] = True
+                values['measure'] = dragger.drag(measure.measure * (
+                    balance[period] / energy_per_period[period]
+                ))
+                profile.measures[idx] = measure._make(values.values())
 
         return profile
 
