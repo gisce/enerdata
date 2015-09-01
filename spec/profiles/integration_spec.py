@@ -180,7 +180,7 @@ with description('Profiles integration with third party data'):
                 period = tariff.get_period_by_date(ph['timestamp'])
                 balance[period.code] += ph['ai'] + 1
 
-            profile_estimated = profile.estimate(tariff, balance)
+            profile_estimated = profile.adjust(tariff, balance)
 
             total_energy = sum(balance.values())
             expect(profile_estimated.total_consumption).to(equal(total_energy))
