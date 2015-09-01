@@ -2,6 +2,9 @@ from enerdata.contracts import TariffPeriod
 
 
 class Measure(object):
+
+    __slots__ = ('date', 'period', 'measure')
+
     def __init__(self, date, period, measure):
         self.date = date
         assert isinstance(period, TariffPeriod)
@@ -22,6 +25,9 @@ class Measure(object):
 
 
 class EnergyMeasure(Measure):
+
+    __slots__ = ('type', 'consumption')
+
     def __init__(self, date, period, measure, mtype='A', consumption=0):
         assert period.type == 'te'
         super(EnergyMeasure, self).__init__(date, period, measure)

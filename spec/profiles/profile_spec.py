@@ -181,10 +181,9 @@ with description("When profiling"):
         t = T30A()
         t.cof = 'C'
         prof = list(profiler.profile(t, measures, drag_method='period'))
-        cons = {}
+        cons = Counter()
         for p in prof:
             period = p[1]['period']
-            cons.setdefault(period, 0)
             cons[period] += p[1]['aprox']
 
         assert cons['P1'] == 282
