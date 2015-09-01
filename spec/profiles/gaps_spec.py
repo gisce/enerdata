@@ -102,7 +102,7 @@ with description('A profile with gaps'):
             total_energy = sum(balance.values())
             expect(profile_estimated.total_consumption).to(equal(total_energy))
 
-    with context('if the balance is less than profile'):
+    with context('If the balance is less than profile'):
         with it('has to fill with 0 the gaps'):
             balance = Counter()
             tariff = T20DHA()
@@ -128,6 +128,19 @@ with description('A profile with gaps'):
             profile_estimated = profile_estimated.adjust(tariff, balance)
             expect(profile_estimated.total_consumption).to(equal(total_energy))
 
+    with it('must fail adjusting'):
+        balance = Counter()
+        tariff = T20DHA()
+        for ph in self.profile.measures:
+            period = tariff.get_period_by_date(ph.date)
+            balance[period.code] += ph.measure
+        expect(len(self.profile.gaps)).to(be_above(0))
+
+        def adjust_error():
+            self.profile.adjust(tariff, balance)
+
+        expect(adjust_error).to(raise_error(Exception, 'Is not possible to adjust a profile with gaps'))
+
 
 
 with description('A complete profile with different energy than balance'):
@@ -141,16 +154,10 @@ with description('A complete profile with different energy than balance'):
         gap_end = TIMEZONE.localize(datetime(2015, 3, 16))
         start_idx = start
         self.gaps = []
-        self.complete_profile = []
         while start_idx <= end:
             energy = random.randint(0, 10)
-            self.complete_profile.append(ProfileHour(start_idx, energy, True))
-            if gap_start < start_idx < gap_end:
-                energy = random.randint(0, 10)
-            else:
-                valid = True
             measures.append(ProfileHour(
-                TIMEZONE.normalize(start_idx), energy, valid
+                TIMEZONE.normalize(start_idx), energy, True
             ))
             start_idx += timedelta(hours=1)
         self.profile = Profile(start, end, measures)
@@ -166,19 +173,44 @@ with description('A complete profile with different energy than balance'):
             tariff, only_valid=True
         )
 
-        for ph in self.complete_profile:
+        for ph in self.profile.measures:
             period = tariff.get_period_by_date(ph.date)
             complete_hours[period.code] += 1
 
         for period in complete_hours:
             expect(profile_hours[period]).to(equal(complete_hours[period]))
 
-    with it('doen\'t have to estimate'):
+    with it('must not to estimate'):
         tariff = T20DHA()
         balance = Counter()
-        for ph in self.complete_profile:
+        for ph in self.profile.measures:
             period = tariff.get_period_by_date(ph.date)
             balance[period.code] += ph.measure
         with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
             profile = self.profile.estimate(tariff, balance)
         expect(profile.n_hours).to(equal(self.profile.n_hours))
+
+    with it('must to adjust with the profile'):
+        tariff = T20DHA()
+        balance = Counter()
+
+        for ph in self.profile.measures:
+            period = tariff.get_period_by_date(ph.date)
+            balance[period.code] += ph.measure - 3
+
+        total_energy = sum(balance.values())
+        expect(total_energy).to(be_below(self.profile.total_consumption))
+        profile = self.profile.adjust(tariff, balance)
+        expect(total_energy).to(equal(profile.total_consumption))
+
+
+        balance = Counter()
+
+        for ph in self.profile.measures:
+            period = tariff.get_period_by_date(ph.date)
+            balance[period.code] += ph.measure + 3
+
+        total_energy = sum(balance.values())
+        expect(total_energy).to(be_above(self.profile.total_consumption))
+        profile = self.profile.adjust(tariff, balance)
+        expect(total_energy).to(equal(profile.total_consumption))
