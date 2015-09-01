@@ -51,7 +51,7 @@ with description('A profile with gaps'):
         total_hours = self.profile.n_hours_measures - self.number_invalid_hours
         assert sum(hours_per_period.values()) == total_hours
 
-    with it('shouldn\'t have estimable hours'):
+    with it('should have estimable hours'):
         estimable_hours = self.profile.get_estimable_hours(T20DHA())
         expect(sum(estimable_hours.values())).to(be_above(0))
 
