@@ -102,7 +102,7 @@ with description('A profile with gaps'):
             total_energy = sum(balance.values())
             expect(profile_estimated.total_consumption).to(equal(total_energy))
 
-    with context('If the balance is less than profile'):
+    with context('if the balance is less than profile'):
         with it('has to fill with 0 the gaps'):
             balance = Counter()
             tariff = T20DHA()
@@ -124,6 +124,8 @@ with description('A profile with gaps'):
                 expect(measure.measure).to(equal(0))
 
             total_energy = sum(balance.values())
+            # Adjust
+            profile_estimated = profile_estimated.adjust(tariff, balance)
             expect(profile_estimated.total_consumption).to(equal(total_energy))
 
 
@@ -153,7 +155,7 @@ with description('A complete profile with different energy than balance'):
             start_idx += timedelta(hours=1)
         self.profile = Profile(start, end, measures)
 
-    with it('There are no gaps'):
+    with it('must not have gaps'):
         complete_hours = Counter()
         tariff = T20DHA()
 

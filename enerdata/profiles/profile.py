@@ -365,9 +365,14 @@ class Profile(object):
             pos = bisect.bisect_left(measures, ProfileHour(gap, 0, True))
             profile_hour = ProfileHour(TIMEZONE.normalize(gap), aprox, True)
             measures.insert(pos, profile_hour)
-
-        # Adjust values
         profile = Profile(self.start_date, self.end_date, measures)
+        return profile
+
+    def adjust(self, tariff, balance):
+        # Adjust values
+        if self.gaps:
+            raise Exception('Is not possible to adjust a profile with gaps')
+        profile = Profile(self.start_date, self.end_date, self.measures)
         dragger = Dragger()
         if profile.total_consumption != sum(balance.values()):
             energy_per_period = profile.get_consumption_per_period(tariff)
@@ -379,7 +384,13 @@ class Profile(object):
                     balance[period] / energy_per_period[period]
                 ))
                 profile.measures[idx] = measure._make(values.values())
+        return profile
 
+    def fixit(self, tariff, balance):
+        # Fill the gaps
+        profile = self.estimate(tariff, balance)
+        # Adjust to the balance
+        profile = profile.adjust(tariff, balance)
         return profile
 
     def __repr__(self):
