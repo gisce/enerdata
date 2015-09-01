@@ -113,7 +113,6 @@ with description('A profile with gaps'):
                 balance[period] -= 10
             with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
                 profile_estimated = self.profile.estimate(tariff, balance)
-            logging.disable(level=logging.INFO)
             expect(profile_estimated.n_hours).to(equal(len(self.complete_profile)))
 
             for gap in self.profile.gaps:
