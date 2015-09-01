@@ -40,7 +40,7 @@ with description('A profile with gaps'):
         expect(self.profile.gaps).to(contain_exactly(*self.gaps))
 
 
-    with it('has sum hours per period the same as total hours'):
+    with it('has sum hours per period the be the same as total hours'):
         hours_per_period = self.profile.get_hours_per_period(T20DHA())
         assert sum(hours_per_period.values()) == self.profile.n_hours
 
@@ -55,7 +55,7 @@ with description('A profile with gaps'):
         estimable_hours = self.profile.get_estimable_hours(T20DHA())
         expect(sum(estimable_hours.values())).to(be_above(0))
 
-    with it('has to be the same the balance and the consumption + estimable'):
+    with it('has to be the same the balance with the consumption + estimable'):
         tariff = T20DHA()
         balance = Counter()
         for ph in self.complete_profile:
