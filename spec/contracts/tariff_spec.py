@@ -138,3 +138,25 @@ with context('3.0A tariff'):
         assert 'P4' in self.periods.keys()
         assert 'P5' in self.periods.keys()
         assert 'P6' in self.periods.keys()
+
+
+with description('Getting a tariff by descripion'):
+
+    with it('must return the appropiate tariff'):
+        tariffs = [
+            ('2.0A', T20A),
+            ('2.0DHA', T20DHA),
+            ('2.0DHS', T20DHS),
+            ('2.1A', T21A),
+            ('2.1DHA', T21DHA),
+            ('2.1DHS', T21DHS),
+            ('3.0A', T30A),
+        ]
+
+        for t in tariffs:
+            t_obj = get_tariff_by_code(t[0])()
+            assert isinstance(t_obj, t[1])
+
+    with it('must return None if the code is not in available'):
+        t = get_tariff_by_code('NO_EXISTS')
+        expect(t).to(be_none)

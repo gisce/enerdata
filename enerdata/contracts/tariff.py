@@ -268,3 +268,21 @@ class T30A(Tariff):
                 'P3', 'tp'
             )
         )
+
+
+def get_tariff_by_code(code):
+    """Get tariff class by code
+
+    :param code: Tariff code
+    :return: Tariff
+    """
+    available = {
+        '2.0A': T20A,
+        '2.0DHA': T20DHA,
+        '2.0DHS': T20DHS,
+        '2.1A': T21A,
+        '2.1DHA': T21DHA,
+        '2.1DHS': T21DHS,
+        '3.0A': T30A
+    }
+    return available.get(code, None)
