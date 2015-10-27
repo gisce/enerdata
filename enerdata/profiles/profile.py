@@ -249,6 +249,7 @@ class Profile(object):
         self.gaps = []  # Containing the gaps and invalid measures
         self.start_date = start
         self.end_date = end
+        self.profile_class = REEProfile
 
         measures_by_date = dict(
             [(m.date, m.measure) for m in measures if m.valid]
@@ -326,7 +327,7 @@ class Profile(object):
         measures = [x for x in self.measures if x.valid]
         start = self.start_date
         end = self.end_date
-        cofs = REEProfile.get_range(start, end)
+        cofs = self.profile_class.get_range(start, end)
         cofs = Coefficients(cofs)
         cofs_per_period = Counter()
         for gap in self.gaps:
