@@ -296,9 +296,8 @@ class Profile(object):
     def get_consumption_per_period(self, tariff):
         assert isinstance(tariff, Tariff)
         consumption_per_period = Counter()
-        if not self.measures:
-            for period in tariff.energy_periods:
-                consumption_per_period[period] = 0
+        for period in tariff.energy_periods:
+            consumption_per_period[period] = 0
         for m in self.measures:
             if m.valid:
                 period = tariff.get_period_by_date(m.date)
