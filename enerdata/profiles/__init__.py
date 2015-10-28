@@ -1,4 +1,7 @@
-from collections import Counter
+try:
+    from collections import Counter
+except ImportError:
+    from backport_collections import Counter
 from decimal import Decimal
 
 

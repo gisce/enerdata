@@ -2,7 +2,10 @@ from __future__ import division
 
 import bisect
 import logging
-from collections import namedtuple, Counter
+try:
+    from collections import namedtuple, Counter
+except ImportError:
+    from backport_collections import namedtuple, Counter
 from datetime import datetime, date, timedelta
 from multiprocessing import Lock
 from StringIO import StringIO
