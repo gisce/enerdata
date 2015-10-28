@@ -1,5 +1,10 @@
+import sys
 from setuptools import setup, find_packages
 
+INSTALL_REQUIRES = ['pytz']
+
+if sys.version_info < (2, 7):
+    INSTALL_REQUIRES += ['backport_collections']
 
 setup(
     name='enerdata',
@@ -9,8 +14,6 @@ setup(
     license='MIT',
     author='GISCE-TI, S.L.',
     author_email='devel@gisce.net',
-    install_requires=[
-        'pytz'
-    ],
+    install_requires=INSTALL_REQUIRES,
     description=''
 )
