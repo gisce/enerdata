@@ -385,9 +385,12 @@ class Profile(object):
                 period = tariff.get_period_by_date(measure.date).code
                 values = measure._asdict()
                 values['valid'] = True
-                values['measure'] = dragger.drag(measure.measure * (
-                    balance[period] / energy_per_period[period]
-                ))
+                if not energy_per_period[period]:
+                    values['measure'] = dragger.drag(measure.measure * 0)
+                else:
+                    values['measure'] = dragger.drag(measure.measure * (
+                        balance[period] / energy_per_period[period]
+                    ))
                 profile.measures[idx] = measure._make(values.values())
         return profile
 
