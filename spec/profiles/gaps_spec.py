@@ -102,6 +102,28 @@ with description('A profile with gaps'):
             total_energy = sum(balance.values())
             expect(profile_estimated.total_consumption).to(equal(total_energy))
 
+        with it('has to generate all the profile estimating if all measures are invalid'):
+
+            balance = Counter()
+            tariff = T20DHA()
+            tariff.cof = 'A'
+
+            measures = []
+            for ph in self.complete_profile:
+                period = tariff.get_period_by_date(ph.date)
+                balance[period.code] += ph.measure
+                measures.append(ProfileHour(ph.date, ph.measure, False))
+
+            profile = Profile(
+                self.profile.start_date, self.profile.end_date, measures
+            )
+
+            with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
+                profile_estimated = profile.estimate(tariff, balance)
+
+            total_energy = sum(balance.values())
+            expect(profile_estimated.total_consumption).to(equal(total_energy))
+
     with context('If the balance is less than profile'):
         with it('has to fill with 0 the gaps'):
             balance = Counter()

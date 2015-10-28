@@ -296,9 +296,8 @@ class Profile(object):
     def get_consumption_per_period(self, tariff):
         assert isinstance(tariff, Tariff)
         consumption_per_period = Counter()
-        if not self.measures:
-            for period in tariff.energy_periods:
-                consumption_per_period[period] = 0
+        for period in tariff.energy_periods:
+            consumption_per_period[period] = 0
         for m in self.measures:
             if m.valid:
                 period = tariff.get_period_by_date(m.date)
@@ -385,9 +384,12 @@ class Profile(object):
                 period = tariff.get_period_by_date(measure.date).code
                 values = measure._asdict()
                 values['valid'] = True
-                values['measure'] = dragger.drag(measure.measure * (
-                    balance[period] / energy_per_period[period]
-                ))
+                if not energy_per_period[period]:
+                    values['measure'] = dragger.drag(measure.measure * 0)
+                else:
+                    values['measure'] = dragger.drag(measure.measure * (
+                        balance[period] / energy_per_period[period]
+                    ))
                 profile.measures[idx] = measure._make(values.values())
         return profile
 
