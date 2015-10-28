@@ -182,12 +182,12 @@ class REEProfile(object):
             key = '%(year)s%(month)02i' % locals()
             conn = None
             if key in cls._CACHE:
-                logger.debug('Using CACHE for REEProfile {}'.format(key))
+                logger.debug('Using CACHE for REEProfile {0}'.format(key))
                 return cls._CACHE[key]
             perff_file = 'PERFF_%(key)s.gz' % locals()
             conn = httplib.HTTPConnection(cls.HOST)
             conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
-            logger.debug('Downloading REEProfile from {}/{}'.format(
+            logger.debug('Downloading REEProfile from {0}/{1}'.format(
                 cls.PATH, perff_file
             ))
             r = conn.getresponse()
@@ -338,7 +338,7 @@ class Profile(object):
             gap_cof = cofs.get(gap)
             cofs_per_period[period.code] += gap_cof.cof[tariff.cof]
 
-        logger.debug('Coefficients per period calculated: {}'.format(
+        logger.debug('Coefficients per period calculated: {0}'.format(
             cofs_per_period
         ))
 
@@ -348,7 +348,7 @@ class Profile(object):
         dragger = Dragger()
 
         for idx, gap in enumerate(self.gaps):
-            logger.debug('Gap {}/{}'.format(
+            logger.debug('Gap {0}/{1}'.format(
                 idx + 1, len(self.gaps)
             ))
             drag_key = period.code
@@ -362,9 +362,10 @@ class Profile(object):
             gap_energy = (energy * gap_cof) / cofs_per_period[period.code]
             aprox = dragger.drag(gap_energy, key=drag_key)
             energy_per_period_rem[period.code] -= gap_energy
-            logger.debug('Energy for hour {} is {}. {} Energy {}/{}'.format(
-                gap, aprox, period.code,
-                energy_per_period_rem[period.code], energy
+            logger.debug(
+                'Energy for hour {0} is {1}. {2} Energy {3}/{4}'.format(
+                    gap, aprox, period.code,
+                    energy_per_period_rem[period.code], energy
             ))
             pos = bisect.bisect_left(measures, ProfileHour(gap, 0, True))
             profile_hour = ProfileHour(TIMEZONE.normalize(gap), aprox, True)
@@ -398,6 +399,6 @@ class Profile(object):
         return profile
 
     def __repr__(self):
-        return '<Profile ({} - {}) {}h {}kWh>'.format(
+        return '<Profile ({0} - {1}) {2}h {3}kWh>'.format(
             self.start_date, self.end_date, self.n_hours, self.total_consumption
         )
