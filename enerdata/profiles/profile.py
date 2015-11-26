@@ -14,7 +14,7 @@ from dateutil.relativedelta import relativedelta
 from enerdata.profiles import Dragger
 from enerdata.contracts.tariff import Tariff
 from enerdata.datetime.timezone import TIMEZONE
-from enerdata.metering.measure import Measure
+from enerdata.metering.measure import Measure, EnergyMeasure
 
 logger = logging.getLogger(__name__)
 
@@ -119,40 +119,53 @@ class Profiler(object):
         for m in sorted(_measures):
             measures.setdefault(m.period.code, [])
             measures[m.period.code].append(m)
-        start, end = measures.values()[0][0].date, measures.values()[0][-1].date
-        sum_cofs = self.coefficient.get_coefs_by_tariff(tariff, start, end)
-        dragger = Dragger()
-        for hour, cof in self.coefficient.get_range(start, end):
-            # TODO: Implement holidays
-            period = tariff.get_period_by_date(hour)
-            if drag_method == 'hour':
-                dp = 'hour'
-            else:
-                dp = period.code
-            d = hour.date()
-            if hour.hour == 0:
-                d -= timedelta(days=1)
-            # To take the first measure
-            if d == start:
-                d += timedelta(days=1)
-            fake_m = Measure(d, period, 0)
-            pos = bisect.bisect_left(measures[period.code], fake_m)
-            consumption = measures[period.code][pos].consumption
-            cof = cof[tariff.cof]
-            hour_c = ((consumption * cof) / sum_cofs[period.code])
-            aprox = dragger.drag(hour_c, key=dp)
-            yield (
-                hour,
-                {
-                    'aprox': aprox,
-                    'drag': dragger[dp],
-                    'consumption': consumption,
-                    'consumption_date': measures[period.code][pos].date,
-                    'sum_cofs': sum_cofs[period.code],
-                    'cof': cof,
-                    'period': period.code
-                }
-            )
+        measures_intervals = EnergyMeasure.intervals(_measures)
+        logger.debug('Profiling {0} intervals'.format(len(measures_intervals)))
+        for idx, measure_date in enumerate(measures_intervals):
+            if idx + 1 == len(measures_intervals):
+                break
+            start = measure_date
+            if idx > 0:
+                start += timedelta(days=1)
+            end = measures_intervals[idx + 1]
+            logger.debug('Getting coeffs from {0} to {1}'.format(
+                start, end
+            ))
+            sum_cofs = self.coefficient.get_coefs_by_tariff(tariff, start, end)
+            dragger = Dragger()
+            for hour, cof in self.coefficient.get_range(start, end):
+                period = tariff.get_period_by_date(hour)
+                if drag_method == 'hour':
+                    dp = 'hour'
+                else:
+                    dp = period.code
+                d = hour.date()
+                if hour.hour == 0:
+                    d -= timedelta(days=1)
+                # To take the first measure
+                if d == start:
+                    d += timedelta(days=1)
+                fake_m = Measure(d, period, 0)
+                pos = bisect.bisect_left(measures[period.code], fake_m)
+                consumption = measures[period.code][pos].consumption
+                logger.debug('Hour: {0} Period: {1} Consumption: {2}'.format(
+                    hour, period.code, consumption
+                ))
+                cof = cof[tariff.cof]
+                hour_c = ((consumption * cof) / sum_cofs[period.code])
+                aprox = dragger.drag(hour_c, key=dp)
+                yield (
+                    hour,
+                    {
+                        'aprox': aprox,
+                        'drag': dragger[dp],
+                        'consumption': consumption,
+                        'consumption_date': measures[period.code][pos].date,
+                        'sum_cofs': sum_cofs[period.code],
+                        'cof': cof,
+                        'period': period.code
+                    }
+                )
 
 
 class REEProfile(object):

@@ -42,6 +42,20 @@ class EnergyMeasure(Measure):
             self.measure
         )
 
+    @classmethod
+    def intervals(cls, measures):
+        """Get the intervals of dates between measures.
+
+        :param measures: A list of EnergyMeasures
+        :return: A sorted list of `date` objects
+        """
+
+        dates = []
+        for measure in sorted(measures):
+            if measure.date not in dates:
+                dates.append(measure.date)
+        return dates
+
 
 class PowerMeasure(Measure):
     def __init__(self, date, period, measure):
