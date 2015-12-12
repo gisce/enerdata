@@ -51,3 +51,15 @@ with description('A dragger object'):
                 aprox = d.drag(32.453)
                 aprox2 = d.drag(1.046)
                 expect(aprox2).to(be(1))
+
+        with context('if receives 0.5 and 0'):
+            with it('has to drag -0.5 and return 1 and 0'):
+                d = Dragger()
+                approx = d.drag(0.5)
+                dragging = d['default']
+                expect(approx).to(equal(1))
+                expect(dragging).to(equal(-0.5))
+                aprox = d.drag(0)
+                dragging = d['default']
+                expect(aprox).to(equal(0))
+                expect(dragging).to(equal(-0.5))
