@@ -58,8 +58,8 @@ with description('A dragger object'):
                 approx = d.drag(0.5)
                 dragging = d['default']
                 expect(approx).to(equal(1))
-                expect(dragging).to(equal(-0.5))
+                expect(dragging).to(equal(Decimal('-0.5')))
                 aprox = d.drag(0)
                 dragging = d['default']
                 expect(aprox).to(equal(0))
-                expect(dragging).to(equal(-0.5))
+                expect(dragging).to(equal(Decimal('-0.5')))
