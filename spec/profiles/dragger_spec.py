@@ -46,7 +46,7 @@ with description('A dragger object'):
                 expect(d['default']).to(be_below_or_equal(0))
 
         with context('If the curren drag is < 0.5'):
-            with it('hsa to return number'):
+            with it('has to return number'):
                 d = Dragger()
                 aprox = d.drag(32.453)
                 aprox2 = d.drag(1.046)
