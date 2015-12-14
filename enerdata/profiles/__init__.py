@@ -8,7 +8,7 @@ from decimal import Decimal
 class Dragger(Counter):
 
     def drag(self, number, key='default'):
-        if number == 0 and abs(self[key]) == 0.5:
+        if number == 0 and abs(self[key]) == Decimal('0.5'):
             # Avoid oscillation between -1 and 1 and dragging 0.5 and -0.5
             return number
 
