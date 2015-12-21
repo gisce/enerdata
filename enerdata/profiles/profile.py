@@ -146,8 +146,13 @@ class Profiler(object):
                 if d == start:
                     d += timedelta(days=1)
                 fake_m = Measure(d, period, 0)
-                pos = bisect.bisect_left(measures[period.code], fake_m)
-                consumption = measures[period.code][pos].consumption
+                pos = bisect.bisect_left(measures.get(period.code, []), fake_m)
+                if pos >= len(measures[period.code]):
+                    consumption = 0
+                    consumption_date = None
+                else:
+                    consumption = measures[period.code][pos].consumption
+                    consumption_date = measures[period.code][pos].date
                 logger.debug('Hour: {0} Period: {1} Consumption: {2}'.format(
                     hour, period.code, consumption
                 ))
@@ -160,7 +165,7 @@ class Profiler(object):
                         'aprox': aprox,
                         'drag': dragger[dp],
                         'consumption': consumption,
-                        'consumption_date': measures[period.code][pos].date,
+                        'consumption_date': consumption_date,
                         'sum_cofs': sum_cofs[period.code],
                         'cof': cof,
                         'period': period.code
