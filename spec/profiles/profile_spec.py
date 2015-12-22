@@ -294,6 +294,54 @@ with description("When profiling"):
             assert cons['P5'] == 0
             assert cons['P6'] == 0
 
+        with it('must use 0 as its consumption when only 3 periods'):
+
+            c = Coefficients()
+            with vcr.use_cassette('spec/fixtures/ree/201502.yaml'):
+                c.insert_coefs(REEProfile.get(2015, 2))
+            with vcr.use_cassette('spec/fixtures/ree/201503.yaml'):
+                c.insert_coefs(REEProfile.get(2015, 3))
+            profiler = Profiler(c)
+            measures = [
+                EnergyMeasure(
+                    date(2015, 2, 17),
+                    TariffPeriod('P1', 'te'), 0, consumption=0
+                ),
+                EnergyMeasure(
+                    date(2015, 2, 17),
+                    TariffPeriod('P2', 'te'), 0, consumption=0
+                ),
+                EnergyMeasure(
+                    date(2015, 2, 17),
+                    TariffPeriod('P3', 'te'), 0, consumption=0
+                ),
+                EnergyMeasure(
+                    date(2015, 3, 18),
+                    TariffPeriod('P1', 'te'), 0, consumption=282
+                ),
+                EnergyMeasure(
+                    date(2015, 3, 18),
+                    TariffPeriod('P2', 'te'), 0, consumption=156
+                ),
+                EnergyMeasure(
+                    date(2015, 3, 18),
+                    TariffPeriod('P3', 'te'), 0, consumption=325
+                )
+            ]
+            t = T30A()
+            t.cof = 'C'
+            prof = list(profiler.profile(t, measures, drag_method='period'))
+            cons = Counter()
+            for p in prof:
+                period = p[1]['period']
+                cons[period] += p[1]['aprox']
+
+            assert cons['P1'] == 282
+            assert cons['P2'] == 156
+            assert cons['P3'] == 325
+            assert cons['P4'] == 0
+            assert cons['P5'] == 0
+            assert cons['P6'] == 0
 
 with description('A profile'):
     with before.all:
