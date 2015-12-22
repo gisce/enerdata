@@ -147,7 +147,8 @@ class Profiler(object):
                     d += timedelta(days=1)
                 fake_m = Measure(d, period, 0)
                 pos = bisect.bisect_left(measures.get(period.code, []), fake_m)
-                if pos >= len(measures[period.code]):
+                pcode = period.code
+                if pcode not in measures or pos >= len(measures[period.code]):
                     consumption = 0
                     consumption_date = None
                 else:
