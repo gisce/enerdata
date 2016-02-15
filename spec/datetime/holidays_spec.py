@@ -13,6 +13,8 @@ with description('The holidays modules'):
             date(2015, 5, 1),
             date(2015, 8, 15),
             date(2015, 10, 12),
+            date(2015, 11, 1),
+            date(2015, 12, 6),
             date(2015, 12, 8),
             date(2015, 12, 25)
         ]))
