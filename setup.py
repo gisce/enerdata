@@ -1,7 +1,7 @@
 import sys
 from setuptools import setup, find_packages
 
-INSTALL_REQUIRES = ['pytz']
+INSTALL_REQUIRES = ['pytz', 'workalendar']
 
 if sys.version_info < (2, 7):
     INSTALL_REQUIRES += ['backport_collections']

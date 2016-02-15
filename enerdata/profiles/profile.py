@@ -397,7 +397,9 @@ class Profile(object):
             raise Exception('Is not possible to adjust a profile with gaps')
         profile = Profile(self.start_date, self.end_date, self.measures)
         dragger = Dragger()
-        if profile.total_consumption != sum(balance.values()):
+        total_balance = sum(balance.values())
+        consumption = profile.total_consumption
+        if not total_balance - 1 <= consumption <= total_balance + 1:
             energy_per_period = profile.get_consumption_per_period(tariff)
             for idx, measure in enumerate(profile.measures):
                 period = tariff.get_period_by_date(measure.date).code
