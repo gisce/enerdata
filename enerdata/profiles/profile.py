@@ -184,7 +184,9 @@ class REEProfile(object):
     @classmethod
     def get_range(cls, start, end):
         cofs = []
-        while start < end:
+        start = datetime(start.year, start.month, 1)
+        end = datetime(end.year, end.month, 1)
+        while start <= end:
             logger.debug('Downloading coefficients for {0}/{1}'.format(
                 start.month, start.year
             ))
