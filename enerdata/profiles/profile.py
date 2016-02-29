@@ -393,7 +393,7 @@ class Profile(object):
         profile = Profile(self.start_date, self.end_date, measures)
         return profile
 
-    def adjust(self, tariff, balance):
+    def adjust(self, tariff, balance, diff=0):
         # Adjust values
         if self.gaps:
             raise Exception('Is not possible to adjust a profile with gaps')
@@ -401,7 +401,7 @@ class Profile(object):
         dragger = Dragger()
         total_balance = sum(balance.values())
         consumption = profile.total_consumption
-        if not total_balance - 1 <= consumption <= total_balance + 1:
+        if not total_balance - diff <= consumption <= total_balance + diff:
             energy_per_period = profile.get_consumption_per_period(tariff)
             for idx, measure in enumerate(profile.measures):
                 period = tariff.get_period_by_date(measure.date).code
