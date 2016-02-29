@@ -416,11 +416,11 @@ class Profile(object):
                 profile.measures[idx] = measure._make(values.values())
         return profile
 
-    def fixit(self, tariff, balance):
+    def fixit(self, tariff, balance, diff=0):
         # Fill the gaps
         profile = self.estimate(tariff, balance)
         # Adjust to the balance
-        profile = profile.adjust(tariff, balance)
+        profile = profile.adjust(tariff, balance, diff)
         return profile
 
     def __repr__(self):
