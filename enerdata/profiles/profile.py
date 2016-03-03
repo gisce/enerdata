@@ -413,7 +413,7 @@ class Profile(object):
                     values['measure'] = dragger.drag(measure.measure * (
                         balance[period] / energy_per_period[period]
                     ))
-                profile.measures[idx] = measure._make(values.values())
+                profile.measures[idx] = measure._replace(**values)
         return profile
 
     def fixit(self, tariff, balance, diff=0):
