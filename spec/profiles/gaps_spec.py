@@ -238,32 +238,59 @@ with description('A complete profile with different energy than balance'):
             profile = self.profile.adjust(tariff, balance)
             expect(total_energy).to(equal(profile.total_consumption))
 
-    with context('If difference is between 1kWh'):
-        with it('doesn\'t have to adjust'):
-            tariff = T20DHA()
-            balance = Counter()
+    with context('The difference adjusting must be customitzable'):
+        with context('If is acceptable'):
+            with it('doesn\'t have to adjust'):
+                tariff = T20DHA()
+                balance = Counter()
 
-            for ph in self.profile.measures:
-                period = tariff.get_period_by_date(ph.date)
-                balance[period.code] += ph.measure
+                measures = [
+                    ProfileHour(m.date, m.measure * 1000, m.valid)
+                        for m in self.profile.measures
+                ]
+                profile = Profile(
+                    self.profile.start_date,
+                    self.profile.end_date,
+                    measures
+                )
 
-            balance[period.code] -= 1
+                for ph in profile.measures:
+                    period = tariff.get_period_by_date(ph.date)
+                    balance[period.code] += ph.measure
 
-            total_energy = sum(balance.values())
-            expect(total_energy).to(be_below(self.profile.total_consumption))
-            profile = self.profile.adjust(tariff, balance)
-            expect(total_energy).to(equal(profile.total_consumption - 1))
+                balance[period.code] -= 940
 
-            balance = Counter()
+                total_energy = sum(balance.values())
+                expect(total_energy).to(be_below(profile.total_consumption))
+                profile = profile.adjust(tariff, balance, 1000)
+                expect(total_energy).to(equal(profile.total_consumption - 940))
 
-            for ph in self.profile.measures:
-                period = tariff.get_period_by_date(ph.date)
-                balance[period.code] += ph.measure
+                balance = Counter()
 
-            balance[period.code] += 1
+                for ph in profile.measures:
+                    period = tariff.get_period_by_date(ph.date)
+                    balance[period.code] += ph.measure
 
-            total_energy = sum(balance.values())
-            expect(total_energy).to(be_above(self.profile.total_consumption))
-            profile = self.profile.adjust(tariff, balance)
-            expect(total_energy).to(equal(profile.total_consumption + 1))
+                balance[period.code] += 360
+
+                total_energy = sum(balance.values())
+                expect(total_energy).to(be_above(profile.total_consumption))
+                profile = profile.adjust(tariff, balance, 1000)
+                expect(total_energy).to(equal(profile.total_consumption + 360))
+
+        with context('If is not acceptable'):
+            with it('have to adjust'):
+                tariff = T20DHA()
+                balance = Counter()
+
+                for ph in self.profile.measures:
+                    period = tariff.get_period_by_date(ph.date)
+                    balance[period.code] += ph.measure
+
+                balance[period.code] += 3
+
+                total_energy = sum(balance.values())
+                expect(total_energy).to(be_above(self.profile.total_consumption))
+                profile = self.profile.adjust(tariff, balance, 1)
+                expect(total_energy).to(equal(profile.total_consumption))
 
