@@ -339,7 +339,10 @@ class Profile(object):
         consumption_per_period = self.get_consumption_per_period(tariff)
         estimable = {}
         for period in consumption_per_period:
-            estimable[period] = balance[period] - consumption_per_period[period]
+            if period in balance:
+                estimable[period] = balance[period] - consumption_per_period[period]
+            else:
+                estimable[period] = -consumption_per_period[period]
         return estimable
 
     def estimate(self, tariff, balance):
