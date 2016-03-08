@@ -26,6 +26,7 @@ class Tariff(object):
     def __init__(self, code=None):
         self.code = code
         self._periods = tuple()
+        self.cof = None
 
     @property
     def periods(self):
@@ -137,6 +138,7 @@ class T20A(Tariff):
     def __init__(self):
         super(T20A, self).__init__()
         self.code = '2.0A'
+        self.cof = 'A'
         self.periods = (
             TariffPeriod('P1', 'te'),
             TariffPeriod('P1', 'tp')
@@ -150,6 +152,7 @@ class T20DHA(T20A):
     def __init__(self):
         super(T20DHA, self).__init__()
         self.code = '2.0DHA'
+        self.cof = 'B'
         self.periods = (
             TariffPeriod(
                 'P1', 'te',
@@ -171,6 +174,7 @@ class T20DHS(T20DHA):
     def __init__(self):
         super(T20DHS, self).__init__()
         self.code = '2.0DHS'
+        self.cof = 'D'
         self.periods = (
             TariffPeriod(
                 'P1', 'te',
@@ -197,6 +201,7 @@ class T21A(T20A):
     def __init__(self):
         super(T21A, self).__init__()
         self.code = '2.1A'
+        self.cof = 'A'
         self.min_power = 10
         self.max_power = 15
 
@@ -205,6 +210,7 @@ class T21DHA(T20DHA):
     def __init__(self):
         super(T21DHA, self).__init__()
         self.code = '2.1DHA'
+        self.cof = 'B'
         self.min_power = 10
         self.max_power = 15
 
@@ -213,6 +219,7 @@ class T21DHS(T20DHS):
     def __init__(self):
         super(T21DHS, self).__init__()
         self.code = '2.1DHS'
+        self.cof = 'D'
         self.min_power = 10
         self.max_power = 15
 
@@ -221,6 +228,7 @@ class T30A(Tariff):
     def __init__(self):
         super(T30A, self).__init__()
         self.code = '3.0A'
+        self.cof = 'C'
         self.min_power = 15
         self.max_power = 99999
         self.type = 'BT'
