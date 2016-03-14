@@ -271,6 +271,7 @@ class Profile(object):
     def __init__(self, start, end, measures):
         self.measures = measures[:]
         self.gaps = []  # Containing the gaps and invalid measures
+        self.adjusted_periods = [] # If a period is adjusted
         self.start_date = start
         self.end_date = end
         self.profile_class = REEProfile
@@ -404,6 +405,7 @@ class Profile(object):
             period_balance = balance[period_name]
             period_profile = energy_per_period[period_name]
             if not period_balance - diff <= period_profile <= period_balance + diff:
+                profile.adjusted_periods.append(period_name)
                 for idx, measure in enumerate(profile.measures):
                     period = tariff.get_period_by_date(measure.date).code
                     if period != period_name:
