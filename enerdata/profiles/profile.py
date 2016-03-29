@@ -401,10 +401,11 @@ class Profile(object):
         profile = Profile(self.start_date, self.end_date, self.measures)
         dragger = Dragger()
         energy_per_period = profile.get_consumption_per_period(tariff)
-        for period_name in balance.keys():
-            period_balance = balance[period_name]
+        for period_name, period_balance in balance.items():
             period_profile = energy_per_period[period_name]
-            if not period_balance - diff <= period_profile <= period_balance + diff:
+            margin_bottom = period_balance - diff
+            margin_top = period_balance + diff
+            if not margin_bottom <= period_profile <= margin_top:
                 profile.adjusted_periods.append(period_name)
                 for idx, measure in enumerate(profile.measures):
                     period = tariff.get_period_by_date(measure.date).code
