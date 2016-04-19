@@ -271,6 +271,7 @@ class Profile(object):
     def __init__(self, start, end, measures):
         self.measures = measures[:]
         self.gaps = []  # Containing the gaps and invalid measures
+        self.adjusted_periods = [] # If a period is adjusted
         self.start_date = start
         self.end_date = end
         self.profile_class = REEProfile
@@ -399,21 +400,26 @@ class Profile(object):
             raise Exception('Is not possible to adjust a profile with gaps')
         profile = Profile(self.start_date, self.end_date, self.measures)
         dragger = Dragger()
-        total_balance = sum(balance.values())
-        consumption = profile.total_consumption
-        if not total_balance - diff <= consumption <= total_balance + diff:
-            energy_per_period = profile.get_consumption_per_period(tariff)
-            for idx, measure in enumerate(profile.measures):
-                period = tariff.get_period_by_date(measure.date).code
-                values = measure._asdict()
-                values['valid'] = True
-                if not energy_per_period[period]:
-                    values['measure'] = dragger.drag(measure.measure * 0)
-                else:
-                    values['measure'] = dragger.drag(measure.measure * (
-                        balance[period] / energy_per_period[period]
-                    ))
-                profile.measures[idx] = measure._replace(**values)
+        energy_per_period = profile.get_consumption_per_period(tariff)
+        for period_name, period_balance in balance.items():
+            period_profile = energy_per_period[period_name]
+            margin_bottom = period_balance - diff
+            margin_top = period_balance + diff
+            if not margin_bottom <= period_profile <= margin_top:
+                profile.adjusted_periods.append(period_name)
+                for idx, measure in enumerate(profile.measures):
+                    period = tariff.get_period_by_date(measure.date).code
+                    if period != period_name:
+                        continue
+                    values = measure._asdict()
+                    values['valid'] = True
+                    if not energy_per_period[period]:
+                        values['measure'] = dragger.drag(measure.measure * 0)
+                    else:
+                        values['measure'] = dragger.drag(measure.measure * (
+                            balance[period] / energy_per_period[period]
+                        ))
+                    profile.measures[idx] = measure._replace(**values)
         return profile
 
     def fixit(self, tariff, balance, diff=0):

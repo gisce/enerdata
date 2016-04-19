@@ -212,33 +212,7 @@ with description('A complete profile with different energy than balance'):
             profile = self.profile.estimate(tariff, balance)
         expect(profile.n_hours).to(equal(self.profile.n_hours))
 
-    with context('If the difference is more than 1kWh'):
-        with it('must to adjust with the profile'):
-            tariff = T20DHA()
-            balance = Counter()
-
-            for ph in self.profile.measures:
-                period = tariff.get_period_by_date(ph.date)
-                balance[period.code] += ph.measure - 3
-
-            total_energy = sum(balance.values())
-            expect(total_energy).to(be_below(self.profile.total_consumption))
-            profile = self.profile.adjust(tariff, balance)
-            expect(total_energy).to(equal(profile.total_consumption))
-
-
-            balance = Counter()
-
-            for ph in self.profile.measures:
-                period = tariff.get_period_by_date(ph.date)
-                balance[period.code] += ph.measure + 3
-
-            total_energy = sum(balance.values())
-            expect(total_energy).to(be_above(self.profile.total_consumption))
-            profile = self.profile.adjust(tariff, balance)
-            expect(total_energy).to(equal(profile.total_consumption))
-
-    with context('The difference adjusting must be customitzable'):
+    with context('The difference adjusting must be customitzable and checked per period'):
         with context('If is acceptable'):
             with it('doesn\'t have to adjust'):
                 tariff = T20DHA()
@@ -279,7 +253,7 @@ with description('A complete profile with different energy than balance'):
                 expect(total_energy).to(equal(profile.total_consumption + 360))
 
         with context('If is not acceptable'):
-            with it('have to adjust'):
+            with it('have to adjust and record the period adjusted'):
                 tariff = T20DHA()
                 balance = Counter()
 
@@ -287,10 +261,24 @@ with description('A complete profile with different energy than balance'):
                     period = tariff.get_period_by_date(ph.date)
                     balance[period.code] += ph.measure
 
-                balance[period.code] += 3
+                balance[period.code] += 10
+                adjusted_periods = [period.code]
+
+
 
                 total_energy = sum(balance.values())
                 expect(total_energy).to(be_above(self.profile.total_consumption))
                 profile = self.profile.adjust(tariff, balance, 1)
                 expect(total_energy).to(equal(profile.total_consumption))
 
+                adjusted_balance = Counter()
+                for ph in profile.measures:
+                    period = tariff.get_period_by_date(ph.date)
+                    adjusted_balance[period.code] += ph.measure
+
+                for period in adjusted_balance:
+                    expect(adjusted_balance[period]).to(equal(balance[period]))
+
+                expect(profile.adjusted_periods).to(
+                    contain_exactly(*adjusted_periods)
+                )
