@@ -388,3 +388,7 @@ with description('A profile'):
     with it('shouldn\'t have estimable hours'):
         estimable_hours = self.profile.get_estimable_hours(T20DHA())
         expect(sum(estimable_hours.values())).to(equal(0))
+
+    with it('can handle partial filled profiles (without all tariff periods defined)'):
+        t = T30A()
+        print self.profile.estimate(t, {str('P2'): int(5)})
