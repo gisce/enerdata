@@ -142,7 +142,7 @@ with context('3.0A tariff'):
 
 with description('Getting a tariff by descripion'):
 
-    with it('must return the appropiate tariff'):
+    with it('must return the appropiate tariff and initialize the expected cof'):
         tariffs = [
             ('2.0A', T20A),
             ('2.0DHA', T20DHA),
@@ -153,9 +153,22 @@ with description('Getting a tariff by descripion'):
             ('3.0A', T30A),
         ]
 
+        tariff_cof = {
+            '2.0A': 'A',
+            '2.0DHA': 'B',
+            '2.0DHS': 'D',
+            '2.1A': 'A',
+            '2.1DHA': 'B',
+            '2.1DHS': 'D',
+            '3.0A': 'C',
+        }
+
         for t in tariffs:
             t_obj = get_tariff_by_code(t[0])()
             assert isinstance(t_obj, t[1])
+            assert t_obj.cof, "Object doesn't have cof attribute"
+            assert t_obj.cof == tariff_cof[t[0]], "Object cof not match with expected one"
+
 
     with it('must return None if the code is not in available'):
         t = get_tariff_by_code('NO_EXISTS')
