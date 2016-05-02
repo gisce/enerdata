@@ -8,7 +8,7 @@ if sys.version_info < (2, 7):
 
 setup(
     name='enerdata',
-    version='0.8.15',
+    version='0.8.16',
     packages=find_packages(),
     url='http://code.gisce.net',
     license='MIT',
