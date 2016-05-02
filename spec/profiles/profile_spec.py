@@ -1,5 +1,5 @@
 from enerdata.profiles.profile import *
-from enerdata.contracts.tariff import T20DHA, T30A
+from enerdata.contracts.tariff import T20DHA, T30A, T31A
 from enerdata.metering.measure import *
 from expects import *
 import vcr
@@ -228,6 +228,20 @@ with description("When profiling"):
         assert cons['P2'] == 156
         assert cons['P3'] == 325
         assert cons['P4'] == 56
+        assert cons['P5'] == 643
+        assert cons['P6'] == 32
+
+        t = T31A()
+        prof = list(profiler.profile(t, measures, drag_method='period'))
+        cons = Counter()
+        for p in prof:
+            period = p[1]['period']
+            cons[period] += p[1]['aprox']
+
+        assert cons['P1'] == 282
+        assert cons['P2'] == 156
+        assert cons['P3'] == 325
+        assert cons['P4'] == 0
         assert cons['P5'] == 643
         assert cons['P6'] == 32
 
