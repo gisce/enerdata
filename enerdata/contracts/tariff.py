@@ -279,6 +279,9 @@ class T30A(Tariff):
 
 
 class T31A(T30A):
+    """
+    3.1A Tariff
+    """
     def __init__(self):
         super(T31A, self).__init__()
         self.code = '3.1A'
