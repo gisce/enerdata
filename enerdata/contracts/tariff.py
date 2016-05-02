@@ -278,6 +278,54 @@ class T30A(Tariff):
         )
 
 
+class T31A(T30A):
+    def __init__(self):
+        super(T31A, self).__init__()
+        self.code = '3.1A'
+        self.cof = 'C'
+        self.min_power = 1
+        self.max_power = 99999
+        self.type = 'AT'
+        self.periods = (
+            TariffPeriod(
+                'P1', 'te',
+                winter_hours=[(17, 23)],
+                summer_hours=[(10, 16)]
+            ),
+            TariffPeriod(
+                'P2', 'te',
+                winter_hours=[(8, 17), (23, 24)],
+                summer_hours=[(8, 10), (16, 24)]
+            ),
+            TariffPeriod(
+                'P3', 'te',
+                winter_hours=[(0, 8)],
+                summer_hours=[(0, 8)]
+            ),
+            TariffPeriod(
+                'P5', 'te',
+                holiday=True,
+                winter_hours=[(18, 24)],
+                summer_hours=[(18, 24)]
+            ),
+            TariffPeriod(
+                'P6', 'te',
+                holiday=True,
+                winter_hours=[(0, 18)],
+                summer_hours=[(0, 18)]
+            ),
+            TariffPeriod(
+                'P1', 'tp'
+            ),
+            TariffPeriod(
+                'P2', 'tp'
+            ),
+            TariffPeriod(
+                'P3', 'tp'
+            )
+        )
+
+
 def get_tariff_by_code(code):
     """Get tariff class by code
 
@@ -291,6 +339,7 @@ def get_tariff_by_code(code):
         '2.1A': T21A,
         '2.1DHA': T21DHA,
         '2.1DHS': T21DHS,
-        '3.0A': T30A
+        '3.0A': T30A,
+        '3.1A': T31A
     }
     return available.get(code, None)
