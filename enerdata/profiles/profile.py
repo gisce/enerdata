@@ -203,20 +203,31 @@ class REEProfile(object):
         try:
             cls.down_lock.acquire()
             import csv
-            import httplib
+            import http.client as httplib
             key = '%(year)s%(month)02i' % locals()
             conn = None
             if key in cls._CACHE:
                 logger.debug('Using CACHE for REEProfile {0}'.format(key))
                 return cls._CACHE[key]
             perff_file = 'PERFF_%(key)s.gz' % locals()
+
             conn = httplib.HTTPConnection(cls.HOST)
             conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
+            print('Downloading REEProfile from {0}/{1}'.format(
+                cls.PATH, perff_file
+            ))
             logger.debug('Downloading REEProfile from {0}/{1}'.format(
                 cls.PATH, perff_file
             ))
             r = conn.getresponse()
-            if r.msg.type == 'application/x-gzip':
+
+
+            try:
+                msg_type = r.msg.type
+            except:
+                msg_type = r.msg.get_content_type()
+
+            if msg_type == 'application/x-gzip':
                 import gzip
                 c = StringIO(r.read())
                 m = StringIO(gzip.GzipFile(fileobj=c).read())
