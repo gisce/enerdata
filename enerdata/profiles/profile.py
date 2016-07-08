@@ -8,7 +8,10 @@ except ImportError:
     from backport_collections import namedtuple, Counter
 from datetime import datetime, date, timedelta
 from multiprocessing import Lock
-from StringIO import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from dateutil.relativedelta import relativedelta
 
