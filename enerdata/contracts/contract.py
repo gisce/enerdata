@@ -84,14 +84,14 @@ class Contract(object):
         changes = {}
         local_vals = vars(self)
         mod_vals = vars(modification)
-        for attr, value in mod_vals.iteritems():
+        for attr, value in list(mod_vals.items()):
             if attr in local_vals:
                 if value != local_vals[attr]:
                     changes[attr] = {'old': local_vals[attr], 'new': value}
         return changes
 
     def apply_changes(self, changes):
-        for attr, value in changes.iteritems():
+        for attr, value in list(changes.items()):
             setattr(self, attr, value['new'])
 
     def apply_modification(self, modification):
@@ -120,7 +120,7 @@ class Modification(object):
             mod_vals = vars(modification)
         if filter is not None:
             mod_vals = dict((k, v) for k, v in mod_vals.items() if k in filter)
-        for attr, value in mod_vals.iteritems():
+        for attr, value in list(mod_vals.items()):
             if attr in local_vals:
                 if value != local_vals[attr]:
                     changes[attr] = {'old': local_vals[attr], 'new': value}
