@@ -63,7 +63,7 @@ with context('A tariff'):
         assert self.tariff.get_number_of_periods() == 2
     with it('should return the periods of energy'):
         assert len(self.tariff.energy_periods) == 2
-        assert list(self.tariff.energy_periods.keys()) == ['1', '2']
+        assert sorted(list(self.tariff.energy_periods.keys())) == ['1', '2']
     with it('should return the periods of power'):
         assert len(self.tariff.power_periods) == 0
         self.tariff.periods += (TariffPeriod('1', 'tp'),)
