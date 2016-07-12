@@ -2,3 +2,4 @@ pytz
 # Merged but not released yet
 https://github.com/novapost/workalendar/archive/master.zip
 future
+six
