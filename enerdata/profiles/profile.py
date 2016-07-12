@@ -198,59 +198,95 @@ class REEProfile(object):
             start += relativedelta(months=1)
         return cofs
 
+    
+
+    @staticmethod
+    def parse_REE_file(reader):
+        header = True
+        cofs = []
+        for vals in reader:
+            if header:
+                header = False
+                cols = len(vals)
+                continue
+
+            if len(vals) != cols:
+                continue
+
+            if int(vals[3]) == 1:
+                n_hour = 1
+            dt = datetime(
+                int(vals[0]), int(vals[1]), int(vals[2])
+            )
+
+            day = TIMEZONE.localize(dt, is_dst=bool(not int(vals[4])))
+            day += timedelta(hours=n_hour)
+            n_hour += 1
+            cofs.append(Coefficent(
+                TIMEZONE.normalize(day), dict(
+                    (k, float(vals[i])) for i, k in enumerate('ABCD', 5)
+                ))
+            )
+
+        return cofs
+
     @classmethod
     def get(cls, year, month):
         try:
             cls.down_lock.acquire()
             import csv
             import http.client as httplib
+            conn = None
             key = '%(year)s%(month)02i' % locals()
             if key in cls._CACHE:
                 logger.debug('Using CACHE for REEProfile {0}'.format(key))
                 return cls._CACHE[key]
             perff_file = 'PERFF_%(key)s.gz' % locals()
 
-            try:
-                import gzip
+            from six import PY2, PY3
 
-                from six.moves import urllib
-
-                url = "http://{}{}/{}".format(cls.HOST, cls.PATH, perff_file)
-                with urllib.request.urlopen(url) as response:
-                    with gzip.GzipFile(fileobj=response) as desenzipat:
-                        m = str(desenzipat.read())
-                        reader = csv.reader(m.split('\\n'), delimiter=';')
-                        header = True
-                        cofs = []
-                        for vals in reader:
-                            if header:
-                                header = False
-                                cols = len(vals)
-                                continue
-
-                            if len(vals) != cols:
-                                continue
-
-                            if int(vals[3]) == 1:
-                                n_hour = 1
-
-                            dt = datetime(
-                                int(vals[0]), int(vals[1]), int(vals[2])
-                            )
-
-                            day = TIMEZONE.localize(dt, is_dst=bool(not int(vals[4])))
-                            day += timedelta(hours=n_hour)
-                            n_hour += 1
-                            cofs.append(Coefficent(
-                                TIMEZONE.normalize(day), dict(
-                                    (k, float(vals[i])) for i, k in enumerate('ABCD', 5)
-                                ))
-                            )
-
+            if PY2:
+                try:
+                    conn = httplib.HTTPConnection(cls.HOST)
+                    conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
+                    logger.debug('Downloading REEProfile from {0}/{1}'.format(
+                        cls.PATH, perff_file
+                    ))
+                    r = conn.getresponse()
+                    if r.msg.type == 'application/x-gzip':
+                        import gzip
+                        c = StringIO(r.read())
+                        m = StringIO(gzip.GzipFile(fileobj=c).read())
+                        c.close()
+                        reader = csv.reader(m, delimiter=';')
+                        cofs = cls.parse_REE_file(reader)
                         cls._CACHE[key] = cofs
                         return cofs
-            except:
-                raise Exception('Profiles from REE not found')
+                    else:
+                        raise Exception('Profiles from REE are not gzip')
+                except:
+                    raise Exception('Profiles from REE not found')
+
+                finally:
+                    if conn is not None:
+                        conn.close()
+
+            elif PY3:
+                try:
+                    import gzip
+                    from six.moves import urllib
+
+                    url = "http://{}{}/{}".format(cls.HOST, cls.PATH, perff_file)
+                    with urllib.request.urlopen(url) as response:
+                        with gzip.GzipFile(fileobj=response) as desenzipat:
+                            m = str(desenzipat.read())
+                            reader = csv.reader(m.split('\\n'), delimiter=';')
+                            cofs = cls.parse_REE_file(reader)
+                            cls._CACHE[key] = cofs
+                            return cofs
+                except:
+                    raise Exception('Profiles from REE not found')
+            
         finally:
             cls.down_lock.release()
 
