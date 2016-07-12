@@ -198,10 +198,10 @@ class REEProfile(object):
             start += relativedelta(months=1)
         return cofs
 
-    
-
     @staticmethod
-    def parse_REE_file(reader):
+    def parse_file(reader):
+        """Parse all the cofs from the REE CSV file
+        """
         header = True
         cofs = []
         for vals in reader:
@@ -259,7 +259,7 @@ class REEProfile(object):
                         m = StringIO(gzip.GzipFile(fileobj=c).read())
                         c.close()
                         reader = csv.reader(m, delimiter=';')
-                        cofs = cls.parse_REE_file(reader)
+                        cofs = cls.parse_file(reader)
                         cls._CACHE[key] = cofs
                         return cofs
                     else:
@@ -281,12 +281,11 @@ class REEProfile(object):
                         with gzip.GzipFile(fileobj=response) as desenzipat:
                             m = str(desenzipat.read())
                             reader = csv.reader(m.split('\\n'), delimiter=';')
-                            cofs = cls.parse_REE_file(reader)
+                            cofs = cls.parse_file(reader)
                             cls._CACHE[key] = cofs
                             return cofs
                 except:
                     raise Exception('Profiles from REE not found')
-            
         finally:
             cls.down_lock.release()
 
