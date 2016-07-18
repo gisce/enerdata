@@ -13,6 +13,8 @@ try:
 except ImportError:
     from io import StringIO
 
+from six import integer_types
+
 from dateutil.relativedelta import relativedelta
 
 from enerdata.profiles import Dragger
