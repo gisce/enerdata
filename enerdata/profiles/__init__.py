@@ -14,8 +14,6 @@ class Dragger(Counter):
             return number
 
         number = Decimal(str(number)) + self[key]
-        aprox = int(round(number))
-
         aprox = int(number.quantize(Decimal('1'), rounding=ROUND_HALF_UP))
 
         self[key] = number - aprox
