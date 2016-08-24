@@ -65,10 +65,10 @@ NORMALIZED_POWERS = {
 class NormalizedPower(object):
 
     def get_volt_int(self, pot):
-        if pot in NORMALIZED_POWERS:
-            return NORMALIZED_POWERS[pot]
-
-        raise ValueError('The given power is not normalized')
+        volt_int = NORMALIZED_POWERS.get(pot, None)
+        if volt_int is None:
+            raise ValueError('The given power is not normalized')
+        return volt_int
 
     def is_normalized(self, pot):
         return pot in NORMALIZED_POWERS
