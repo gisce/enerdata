@@ -121,6 +121,46 @@ with description("When profiling"):
         consum = sum([i[1]['aprox'] for i in prof])
         assert consum == 233 + 42
 
+        c = Coefficients(REEProfile.get(2016, 4))
+        profiler = Profiler(c)
+        measures = [
+            EnergyMeasure(
+                date(2016, 4, 1),
+                TariffPeriod('P1', 'te'), 135134, consumption=0
+            ),
+            EnergyMeasure(
+                date(2016, 4, 1),
+                TariffPeriod('P2', 'te'), 261635, consumption=0
+            ),
+            EnergyMeasure(
+                date(2016, 4, 1),
+                TariffPeriod('P3', 'te'), 251742, consumption=0
+            ),
+            EnergyMeasure(
+                date(2016, 4, 30),
+                TariffPeriod('P1', 'te'), 138529, consumption=3395
+            ),
+            EnergyMeasure(
+                date(2016, 4, 30),
+                TariffPeriod('P2', 'te'), 267881, consumption=6246
+            ),
+            EnergyMeasure(
+                date(2016, 4, 30),
+                TariffPeriod('P3', 'te'), 258091, consumption=6349
+            ),
+        ]
+        t = T31A()
+        prof = list(profiler.profile(t, measures, drag_method='period'))
+        assert len(prof) == (30 * 24)
+        consum = sum([i[1]['aprox'] for i in prof])
+        group = Counter()
+        for p in prof:
+            per = t.get_period_by_date(p[0]).code
+            group[per] += p[1]['aprox']
+        consums = {'P1': 3395, 'P2': 6246, 'P3': 6349}
+        for p in consums:
+            assert group[p] == consums[p]
+
 
     with it('the total energy must be the sum of the profiled energy (more than one measures)'):
         c = Coefficients(REEProfile.get(2014, 10))
