@@ -5,6 +5,10 @@ python:
 install:
   - pip install -r requirements.txt
   - pip install -r requirements-dev.txt
+  - pip install coveralls
   - pip install -e .
 script:
-  - mamba
+  - mamba --enable-coverage
+after_success:
+  - coveralls
+  - coverage report
