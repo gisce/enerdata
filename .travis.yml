@@ -7,10 +7,10 @@ python:
   - "3.5.0"
   - "3.5.2"
 install:
-  - pip install -r requirements.txt
-  - pip install -r requirements-dev.txt
-  - pip install -e .
-  - pip list
+  - pip3 install -r requirements.txt
+  - pip3 install -r requirements-dev.txt
+  - pip3 install -e .
+  - pip3 list
 script:
   - mamba
-  - pip list
+  - pip3 list
