@@ -369,6 +369,62 @@ class T31A(T30A):
             raise
 
 
+class T61A(Tariff):
+    """
+    6.1A Tariff
+    """
+    def __init__(self):
+        super(T61A, self).__init__()
+        self.code = '6.1A'
+        self.cof = 'C'
+        self.min_power = 450
+        self.max_power = 999999
+        self.type = 'AT'
+        self.periods = (
+            #
+            # TODO: Add Energy periods
+            #
+            TariffPeriod(
+                'P1', 'tp'
+            ),
+            TariffPeriod(
+                'P2', 'tp'
+            ),
+            TariffPeriod(
+                'P3', 'tp'
+            ),
+            TariffPeriod(
+                'P4', 'tp'
+            ),
+            TariffPeriod(
+                'P5', 'tp'
+            ),
+            TariffPeriod(
+                'P6', 'tp'
+            ),
+        )
+
+    def evaluate_powers(self, powers):
+        try:
+            return super(T61A, self).evaluate_powers(powers)
+        except NotNormalizedPower:
+            # If both a not normalized power and a not ascending powers are to
+            # be raised, we give more priority to not ascending powers.
+            # For the other exceptions we give more priority to them
+            if not are_powers_ascending(powers):
+                raise NotAscendingPowers()
+            raise
+
+
+class T61B(T61A):
+    """
+    6.1B Tariff
+    """
+    def __init__(self):
+        super(T61B, self).__init__()
+        self.code = '6.1B'
+
+
 class NotPositivePower(Exception):
     def __init__(self):
         super(NotPositivePower, self).__init__(
@@ -422,6 +478,8 @@ def get_tariff_by_code(code):
         '2.1DHA': T21DHA,
         '2.1DHS': T21DHS,
         '3.0A': T30A,
-        '3.1A': T31A
+        '3.1A': T31A,
+        '6.1A': T61A,
+        '6.1B': T61B,
     }
     return available.get(code, None)
