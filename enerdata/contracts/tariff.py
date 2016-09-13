@@ -115,6 +115,15 @@ class Tariff(object):
     def is_maximum_power_correct(self, max_pow):
         return self.min_power < max_pow <= self.max_power
 
+    @staticmethod
+    def are_powers_normalized(powers):
+        np = NormalizedPower()
+        for power in powers:
+            if not np.is_normalized(power * 1000):
+                return False
+
+        return True
+
     def evaluate_powers(self, powers):
         if min(powers) <= 0:
             raise NotPositivePower()
@@ -122,11 +131,8 @@ class Tariff(object):
             raise IncorrectPowerNumber(len(powers), len(self.power_periods))
         if not self.is_maximum_power_correct(max(powers)):
             raise IncorrectMaxPower(max(powers), self.min_power, self.max_power)
-
-        np = NormalizedPower()
-        for power in powers:
-            if not np.is_normalized(power * 1000):
-                raise NotNormalizedPower(power)
+        if not self.are_powers_normalized(powers):
+            raise NotNormalizedPower()
 
         return True
 
@@ -259,7 +265,7 @@ class T30A(Tariff):
         self.code = '3.0A'
         self.cof = 'C'
         self.min_power = 15
-        self.max_power = 99999
+        self.max_power = 1000000
         self.type = 'BT'
         self.periods = (
             TariffPeriod(
@@ -357,16 +363,18 @@ class T31A(T30A):
             )
         )
 
+    @staticmethod
+    def are_powers_normalized(powers):
+        # 3.1A doesn't need to have normalized powers
+        return True
+
     def evaluate_powers(self, powers):
-        try:
-            return super(T31A, self).evaluate_powers(powers)
-        except NotNormalizedPower:
-            # If both a not normalized power and a not ascending powers are to
-            # be raised, we give more priority to not ascending powers.
-            # For the other exceptions we give more priority to them
-            if not are_powers_ascending(powers):
-                raise NotAscendingPowers()
-            raise
+        super(T31A, self).evaluate_powers(powers)
+
+        if not are_powers_ascending(powers):
+            raise NotAscendingPowers()
+
+        return True
 
 
 class T61A(Tariff):
@@ -378,7 +386,7 @@ class T61A(Tariff):
         self.code = '6.1A'
         self.cof = 'C'
         self.min_power = 450
-        self.max_power = 999999
+        self.max_power = 1000000
         self.type = 'AT'
         self.periods = (
             #
@@ -405,16 +413,18 @@ class T61A(Tariff):
             ),
         )
 
+    @staticmethod
+    def are_powers_normalized(powers):
+        # 6.1A doesn't need to have normalized powers
+        return True
+
     def evaluate_powers(self, powers):
-        try:
-            return super(T61A, self).evaluate_powers(powers)
-        except NotNormalizedPower:
-            # If both a not normalized power and a not ascending powers are to
-            # be raised, we give more priority to not ascending powers.
-            # For the other exceptions we give more priority to them
-            if not are_powers_ascending(powers):
-                raise NotAscendingPowers()
-            raise
+        super(T61A, self).evaluate_powers(powers)
+
+        if not are_powers_ascending(powers):
+            raise NotAscendingPowers()
+
+        return True
 
 
 class T61B(T61A):
@@ -434,9 +444,9 @@ class NotPositivePower(Exception):
 
 
 class NotNormalizedPower(Exception):
-    def __init__(self, power):
+    def __init__(self):
         super(NotNormalizedPower, self).__init__(
-            'Power {0}kW isn\'t a normalized value'.format(power)
+            'One or more of the powers doen\'t have a normalized value'
         )
 
 
@@ -447,6 +457,8 @@ class IncorrectPowerNumber(Exception):
                 expected_number, power_number
             )
         )
+        self.power_number = power_number
+        self.expected_number = expected_number
 
 
 class IncorrectMaxPower(Exception):
@@ -456,6 +468,9 @@ class IncorrectMaxPower(Exception):
                 power, min_power, max_power
             )
         )
+        self.power = power
+        self.min_power = min_power
+        self.max_power = max_power
 
 
 class NotAscendingPowers(Exception):
