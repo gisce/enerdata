@@ -131,9 +131,7 @@ with context('A tariff'):
         expect(lambda: tari_T20A.evaluate_powers([0])).to(
             raise_error(NotPositivePower))
         expect(lambda: tari_T20A.evaluate_powers([5])).to(
-            raise_error(
-                NotNormalizedPower, 'Power 5kW isn\'t a normalized value'
-            ))
+            raise_error(NotNormalizedPower))
         assert tari_T20A.evaluate_powers([5.5])
         expect(lambda: tari_T20A.evaluate_powers([5, 7])).to(
             raise_error(IncorrectPowerNumber, 'Expected 1 power(s) and got 2'))
@@ -146,9 +144,7 @@ with context('A tariff'):
         expect(lambda: tari_T30A.evaluate_powers([10, 13, 15])).to(
             raise_error(IncorrectMaxPower))
         expect(lambda: tari_T30A.evaluate_powers([10, 13, 16])).to(
-            raise_error(
-                NotNormalizedPower, 'Power 10kW isn\'t a normalized value'
-            ))
+            raise_error(NotNormalizedPower))
         assert tari_T30A.evaluate_powers([2.304, 2.304, 16.454])
         expect(lambda: tari_T30A.evaluate_powers([16, 17])).to(
             raise_error(IncorrectPowerNumber, 'Expected 3 power(s) and got 2'))
@@ -156,14 +152,34 @@ with context('A tariff'):
         tari_T31A = T31A()
         expect(lambda: tari_T31A.evaluate_powers([-10, -5, 0])).to(
             raise_error(NotPositivePower))
-        expect(lambda: tari_T31A.evaluate_powers([10, 13, 16])).to(
-            raise_error(
-                NotNormalizedPower, 'Power 10kW isn\'t a normalized value'
-            ))
-        assert tari_T31A.evaluate_powers([2.304, 2.304, 16.454])
+        assert tari_T31A.evaluate_powers([10, 13, 16])
         expect(lambda: tari_T31A.evaluate_powers([16, 17])).to(
             raise_error(IncorrectPowerNumber, 'Expected 3 power(s) and got 2'))
         expect(lambda: tari_T31A.evaluate_powers([16, 20, 16])).to(
+            raise_error(NotAscendingPowers))
+
+        tari_T61A = T61A()
+        expect(lambda: tari_T61A.evaluate_powers([-10, -5, 0, 10, 20])).to(
+            raise_error(NotPositivePower))
+        assert tari_T61A.evaluate_powers([400, 410, 420, 430, 440, 451])
+        assert tari_T61A.evaluate_powers([500, 600, 700, 800, 900, 1000])
+        expect(lambda: tari_T61A.evaluate_powers([16, 17])).to(
+            raise_error(IncorrectPowerNumber, 'Expected 6 power(s) and got 2'))
+        expect(
+            lambda: tari_T61A.evaluate_powers([500, 600, 700, 700, 600, 500])
+        ).to(
+            raise_error(NotAscendingPowers))
+
+        tari_T61B = T61B()
+        expect(lambda: tari_T61B.evaluate_powers([-10, -5, 0, 10, 20])).to(
+            raise_error(NotPositivePower))
+        assert tari_T61B.evaluate_powers([400, 410, 420, 430, 440, 451])
+        assert tari_T61B.evaluate_powers([500, 600, 700, 800, 900, 1000])
+        expect(lambda: tari_T61B.evaluate_powers([16, 17])).to(
+            raise_error(IncorrectPowerNumber, 'Expected 6 power(s) and got 2'))
+        expect(
+            lambda: tari_T61B.evaluate_powers([500, 600, 700, 700, 600, 500])
+        ).to(
             raise_error(NotAscendingPowers))
     with it('should allow to check if a maximum power is correct'):
         tari_T20A = T20A()
