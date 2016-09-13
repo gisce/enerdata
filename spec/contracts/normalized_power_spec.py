@@ -37,5 +37,5 @@ with description('A normalized power class'):
         n_p = NormalizedPower()
         norm_power_01 = [330, 345, 598, 660, 690, 770, 805, 987]
         norm_power_02 = [2300, 2304, 2425, 2988, 3291, 3300]
-        assert n_p.get_norm_powers(0, 1000) == norm_power_01
-        assert n_p.get_norm_powers(2200, 3300) == norm_power_02
+        assert list(n_p.get_norm_powers(0, 1000)) == norm_power_01
+        assert list(n_p.get_norm_powers(2200, 3300)) == norm_power_02

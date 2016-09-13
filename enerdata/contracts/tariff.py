@@ -194,7 +194,7 @@ class T20A(Tariff):
 
         norm_power = NormalizedPower().get_norm_powers(
             self.min_power * 1000, self.max_power * 1000
-        )[0]
+        ).next()
 
         return [norm_power / 1000.0] * len(self.power_periods)
 

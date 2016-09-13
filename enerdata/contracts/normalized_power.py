@@ -89,5 +89,8 @@ class NormalizedPower(object):
         return pot in NORMALIZED_POWERS
 
     def get_norm_powers(self, pot_min, pot_max):
-        return [norm_pow for norm_pow in sorted(NORMALIZED_POWERS)
-                if pot_min < norm_pow <= pot_max]
+        for norm_pow in sorted(NORMALIZED_POWERS):
+            if pot_min < norm_pow <= pot_max:
+                yield norm_pow
+            elif norm_pow > pot_max:
+                break
