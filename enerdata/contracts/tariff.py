@@ -1,5 +1,6 @@
 import calendar
 
+from enerdata.contracts.normalized_power import NormalizedPower
 from enerdata.datetime.station import get_station
 from enerdata.datetime.holidays import get_holidays
 
@@ -17,6 +18,16 @@ def check_range_hours(hours):
         if start < before[1]:
             return False
         before = (start, end)
+    return True
+
+
+def are_powers_ascending(powers):
+    power_ant = 0
+    for power_new in powers:
+        if power_new < power_ant:
+            return False
+        power_ant = power_new
+
     return True
 
 
@@ -83,8 +94,8 @@ class Tariff(object):
         station = get_station(date_time)
         date = date_time.date()
         holidays = get_holidays(date.year)
-        if (calendar.weekday(date.year, date.month, date.day) in (5, 6)
-                or date in holidays):
+        if (calendar.weekday(date.year, date.month, date.day) in (5, 6) or
+                date in holidays):
             holiday = True
         else:
             holiday = False
@@ -100,6 +111,24 @@ class Tariff(object):
     @property
     def has_holidays_periods(self):
         return any(p.holiday for p in self.energy_periods.values())
+
+    def is_maximum_power_correct(self, max_pow):
+        return self.min_power < max_pow <= self.max_power
+
+    def evaluate_powers(self, powers):
+        if min(powers) <= 0:
+            raise NotPositivePower()
+        if not len(self.power_periods) == len(powers):
+            raise IncorrectPowerNumber(len(powers), len(self.power_periods))
+        if not self.is_maximum_power_correct(max(powers)):
+            raise IncorrectMaxPower(max(powers), self.min_power, self.max_power)
+
+        np = NormalizedPower()
+        for power in powers:
+            if not np.is_normalized(power * 1000):
+                raise NotNormalizedPower(power)
+
+        return True
 
 
 class TariffPeriod(object):
@@ -287,7 +316,7 @@ class T31A(T30A):
         self.code = '3.1A'
         self.cof = 'C'
         self.min_power = 1
-        self.max_power = 99999
+        self.max_power = 450
         self.type = 'AT'
         self.periods = (
             TariffPeriod(
@@ -326,6 +355,56 @@ class T31A(T30A):
             TariffPeriod(
                 'P3', 'tp'
             )
+        )
+
+    def evaluate_powers(self, powers):
+        try:
+            return super(T31A, self).evaluate_powers(powers)
+        except NotNormalizedPower:
+            # If both a not normalized power and a not ascending powers are to
+            # be raised, we give more priority to not ascending powers.
+            # For the other exceptions we give more priority to them
+            if not are_powers_ascending(powers):
+                raise NotAscendingPowers()
+            raise
+
+
+class NotPositivePower(Exception):
+    def __init__(self):
+        super(NotPositivePower, self).__init__(
+            'Power should allways be higher than 0'
+        )
+
+
+class NotNormalizedPower(Exception):
+    def __init__(self, power):
+        super(NotNormalizedPower, self).__init__(
+            'Power {0}kW isn\'t a normalized value'.format(power)
+        )
+
+
+class IncorrectPowerNumber(Exception):
+    def __init__(self, power_number, expected_number):
+        super(IncorrectPowerNumber, self).__init__(
+            'Expected {0} power(s) and got {1}'.format(
+                expected_number, power_number
+            )
+        )
+
+
+class IncorrectMaxPower(Exception):
+    def __init__(self, power, min_power, max_power):
+        super(IncorrectMaxPower, self).__init__(
+            'Power {0} is not between {1} and {2}'.format(
+                power, min_power, max_power
+            )
+        )
+
+
+class NotAscendingPowers(Exception):
+    def __init__(self):
+        super(NotAscendingPowers, self).__init__(
+            'For this tariff powers should go in an ascending order (Pn+1>=Pn)'
         )
 
 
