@@ -382,8 +382,9 @@ class T61A(Tariff):
         self.type = 'AT'
         self.periods = (
             #
-            # TODO: Add Energy periods
+            # TODO: Implement correct energy periods
             #
+            TariffPeriod('P1', 'te'),
             TariffPeriod(
                 'P1', 'tp'
             ),
