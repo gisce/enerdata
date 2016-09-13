@@ -136,6 +136,9 @@ class Tariff(object):
 
         return True
 
+    def correct_powers(self, powers):
+        raise NotImplementedError
+
 
 class TariffPeriod(object):
     """Tariff period.
@@ -181,6 +184,19 @@ class T20A(Tariff):
         self.min_power = 0
         self.max_power = 10
         self.type = 'BT'
+
+    def correct_powers(self, powers):
+        try:
+            if self.evaluate_powers(powers):
+                return powers
+        except:
+            pass
+
+        norm_power = NormalizedPower().get_norm_powers(
+            self.min_power * 1000, self.max_power * 1000
+        )[0]
+
+        return [norm_power / 1000.0] * len(self.power_periods)
 
 
 class T20DHA(T20A):
