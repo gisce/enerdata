@@ -124,6 +124,54 @@ with context('A tariff'):
         dt = datetime(2015, 12, 27, 1, 0, 0)
         period = self.tariff.get_period_by_date(dt)
         assert period.code == 'P6'
+    with it('should allow to check if a set of powers is correct'):
+        tari_T20A = T20A()
+        expect(lambda: tari_T20A.evaluate_powers([-10])).to(
+            raise_error(NotPositivePower))
+        expect(lambda: tari_T20A.evaluate_powers([0])).to(
+            raise_error(NotPositivePower))
+        expect(lambda: tari_T20A.evaluate_powers([5])).to(
+            raise_error(
+                NotNormalizedPower, 'Power 5kW isn\'t a normalized value'
+            ))
+        assert tari_T20A.evaluate_powers([5.5])
+        expect(lambda: tari_T20A.evaluate_powers([5, 7])).to(
+            raise_error(IncorrectPowerNumber, 'Expected 1 power(s) and got 2'))
+        expect(lambda: tari_T20A.evaluate_powers([100])).to(
+            raise_error(IncorrectMaxPower))
+
+        tari_T30A = T30A()
+        expect(lambda: tari_T30A.evaluate_powers([-10, -5, 0])).to(
+            raise_error(NotPositivePower))
+        expect(lambda: tari_T30A.evaluate_powers([10, 13, 15])).to(
+            raise_error(IncorrectMaxPower))
+        expect(lambda: tari_T30A.evaluate_powers([10, 13, 16])).to(
+            raise_error(
+                NotNormalizedPower, 'Power 10kW isn\'t a normalized value'
+            ))
+        assert tari_T30A.evaluate_powers([2.304, 2.304, 16.454])
+        expect(lambda: tari_T30A.evaluate_powers([16, 17])).to(
+            raise_error(IncorrectPowerNumber, 'Expected 3 power(s) and got 2'))
+
+        tari_T31A = T31A()
+        expect(lambda: tari_T31A.evaluate_powers([-10, -5, 0])).to(
+            raise_error(NotPositivePower))
+        expect(lambda: tari_T31A.evaluate_powers([10, 13, 16])).to(
+            raise_error(
+                NotNormalizedPower, 'Power 10kW isn\'t a normalized value'
+            ))
+        assert tari_T31A.evaluate_powers([2.304, 2.304, 16.454])
+        expect(lambda: tari_T31A.evaluate_powers([16, 17])).to(
+            raise_error(IncorrectPowerNumber, 'Expected 3 power(s) and got 2'))
+        expect(lambda: tari_T31A.evaluate_powers([16, 20, 16])).to(
+            raise_error(NotAscendingPowers))
+    with it('should allow to check if a maximum power is correct'):
+        tari_T20A = T20A()
+        assert not tari_T20A.is_maximum_power_correct(-10)
+        assert not tari_T20A.is_maximum_power_correct(0)
+        assert tari_T20A.is_maximum_power_correct(7)
+        assert tari_T20A.is_maximum_power_correct(10)
+        assert not tari_T20A.is_maximum_power_correct(1000)
 
 with context('3.0A tariff'):
     with before.all:
