@@ -72,3 +72,7 @@ class NormalizedPower(object):
 
     def is_normalized(self, pot):
         return pot in NORMALIZED_POWERS
+
+    def get_norm_powers(self, pot_min, pot_max):
+        return [norm_pow for norm_pow in sorted(NORMALIZED_POWERS)
+                if pot_min < norm_pow <= pot_max]
