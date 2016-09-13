@@ -1,5 +1,6 @@
 import calendar
 
+from enerdata.contracts.normalized_power import NormalizedPower
 from enerdata.datetime.station import get_station
 from enerdata.datetime.holidays import get_holidays
 
@@ -17,6 +18,16 @@ def check_range_hours(hours):
         if start < before[1]:
             return False
         before = (start, end)
+    return True
+
+
+def are_powers_ascending(powers):
+    power_ant = 0
+    for power_new in powers:
+        if power_new < power_ant:
+            return False
+        power_ant = power_new
+
     return True
 
 
@@ -83,8 +94,8 @@ class Tariff(object):
         station = get_station(date_time)
         date = date_time.date()
         holidays = get_holidays(date.year)
-        if (calendar.weekday(date.year, date.month, date.day) in (5, 6)
-                or date in holidays):
+        if (calendar.weekday(date.year, date.month, date.day) in (5, 6) or
+                date in holidays):
             holiday = True
         else:
             holiday = False
@@ -100,6 +111,33 @@ class Tariff(object):
     @property
     def has_holidays_periods(self):
         return any(p.holiday for p in self.energy_periods.values())
+
+    def is_maximum_power_correct(self, max_pow):
+        return self.min_power < max_pow <= self.max_power
+
+    @staticmethod
+    def are_powers_normalized(powers):
+        np = NormalizedPower()
+        for power in powers:
+            if not np.is_normalized(power * 1000):
+                return False
+
+        return True
+
+    def evaluate_powers(self, powers):
+        if min(powers) <= 0:
+            raise NotPositivePower()
+        if not len(self.power_periods) == len(powers):
+            raise IncorrectPowerNumber(len(powers), len(self.power_periods))
+        if not self.is_maximum_power_correct(max(powers)):
+            raise IncorrectMaxPower(max(powers), self.min_power, self.max_power)
+        if not self.are_powers_normalized(powers):
+            raise NotNormalizedPower()
+
+        return True
+
+    def correct_powers(self, powers):
+        raise NotImplementedError
 
 
 class TariffPeriod(object):
@@ -146,6 +184,19 @@ class T20A(Tariff):
         self.min_power = 0
         self.max_power = 10
         self.type = 'BT'
+
+    def correct_powers(self, powers):
+        try:
+            if self.evaluate_powers(powers):
+                return powers
+        except:
+            pass
+
+        norm_power = NormalizedPower().get_norm_powers(
+            self.min_power * 1000, self.max_power * 1000
+        ).next()
+
+        return [norm_power / 1000.0] * len(self.power_periods)
 
 
 class T20DHA(T20A):
@@ -230,7 +281,7 @@ class T30A(Tariff):
         self.code = '3.0A'
         self.cof = 'C'
         self.min_power = 15
-        self.max_power = 99999
+        self.max_power = 1000000
         self.type = 'BT'
         self.periods = (
             TariffPeriod(
@@ -287,7 +338,7 @@ class T31A(T30A):
         self.code = '3.1A'
         self.cof = 'C'
         self.min_power = 1
-        self.max_power = 99999
+        self.max_power = 450
         self.type = 'AT'
         self.periods = (
             TariffPeriod(
@@ -328,6 +379,122 @@ class T31A(T30A):
             )
         )
 
+    @staticmethod
+    def are_powers_normalized(powers):
+        # 3.1A doesn't need to have normalized powers
+        return True
+
+    def evaluate_powers(self, powers):
+        super(T31A, self).evaluate_powers(powers)
+
+        if not are_powers_ascending(powers):
+            raise NotAscendingPowers()
+
+        return True
+
+
+class T61A(Tariff):
+    """
+    6.1A Tariff
+    """
+    def __init__(self):
+        super(T61A, self).__init__()
+        self.code = '6.1A'
+        self.cof = 'C'
+        self.min_power = 450
+        self.max_power = 1000000
+        self.type = 'AT'
+        self.periods = (
+            #
+            # TODO: Implement correct energy periods
+            #
+            TariffPeriod('P1', 'te'),
+            TariffPeriod(
+                'P1', 'tp'
+            ),
+            TariffPeriod(
+                'P2', 'tp'
+            ),
+            TariffPeriod(
+                'P3', 'tp'
+            ),
+            TariffPeriod(
+                'P4', 'tp'
+            ),
+            TariffPeriod(
+                'P5', 'tp'
+            ),
+            TariffPeriod(
+                'P6', 'tp'
+            ),
+        )
+
+    @staticmethod
+    def are_powers_normalized(powers):
+        # 6.1A doesn't need to have normalized powers
+        return True
+
+    def evaluate_powers(self, powers):
+        super(T61A, self).evaluate_powers(powers)
+
+        if not are_powers_ascending(powers):
+            raise NotAscendingPowers()
+
+        return True
+
+
+class T61B(T61A):
+    """
+    6.1B Tariff
+    """
+    def __init__(self):
+        super(T61B, self).__init__()
+        self.code = '6.1B'
+
+
+class NotPositivePower(Exception):
+    def __init__(self):
+        super(NotPositivePower, self).__init__(
+            'Power should allways be higher than 0'
+        )
+
+
+class NotNormalizedPower(Exception):
+    def __init__(self):
+        super(NotNormalizedPower, self).__init__(
+            'One or more of the powers doen\'t have a normalized value'
+        )
+
+
+class IncorrectPowerNumber(Exception):
+    def __init__(self, power_number, expected_number):
+        super(IncorrectPowerNumber, self).__init__(
+            'Expected {0} power(s) and got {1}'.format(
+                expected_number, power_number
+            )
+        )
+        self.power_number = power_number
+        self.expected_number = expected_number
+
+
+class IncorrectMaxPower(Exception):
+    def __init__(self, power, min_power, max_power):
+        super(IncorrectMaxPower, self).__init__(
+            'Power {0} is not between {1} and {2}'.format(
+                power, min_power, max_power
+            )
+        )
+        self.power = power
+        self.min_power = min_power
+        self.max_power = max_power
+
+
+class NotAscendingPowers(Exception):
+    def __init__(self):
+        super(NotAscendingPowers, self).__init__(
+            'For this tariff powers should go in an ascending order (Pn+1>=Pn)'
+        )
+
 
 def get_tariff_by_code(code):
     """Get tariff class by code
@@ -343,6 +510,8 @@ def get_tariff_by_code(code):
         '2.1DHA': T21DHA,
         '2.1DHS': T21DHS,
         '3.0A': T30A,
-        '3.1A': T31A
+        '3.1A': T31A,
+        '6.1A': T61A,
+        '6.1B': T61B,
     }
     return available.get(code, None)
