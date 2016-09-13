@@ -188,6 +188,50 @@ with context('A tariff'):
         assert tari_T20A.is_maximum_power_correct(7)
         assert tari_T20A.is_maximum_power_correct(10)
         assert not tari_T20A.is_maximum_power_correct(1000)
+    with context('without correct_power implemented'):
+        with it('should raise NotImplemented on correct_power call'):
+            # All 2.X have it so we don't check anything on them here
+            # All others don't have it implemented so far
+            expect(lambda: T30A().correct_powers([1, 2, 3])).to(
+                raise_error(NotImplementedError))
+            expect(lambda: T31A().correct_powers([1, 2, 3])).to(
+                raise_error(NotImplementedError))
+            expect(lambda: T61A().correct_powers([1, 2, 3, 4, 5, 6])).to(
+                raise_error(NotImplementedError))
+            expect(lambda: T61B().correct_powers([1, 2, 3, 4, 5, 6])).to(
+                raise_error(NotImplementedError))
+    with context('with correct_power implemented'):
+        with it('should return a correct power if a wrong one is sent'):
+            t_20A = T20A()
+            corr_powers_20A = t_20A.correct_powers([0])
+            assert t_20A.are_powers_normalized(corr_powers_20A)
+
+            t_20DHA = T20DHA()
+            corr_powers_20DHA = t_20DHA.correct_powers([0])
+            assert t_20DHA.are_powers_normalized(corr_powers_20DHA)
+
+            t_20DHS = T20DHS()
+            corr_powers_20DHS = t_20DHS.correct_powers([0])
+            assert t_20DHS.are_powers_normalized(corr_powers_20DHS)
+
+            t_21A = T21A()
+            corr_powers_21A = t_21A.correct_powers([10])
+            assert t_21A.are_powers_normalized(corr_powers_21A)
+
+            t_21DHA = T21DHA()
+            corr_powers_21DHA = t_21DHA.correct_powers([10])
+            assert t_21DHA.are_powers_normalized(corr_powers_21DHA)
+
+            t_21DHS = T21DHS()
+            corr_powers_21DHS = t_21DHS.correct_powers([10])
+            assert t_21DHS.are_powers_normalized(corr_powers_21DHS)
+        with it('should return the same power if it\'s correct'):
+            assert T20A().correct_powers([0.330]) == [0.330]
+            assert T20DHA().correct_powers([0.345]) == [0.345]
+            assert T20DHS().correct_powers([0.660]) == [0.660]
+            assert T21A().correct_powers([10.350]) == [10.350]
+            assert T21DHA().correct_powers([10.392]) == [10.392]
+            assert T21DHS().correct_powers([11.000]) == [11.000]
 
 with context('3.0A tariff'):
     with before.all:
