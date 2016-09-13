@@ -35,7 +35,7 @@ with description('A normalized power class'):
     with it('must return all the normalized powers between two values in '
             'ascending order (the first one shouldn\'t included)'):
         n_p = NormalizedPower()
-        norm_power_01 = [330, 345, 660, 690, 770, 805, 987]
-        norm_power_02 = [2300, 2304, 2425, 3291, 3300]
+        norm_power_01 = [330, 345, 598, 660, 690, 770, 805, 987]
+        norm_power_02 = [2300, 2304, 2425, 2988, 3291, 3300]
         assert n_p.get_norm_powers(0, 1000) == norm_power_01
         assert n_p.get_norm_powers(2200, 3300) == norm_power_02
