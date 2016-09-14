@@ -90,6 +90,12 @@ class Tariff(object):
     def get_number_of_periods(self):
         return len([p for p in self.periods if p.type == 'te'])
 
+    def get_min_power(self):
+        return self.min_power
+
+    def get_max_power(self):
+        return self.max_power
+
     def get_period_by_date(self, date_time):
         station = get_station(date_time)
         date = date_time.date()
