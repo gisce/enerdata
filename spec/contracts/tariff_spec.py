@@ -232,6 +232,27 @@ with context('A tariff'):
             assert T21A().correct_powers([10.350]) == [10.350]
             assert T21DHA().correct_powers([10.392]) == [10.392]
             assert T21DHS().correct_powers([11.000]) == [11.000]
+    with it('should return it\'s min and max powers'):
+        assert T20A().get_min_power() == 0
+        assert T20DHA().get_min_power() == 0
+        assert T20DHS().get_min_power() == 0
+        assert T21A().get_min_power() == 10
+        assert T21DHA().get_min_power() == 10
+        assert T21DHS().get_min_power() == 10
+        assert T30A().get_min_power() == 15
+        assert T31A().get_min_power() == 1
+        assert T61A().get_min_power() == 450
+        assert T61B().get_min_power() == 450
+
+        assert T20A().get_max_power() == 10
+        assert T20DHA().get_max_power() == 10
+        assert T20DHS().get_max_power() == 10
+        assert T21A().get_max_power() == 15
+        assert T21DHA().get_max_power() == 15
+        assert T21DHS().get_max_power() == 15
+        # T30A doesn't have a max power
+        assert T31A().get_max_power() == 450
+        # T6X don't have a max power
 
 with context('3.0A tariff'):
     with before.all:
