@@ -181,6 +181,9 @@ with context('A tariff'):
             lambda: tari_T61B.evaluate_powers([500, 600, 700, 700, 600, 500])
         ).to(
             raise_error(NotAscendingPowers))
+    with it('shouldn\'t fail due to bad rounding'):
+        tari_T20A = T20A()
+        assert tari_T20A.evaluate_powers([8050.0/1000])
     with it('should allow to check if a maximum power is correct'):
         tari_T20A = T20A()
         assert not tari_T20A.is_maximum_power_correct(-10)
