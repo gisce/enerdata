@@ -517,6 +517,7 @@ def get_tariff_by_code(code):
         '2.1DHS': T21DHS,
         '3.0A': T30A,
         '3.1A': T31A,
+        '3.1A LB': T31A,
         '6.1A': T61A,
         '6.1B': T61B,
     }
