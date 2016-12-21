@@ -283,7 +283,8 @@ with description('Getting a tariff by descripion'):
             ('2.1DHA', T21DHA),
             ('2.1DHS', T21DHS),
             ('3.0A', T30A),
-            ('3.1A', T31A)
+            ('3.1A', T31A),
+            ('3.1A LB', T31A),
         ]
 
         tariff_cof = {
@@ -294,7 +295,8 @@ with description('Getting a tariff by descripion'):
             '2.1DHA': 'B',
             '2.1DHS': 'D',
             '3.0A': 'C',
-            '3.1A': 'C'
+            '3.1A': 'C',
+            '3.1A LB': 'C',
         }
 
         for t in tariffs:
