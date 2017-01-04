@@ -1,6 +1,6 @@
-from workalendar.europe import Spain
+from enerdata.calendars import REECalendar
 
-CALENDAR = Spain()
+CALENDAR = REECalendar()
 
 
 def get_holidays(year):
