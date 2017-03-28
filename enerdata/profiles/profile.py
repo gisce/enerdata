@@ -135,10 +135,10 @@ class Profiler(object):
             dragger = Dragger()
             for hour, cof in self.coefficient.get_range(start, end):
                 period = tariff.get_period_by_date(hour)
-                if drag_method == 'hour':
-                    dp = 'hour'
-                else:
+                if drag_method == 'period':
                     dp = period.code
+                else:
+                    dp = drag_method
                 d = hour.date()
                 if hour.hour == 0:
                     d -= timedelta(days=1)

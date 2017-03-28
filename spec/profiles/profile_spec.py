@@ -198,6 +198,44 @@ with description("When profiling"):
         consum = sum([i[1]['aprox'] for i in prof])
         expect(consum).to(equal(103 + 22 + 130 + 20))
 
+    with it('the total energy must be the sum of the profiled energy disabling drag'):
+        c = Coefficients(REEProfile.get(2014, 10))
+        profiler = Profiler(c)
+        measures = [
+            EnergyMeasure(
+                date(2014, 9, 30),
+                TariffPeriod('P1', 'te'), 307, consumption=145
+            ),
+            EnergyMeasure(
+                date(2014, 9, 30),
+                TariffPeriod('P2', 'te'), 108, consumption=10
+            ),
+            EnergyMeasure(
+                date(2014, 10, 15),
+                TariffPeriod('P1', 'te'), 410, consumption=103
+            ),
+            EnergyMeasure(
+                date(2014, 10, 15),
+                TariffPeriod('P2', 'te'), 130, consumption=22
+            ),
+            EnergyMeasure(
+                date(2014, 10, 31),
+                TariffPeriod('P1', 'te'), 540, consumption=130
+            ),
+            EnergyMeasure(
+                date(2014, 10, 31),
+                TariffPeriod('P2', 'te'), 150, consumption=20
+            )
+        ]
+        t = T20DHA()
+        t.cof = 'A'
+        prof = list(profiler.profile(t, measures, drag_method='disabled'))
+        expect(len(prof)).to(equal((31 * 24) + 1))
+        for i in prof:
+            expect(i[1]['aprox']).to(be_a(float))
+        consum = sum([i[1]['aprox'] for i in prof])
+        expect(round(consum, 12)).to(equal(103 + 22 + 130 + 20))
+
 
     with it('should be the same per period if drag per period is used'):
         c = Coefficients()
