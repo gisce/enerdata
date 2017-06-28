@@ -4,7 +4,7 @@ from expects import expect, raise_error
 from enerdata.contracts.normalized_power import NormalizedPower
 
 NORMALIZED_POWERS = {
-    330: ('220', '1.5')
+    330: ('1x220', '1.5')
 }
 
 NOT_NORMALIZED_POWERS = [100]
