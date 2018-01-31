@@ -375,6 +375,9 @@ class Profile(object):
 
         dragger = Dragger()
 
+        print ()
+        print ()
+        print (tariff, start, end)
 
         # Initialize the Dragger with passed accumulated value
         init_drag_key = tariff.get_period_by_date(self.gaps[0]).code
@@ -392,9 +395,11 @@ class Profile(object):
             # the gaps
             if energy < 0:
                 energy = 0
+
             gap_energy = (energy * gap_cof) / cofs_per_period[period.code]
             aprox = dragger.drag(gap_energy, key=drag_key)
             energy_per_period_rem[period.code] -= gap_energy
+
             logger.debug(
                 'Energy for hour {0} is {1}. {2} Energy {3}/{4}'.format(
                     gap, aprox, period.code,
@@ -402,6 +407,9 @@ class Profile(object):
             ))
             pos = bisect.bisect_left(measures, ProfileHour(gap, 0, True, 0.0))
             profile_hour = ProfileHour(TIMEZONE.normalize(gap), aprox, True, dragger[drag_key])
+
+            print (idx, drag_key, gap, profile_hour)
+
             measures.insert(pos, profile_hour)
         profile = Profile(self.start_date, self.end_date, measures)
         return profile
