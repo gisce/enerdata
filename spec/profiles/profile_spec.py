@@ -507,4 +507,31 @@ with description("An estimation"):
             last_accumulated = estimation.measures[-1].accumulated
             assert float(last_accumulated) == float(expected_last_accumulated), "Last accumulated '{}' must match the expected '{}'".format(last_accumulated, expected_last_accumulated)
 
+
+        with it("must handle incorrect accumulated values"):
+            it_breaks = False
             accumulated = 2
+            try:
+                self.profile = Profile(self.start, self.end, self.measures, accumulated)
+            except:
+                it_breaks = True
+
+            assert it_breaks, "A >1 accumulated must not work"
+
+            it_breaks = False
+            accumulated = -5
+            try:
+                self.profile = Profile(self.start, self.end, self.measures, accumulated)
+            except:
+                it_breaks = True
+
+            assert it_breaks, "A <-1 accumulated must not work"
+
+            it_breaks = False
+            accumulated = "x"
+            try:
+                self.profile = Profile(self.start, self.end, self.measures, accumulated)
+            except:
+                it_breaks = True
+
+            assert it_breaks, "A non numeric accumulated must not work"
