@@ -476,3 +476,34 @@ with description("An estimation"):
         # [!] Energy must match
         assert total_expected == total_estimated, "Total energy '{}' must match the expected '{}'".format(total_estimated, total_expected)
 
+
+    with context("with accumulated energy"):
+        with it("must handle incorrect accumulated values"):
+            accumulated = Decimal(0.636)
+            self.profile = Profile(self.start, self.end, self.measures, accumulated)
+            tariff = T20DHA()
+            periods = tariff.energy_periods
+
+            # This scenario, with an initial accumulated of 0.636 will raise a -1 total energy with an ending accumulated of 0.333962070125
+            total_expected = 0
+            balance = {
+                'P1': 20,
+                'P2': 10,
+            }
+            expected_dragger_round = -1
+            total_expected = sum(balance.values()) + expected_dragger_round
+            expected_last_accumulated = Decimal(0.333962070125)
+
+            estimation = self.profile.estimate(tariff, balance)
+            total_estimated = sum([x.measure for x in estimation.measures])
+
+            # [!] Number of hours must match
+            assert self.expected_number_of_hours == len(estimation.measures), "Number of hours '{}' must match the expected '{}'".format(len(estimation.measures), self.expected_number_of_hours)
+
+            # [!] Energy must match
+            assert total_expected == total_estimated, "Total energy '{}' must match the expected '{}'".format(total_estimated, total_expected)
+
+            # [!] Last accumulated
+            last_accumulated = estimation.measures[-1].accumulated
+            assert float(last_accumulated) == float(expected_last_accumulated), "Last accumulated '{}' must match the expected '{}'".format(last_accumulated, expected_last_accumulated)
+
