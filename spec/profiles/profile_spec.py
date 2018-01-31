@@ -406,7 +406,7 @@ with description('A profile'):
         start_idx = start
         while start_idx <= end:
             measures.append(ProfileHour(
-                TIMEZONE.normalize(start_idx), random.randint(0, 10), True
+                TIMEZONE.normalize(start_idx), random.randint(0, 10), True, 0.0
             ))
             start_idx += timedelta(hours=1)
         self.profile = Profile(start, end, measures)
