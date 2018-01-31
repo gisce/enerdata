@@ -507,3 +507,4 @@ with description("An estimation"):
             last_accumulated = estimation.measures[-1].accumulated
             assert float(last_accumulated) == float(expected_last_accumulated), "Last accumulated '{}' must match the expected '{}'".format(last_accumulated, expected_last_accumulated)
 
+            accumulated = 2
