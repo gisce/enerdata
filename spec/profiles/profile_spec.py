@@ -457,3 +457,22 @@ with description("An estimation"):
         self.profile = Profile(self.start, self.end, self.measures)
 
 
+    with it("must analyze all hours if empty measures is provided"):
+        tariff = T20DHA()
+        periods = tariff.energy_periods
+
+        balance = {
+            'P1': 20,
+            'P2': 10,
+        }
+        total_expected = sum(balance.values())
+
+        estimation = self.profile.estimate(tariff, balance)
+        total_estimated = sum([x.measure for x in estimation.measures])
+
+        # [!] Number of hours must match
+        assert self.expected_number_of_hours == len(estimation.measures), "Number of hours '{}' must match the expected '{}'".format(len(estimation.measures), self.expected_number_of_hours)
+
+        # [!] Energy must match
+        assert total_expected == total_estimated, "Total energy '{}' must match the expected '{}'".format(total_estimated, total_expected)
+
