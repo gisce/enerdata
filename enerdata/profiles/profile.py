@@ -375,6 +375,11 @@ class Profile(object):
 
         dragger = Dragger()
 
+
+        # Initialize the Dragger with passed accumulated value
+        init_drag_key = tariff.get_period_by_date(self.gaps[0]).code
+        dragger.drag(self.accumulated, key=init_drag_key)
+
         for idx, gap in enumerate(self.gaps):
             logger.debug('Gap {0}/{1}'.format(
                 idx + 1, len(self.gaps)
