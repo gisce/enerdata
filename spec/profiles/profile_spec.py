@@ -3,6 +3,7 @@ from enerdata.contracts.tariff import T20DHA, T30A, T31A
 from enerdata.metering.measure import *
 from expects import *
 import vcr
+import random
 
 
 
@@ -399,7 +400,6 @@ with description("When profiling"):
 
 with description('A profile'):
     with before.all:
-        import random
         measures = []
         start = TIMEZONE.localize(datetime(2015, 3, 1, 1))
         end = TIMEZONE.localize(datetime(2015, 4, 1, 0))
@@ -442,3 +442,96 @@ with description('A profile'):
     with it('shouldn\'t have estimable hours'):
         estimable_hours = self.profile.get_estimable_hours(T20DHA())
         expect(sum(estimable_hours.values())).to(equal(0))
+
+
+with description("An estimation"):
+    with before.all:
+
+        self.measures = []
+        self.start = TIMEZONE.localize(datetime(2017, 9, 1))
+        self.end = TIMEZONE.localize(datetime(2017, 9, 2))
+
+        dates_difference_seconds = (self.end - self.start).total_seconds()
+        # Invoice hours with fixed first hour (timedelta performs natural substraction, so first hour must be handled)
+        self.expected_number_of_hours = (dates_difference_seconds / 3600) + 1
+        self.profile = Profile(self.start, self.end, self.measures)
+
+
+    with it("must analyze all hours if empty measures is provided"):
+        tariff = T20DHA()
+        periods = tariff.energy_periods
+
+        balance = {
+            'P1': 20,
+            'P2': 10,
+        }
+        total_expected = sum(balance.values())
+
+        estimation = self.profile.estimate(tariff, balance)
+        total_estimated = sum([x.measure for x in estimation.measures])
+
+        # [!] Number of hours must match
+        assert self.expected_number_of_hours == len(estimation.measures), "Number of hours '{}' must match the expected '{}'".format(len(estimation.measures), self.expected_number_of_hours)
+
+        # [!] Energy must match
+        assert total_expected == total_estimated, "Total energy '{}' must match the expected '{}'".format(total_estimated, total_expected)
+
+
+    with context("with accumulated energy"):
+        with it("must handle incorrect accumulated values"):
+            accumulated = Decimal(0.636)
+            self.profile = Profile(self.start, self.end, self.measures, accumulated)
+            tariff = T20DHA()
+            periods = tariff.energy_periods
+
+            # This scenario, with an initial accumulated of 0.636 will raise a -1 total energy with an ending accumulated of 0.333962070125
+            total_expected = 0
+            balance = {
+                'P1': 20,
+                'P2': 10,
+            }
+            expected_dragger_round = -1
+            total_expected = sum(balance.values()) + expected_dragger_round
+            expected_last_accumulated = Decimal(0.333962070125)
+
+            estimation = self.profile.estimate(tariff, balance)
+            total_estimated = sum([x.measure for x in estimation.measures])
+
+            # [!] Number of hours must match
+            assert self.expected_number_of_hours == len(estimation.measures), "Number of hours '{}' must match the expected '{}'".format(len(estimation.measures), self.expected_number_of_hours)
+
+            # [!] Energy must match
+            assert total_expected == total_estimated, "Total energy '{}' must match the expected '{}'".format(total_estimated, total_expected)
+
+            # [!] Last accumulated
+            last_accumulated = estimation.measures[-1].accumulated
+            assert float(last_accumulated) == float(expected_last_accumulated), "Last accumulated '{}' must match the expected '{}'".format(last_accumulated, expected_last_accumulated)
+
+
+        with it("must handle incorrect accumulated values"):
+            it_breaks = False
+            accumulated = 2
+            try:
+                self.profile = Profile(self.start, self.end, self.measures, accumulated)
+            except:
+                it_breaks = True
+
+            assert it_breaks, "A >1 accumulated must not work"
+
+            it_breaks = False
+            accumulated = -5
+            try:
+                self.profile = Profile(self.start, self.end, self.measures, accumulated)
+            except:
+                it_breaks = True
+
+            assert it_breaks, "A <-1 accumulated must not work"
+
+            it_breaks = False
+            accumulated = "x"
+            try:
+                self.profile = Profile(self.start, self.end, self.measures, accumulated)
+            except:
+                it_breaks = True
+
+            assert it_breaks, "A non numeric accumulated must not work"
