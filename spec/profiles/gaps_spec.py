@@ -39,7 +39,6 @@ with description('A profile with gaps'):
     with it('has to known the gaps'):
         expect(self.profile.gaps).to(contain_exactly(*self.gaps))
 
-
     with it('has sum hours per period the be the same as total hours'):
         hours_per_period = self.profile.get_hours_per_period(T20DHA())
         assert sum(hours_per_period.values()) == self.profile.n_hours
@@ -81,8 +80,15 @@ with description('A profile with gaps'):
         with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
             profile_estimated = self.profile.estimate(tariff, balance)
 
+        at_least_one_diff_zero = False
         for a_profile in profile_estimated.measures:
+            # 0, 0.0 and Decimal(0) or Decimal(0.0) are == 0
+            if a_profile.accumulated != 0:
+                at_least_one_diff_zero = True
+
             assert type(a_profile.accumulated) == float or isinstance(a_profile.accumulated, Decimal), "Accumulated must be inside a ProfileHour and must be a float or a Decimal instance"
+
+        assert at_least_one_diff_zero == True, "Statistically at least one of all the estimated measures must have a dragger different than 0. Debug this scenario to validate if 'ProfileHour.accumulated' field is working properly"
 
         total_energy = sum(balance.values())
         expect(profile_estimated.total_consumption).to(equal(total_energy))
