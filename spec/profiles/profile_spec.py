@@ -3,6 +3,7 @@ from enerdata.contracts.tariff import T20DHA, T30A, T31A
 from enerdata.metering.measure import *
 from expects import *
 import vcr
+import random
 
 
 
@@ -399,7 +400,6 @@ with description("When profiling"):
 
 with description('A profile'):
     with before.all:
-        import random
         measures = []
         start = TIMEZONE.localize(datetime(2015, 3, 1, 1))
         end = TIMEZONE.localize(datetime(2015, 4, 1, 0))
@@ -442,3 +442,18 @@ with description('A profile'):
     with it('shouldn\'t have estimable hours'):
         estimable_hours = self.profile.get_estimable_hours(T20DHA())
         expect(sum(estimable_hours.values())).to(equal(0))
+
+
+with description("An estimation"):
+    with before.all:
+
+        self.measures = []
+        self.start = TIMEZONE.localize(datetime(2017, 9, 1))
+        self.end = TIMEZONE.localize(datetime(2017, 9, 2))
+
+        dates_difference_seconds = (self.end - self.start).total_seconds()
+        # Invoice hours with fixed first hour (timedelta performs natural substraction, so first hour must be handled)
+        self.expected_number_of_hours = (dates_difference_seconds / 3600) + 1
+        self.profile = Profile(self.start, self.end, self.measures)
+
+
