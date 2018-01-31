@@ -2,7 +2,7 @@ from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import *
 from expects import *
 import vcr
-
+from decimal import Decimal
 
 with description('A profile with gaps'):
     with before.all:
@@ -80,6 +80,9 @@ with description('A profile with gaps'):
             balance[period.code] += ph.measure
         with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
             profile_estimated = self.profile.estimate(tariff, balance)
+
+        for a_profile in profile_estimated.measures:
+            assert type(a_profile.accumulated) == float or isinstance(a_profile.accumulated, Decimal), "Accumulated must be inside a ProfileHour and must be a float or a Decimal instance"
 
         total_energy = sum(balance.values())
         expect(profile_estimated.total_consumption).to(equal(total_energy))
