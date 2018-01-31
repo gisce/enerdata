@@ -388,8 +388,8 @@ class Profile(object):
                     gap, aprox, period.code,
                     energy_per_period_rem[period.code], energy
             ))
-            pos = bisect.bisect_left(measures, ProfileHour(gap, 0, True))
-            profile_hour = ProfileHour(TIMEZONE.normalize(gap), aprox, True)
+            pos = bisect.bisect_left(measures, ProfileHour(gap, 0, True, 0.0))
+            profile_hour = ProfileHour(TIMEZONE.normalize(gap), aprox, True, dragger[drag_key])
             measures.insert(pos, profile_hour)
         profile = Profile(self.start_date, self.end_date, measures)
         return profile
