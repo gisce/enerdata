@@ -247,7 +247,7 @@ class REEProfile(object):
             cls.down_lock.release()
 
 
-class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid'])):
+class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid', 'accumulated'])):
 
     __slots__ = ()
 
