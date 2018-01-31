@@ -10,6 +10,7 @@ from datetime import datetime, date, timedelta
 from multiprocessing import Lock
 from StringIO import StringIO
 from dateutil.relativedelta import relativedelta
+from decimal import Decimal
 
 from enerdata.profiles import Dragger
 from enerdata.contracts.tariff import Tariff
@@ -268,13 +269,19 @@ class Profile(object):
     """A Profile object representing hours and consumption.
     """
 
-    def __init__(self, start, end, measures):
+    def __init__(self, start, end, measures, accumulated=None):
         self.measures = measures[:]
         self.gaps = []  # Containing the gaps and invalid measures
         self.adjusted_periods = [] # If a period is adjusted
         self.start_date = start
         self.end_date = end
         self.profile_class = REEProfile
+
+        self.accumulated = Decimal(0)
+        if accumulated:
+            assert type(accumulated) == float or isinstance(accumulated, Decimal), "Provided accumulated must be a Decimal or a float"
+            assert accumulated < 1 and accumulated > -1, "Provided accumulated '{}' must be -1 < accumulated < 1".format(accumulated)
+            self.accumulated = accumulated
 
         measures_by_date = dict(
             [(m.date, m.measure) for m in measures if m.valid]
