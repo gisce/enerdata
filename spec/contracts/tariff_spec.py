@@ -183,6 +183,9 @@ with context('A tariff'):
             lambda: tari_T61B.evaluate_powers([500, 600, 700, 700, 600, 500])
         ).to(
             raise_error(NotAscendingPowers))
+    with it('shouldn\'t fail due to bad rounding'):
+        tari_T20A = T20A()
+        assert tari_T20A.evaluate_powers([8050.0/1000])
     with it('should allow to check if a maximum power is correct'):
         tari_T20A = T20A()
         assert not tari_T20A.is_maximum_power_correct(-10)
@@ -282,7 +285,8 @@ with description('Getting a tariff by descripion'):
             ('2.1DHA', T21DHA),
             ('2.1DHS', T21DHS),
             ('3.0A', T30A),
-            ('3.1A', T31A)
+            ('3.1A', T31A),
+            ('3.1A LB', T31A),
         ]
 
         tariff_cof = {
@@ -293,7 +297,8 @@ with description('Getting a tariff by descripion'):
             '2.1DHA': 'B',
             '2.1DHS': 'D',
             '3.0A': 'C',
-            '3.1A': 'C'
+            '3.1A': 'C',
+            '3.1A LB': 'C',
         }
 
         for t in tariffs:

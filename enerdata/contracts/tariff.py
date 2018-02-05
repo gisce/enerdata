@@ -125,7 +125,7 @@ class Tariff(object):
     def are_powers_normalized(powers):
         np = NormalizedPower()
         for power in powers:
-            if not np.is_normalized(power * 1000):
+            if not np.is_normalized(int(power * 1000)):
                 return False
 
         return True
@@ -199,7 +199,7 @@ class T20A(Tariff):
             pass
 
         norm_power = NormalizedPower().get_norm_powers(
-            self.min_power * 1000, self.max_power * 1000
+            int(self.min_power * 1000), int(self.max_power * 1000)
         ).next()
 
         return [norm_power / 1000.0] * len(self.power_periods)
@@ -517,6 +517,7 @@ def get_tariff_by_code(code):
         '2.1DHS': T21DHS,
         '3.0A': T30A,
         '3.1A': T31A,
+        '3.1A LB': T31A,
         '6.1A': T61A,
         '6.1B': T61B,
     }

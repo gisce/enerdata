@@ -4,7 +4,7 @@ from expects import expect, raise_error
 from enerdata.contracts.normalized_power import NormalizedPower
 
 NORMALIZED_POWERS = {
-    330: ('220', '1.5')
+    330: ('1x220', '1.5')
 }
 
 NOT_NORMALIZED_POWERS = [100]
@@ -35,7 +35,11 @@ with description('A normalized power class'):
     with it('must return all the normalized powers between two values in '
             'ascending order (the first one shouldn\'t included)'):
         n_p = NormalizedPower()
-        norm_power_01 = [330, 345, 598, 660, 690, 770, 805, 987]
-        norm_power_02 = [2300, 2304, 2425, 2988, 3291, 3300]
+        norm_power_01 = [191, 200, 330, 345, 381, 399, 445, 466, 572, 598, 635,
+                         660, 665, 690, 770, 805, 953, 987, 998]
+
+        norm_power_02 = [2300, 2304, 2425, 2540, 2660, 2858, 2988, 3175, 3291,
+                         3300]
+
         assert list(n_p.get_norm_powers(0, 1000)) == norm_power_01
         assert list(n_p.get_norm_powers(2200, 3300)) == norm_power_02
