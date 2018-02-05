@@ -32,6 +32,7 @@ def convert_to_profilehour(measure):
         localize_season(measure['timestamp'], measure['season']),
         measure['ai'],
         measure['valid'],
+        0.0, 
         meta=measure
     )
     return ph
