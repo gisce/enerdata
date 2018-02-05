@@ -372,8 +372,8 @@ class Profile(object):
             logger.debug('Gap {0}/{1}'.format(
                 idx + 1, len(self.gaps)
             ))
-            drag_key = period.code
             period = tariff.get_period_by_date(gap)
+            drag_key = period.code
             gap_cof = cofs.get(gap).cof[tariff.cof]
             energy = energy_per_period[period.code]
             # If the balance[period] < energy_profile[period] fill with 0
