@@ -1,20 +1,17 @@
 from __future__ import division
 
-import bisect
 import logging
 try:
     from collections import namedtuple, Counter
 except ImportError:
     from backport_collections import namedtuple, Counter
-from datetime import datetime, date, timedelta
-from multiprocessing import Lock
-from StringIO import StringIO
 from dateutil.relativedelta import relativedelta
 
 from enerdata.profiles import Dragger
 from enerdata.contracts.tariff import Tariff
-from enerdata.datetime.timezone import TIMEZONE
-from enerdata.metering.measure import Measure, EnergyMeasure
+from enerdata.metering.measure import EnergyMeasure
+from enerdata.utils.profile import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -174,12 +171,7 @@ class Profiler(object):
                 )
 
 
-class REEProfile(object):
-    HOST = 'www.ree.es'
-    PATH = '/sites/default/files/simel/perff'
-    down_lock = Lock()
-
-    _CACHE = {}
+class REEProfileParser(object):
 
     @classmethod
     def get_range(cls, start, end):
@@ -195,56 +187,43 @@ class REEProfile(object):
         return cofs
 
     @classmethod
+    def get(cls, m, header):
+        import csv
+        reader = csv.reader(m, delimiter=';')
+        cofs = []
+        n_hour = 0
+        for vals in reader:
+            if header:
+                header = False
+                continue
+            if int(vals[3]) == 1:
+                n_hour = 1
+            dt = datetime(
+                int(vals[0]), int(vals[1]), int(vals[2])
+            )
+            day = TIMEZONE.localize(dt, is_dst=bool(not int(vals[4])))
+            day += timedelta(hours=n_hour)
+            n_hour += 1
+            cofs.append(
+                (TIMEZONE.normalize(day), dict(
+                    (k, float(vals[i])) for i, k in enumerate('ABCD', 5)
+                ))
+            )
+        return cofs
+
+
+class REEProfile(RemoteProfile):
+    HOST = 'http://www.ree.es'
+    PATH = '/sites/default/files/simel/perff'
+
+    @classmethod
     def get(cls, year, month):
-        try:
-            cls.down_lock.acquire()
-            import csv
-            import httplib
-            key = '%(year)s%(month)02i' % locals()
-            conn = None
-            if key in cls._CACHE:
-                logger.debug('Using CACHE for REEProfile {0}'.format(key))
-                return cls._CACHE[key]
-            perff_file = 'PERFF_%(key)s.gz' % locals()
-            conn = httplib.HTTPConnection(cls.HOST)
-            conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
-            logger.debug('Downloading REEProfile from {0}/{1}'.format(
-                cls.PATH, perff_file
-            ))
-            r = conn.getresponse()
-            if r.msg.type == 'application/x-gzip':
-                import gzip
-                c = StringIO(r.read())
-                m = StringIO(gzip.GzipFile(fileobj=c).read())
-                c.close()
-                reader = csv.reader(m, delimiter=';')
-                header = True
-                cofs = []
-                for vals in reader:
-                    if header:
-                        header = False
-                        continue
-                    if int(vals[3]) == 1:
-                        n_hour = 1
-                    dt = datetime(
-                        int(vals[0]), int(vals[1]), int(vals[2])
-                    )
-                    day = TIMEZONE.localize(dt, is_dst=bool(not int(vals[4])))
-                    day += timedelta(hours=n_hour)
-                    n_hour += 1
-                    cofs.append(Coefficent(
-                        TIMEZONE.normalize(day), dict(
-                            (k, float(vals[i])) for i, k in enumerate('ABCD', 5)
-                        ))
-                    )
-                cls._CACHE[key] = cofs
-                return cofs
-            else:
-                raise Exception('Profiles from REE not found')
-        finally:
-            if conn is not None:
-                conn.close()
-            cls.down_lock.release()
+        key = '%(year)s%(month)02i' % locals()
+        perff_file = 'PERFF_%(key)s.gz' % locals()
+        uri = '/'.join([cls.HOST, cls.PATH, perff_file])
+        return super(REEProfile, cls).get(
+                'PERFF', year, month, REEProfileParser, uri, True
+        )
 
 
 class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid'])):
