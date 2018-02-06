@@ -375,10 +375,6 @@ class Profile(object):
 
         dragger = Dragger()
 
-        print ()
-        print ()
-        print (tariff, start, end)
-
         # Initialize the Dragger with passed accumulated value
         if len(self.gaps) > 0:
             # init_drag_key = tariff.get_period_by_date(self.gaps[0]).code
@@ -411,8 +407,6 @@ class Profile(object):
                 ))
                 pos = bisect.bisect_left(measures, ProfileHour(gap, 0, True, 0.0))
                 profile_hour = ProfileHour(TIMEZONE.normalize(gap), aprox, True, dragger[drag_key])
-
-                print (idx, drag_key, gap, profile_hour)
 
                 measures.insert(pos, profile_hour)
 
