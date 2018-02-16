@@ -449,7 +449,7 @@ with description("An estimation"):
 
         self.measures = []
         self.start = TIMEZONE.localize(datetime(2017, 9, 1))
-        self.end = TIMEZONE.localize(datetime(2017, 9, 2))
+        self.end = TIMEZONE.localize(datetime(2017, 9, 5))
 
         dates_difference_seconds = (self.end - self.start).total_seconds()
         # Invoice hours with fixed first hour (timedelta performs natural substraction, so first hour must be handled)
@@ -458,8 +458,6 @@ with description("An estimation"):
 
 
     with it("must analyze all hours if empty measures is provided"):
-
-        #T20A, T20DHA, T20DHS, T21A, T21DHA, T21DHS, T30A, T31A
         tariffs_list = [
             {
                 "tariff": T20A,
@@ -556,7 +554,7 @@ with description("An estimation"):
                 'P2': 3,
             }
             total_expected = round(sum(balance.values()))
-            expected_last_accumulated = Decimal(-0.064000000006999990230037383)
+            expected_last_accumulated = Decimal(-0.0639999999989999902300373833)
 
             estimation = self.profile.estimate(tariff, balance)
             total_estimated = sum([x.measure for x in estimation.measures])
