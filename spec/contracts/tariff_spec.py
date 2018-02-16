@@ -314,8 +314,7 @@ with description('Getting a tariff by descripion'):
 
 with description('Correct period for tariff an hour'):
     with before.all:
-
-        self.winter_holiday_day = TIMEZONE.localize(datetime(2014, 1, 6))
+        self.winter_holiday_day = TIMEZONE.localize(datetime(2014, 11, 1))
         self.summer_holiday_day = TIMEZONE.localize(datetime(2014, 8, 15))
         self.winter_weekend_day = TIMEZONE.localize(datetime(2014, 2, 15))
         self.summer_weekend_day = TIMEZONE.localize(datetime(2014, 6, 21))
