@@ -735,3 +735,9 @@ with description('Correct period for tariff an hour'):
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=22)).code == 'P1'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=23)).code == 'P1'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=24)).code == 'P2'
+
+    with context('3.0A'):
+        with before.all:
+            self.tarifa = T30A()
+        with it('should have code 3.0A'):
+            assert self.tarifa.code == '3.0A'
