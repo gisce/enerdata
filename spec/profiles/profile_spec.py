@@ -1,5 +1,5 @@
 from enerdata.profiles.profile import *
-from enerdata.contracts.tariff import T20DHA, T30A, T31A
+from enerdata.contracts.tariff import T20A, T20DHA, T20DHS, T21A, T21DHA, T21DHS, T30A, T31A
 from enerdata.metering.measure import *
 from expects import *
 import vcr
@@ -458,23 +458,31 @@ with description("An estimation"):
 
 
     with it("must analyze all hours if empty measures is provided"):
-        tariff = T20DHA()
-        periods = tariff.energy_periods
 
-        balance = {
-            'P1': 20,
-            'P2': 10,
-        }
-        total_expected = sum(balance.values())
+        #T20A, T20DHA, T20DHS, T21A, T21DHA, T21DHS, T30A, T31A
+        tariffs_list = [
+            {
+                "tariff": T20A,
+                "balance": {
+                    'P1': 20,
+                },
+            },
+        ]
 
-        estimation = self.profile.estimate(tariff, balance)
-        total_estimated = sum([x.measure for x in estimation.measures])
+        for a_tariff in tariffs_list:
+            tariff = a_tariff["tariff"]()
+            periods = tariff.energy_periods
+            balance = a_tariff["balance"]
+            total_expected = sum(balance.values())
 
-        # [!] Number of hours must match
-        assert self.expected_number_of_hours == len(estimation.measures), "Number of hours '{}' must match the expected '{}'".format(len(estimation.measures), self.expected_number_of_hours)
+            estimation = self.profile.estimate(tariff, balance)
+            total_estimated = sum([x.measure for x in estimation.measures])
 
-        # [!] Energy must match
-        assert total_expected == total_estimated, "Total energy '{}' must match the expected '{}'".format(total_estimated, total_expected)
+            # [!] Number of hours must match
+            assert self.expected_number_of_hours == len(estimation.measures), "Number of hours '{}' must match the expected '{}'".format(len(estimation.measures), self.expected_number_of_hours)
+
+            # [!] Energy must match
+            assert total_expected == total_estimated, "For tariff '{}' Total energy '{}' must match the expected '{}'".format(a_tariff["tariff"], total_estimated, total_expected)
 
 
     with context("with accumulated energy"):
