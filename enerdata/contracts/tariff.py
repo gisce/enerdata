@@ -1,4 +1,5 @@
 import calendar
+from datetime import timedelta
 
 from enerdata.contracts.normalized_power import NormalizedPower
 from enerdata.datetime.station import get_station
