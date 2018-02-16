@@ -488,6 +488,13 @@ with description("An estimation"):
                     'P1': 20,
                 },
             },
+            {
+                "tariff": T21DHA,
+                "balance": {
+                    'P1': 20,
+                    'P2': 10,
+                },
+            },
         ]
 
         for a_tariff in tariffs_list:
