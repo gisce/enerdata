@@ -895,6 +895,23 @@ with description('Correct period for tariff an hour'):
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=22)).code == 'P4'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=23)).code == 'P5'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=24)).code == 'P5'
+
+        with it('should have correct period on holiday summer data'):
+            dia = self.summer_holiday_day
+            assert self.tarifa.get_period_by_date(dia).code == 'P2'  # points to thursday 14/08/17
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=1)).code == 'P6'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=2)).code == 'P6'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=8)).code == 'P6'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=9)).code == 'P5'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=10)).code == 'P5'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=11)).code == 'P5'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=12)).code == 'P4'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=15)).code == 'P4'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=16)).code == 'P5'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=17)).code == 'P5'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=23)).code == 'P5'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=24)).code == 'P5'
+
         with it('should have correct period on laboral winter data'):
             dia = self.winter_laboral_day
             assert self.tarifa.get_period_by_date(dia).code == 'P2'
