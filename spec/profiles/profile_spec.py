@@ -514,6 +514,16 @@ with description("An estimation"):
                     'P6': 10,
                 },
             },
+            {
+                "tariff": T31A,
+                "balance": {
+                    'P1': 100,
+                    'P2': 80,
+                    'P3': 60,
+                    'P5': 15,
+                    'P6': 15,
+                },
+            },
         ]
 
         for a_tariff in tariffs_list:
