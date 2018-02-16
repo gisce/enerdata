@@ -97,14 +97,16 @@ class Tariff(object):
         return self.max_power
 
     def get_period_by_date(self, date_time):
-        station = get_station(date_time)
-        date = date_time.date()
+        datetime_previous_hour = date_time - timedelta(hours=1)
+        station = get_station(datetime_previous_hour)
+        date = datetime_previous_hour.date()
         holidays = get_holidays(date.year)
         if (calendar.weekday(date.year, date.month, date.day) in (5, 6) or
                 date in holidays):
             holiday = True
         else:
             holiday = False
+
         # Map hour 0 to 24
         hour = date_time.hour or 24
         for period in self.periods:
@@ -113,6 +115,7 @@ class Tariff(object):
                     if range_h[0] < hour <= range_h[1]:
                         return period
         return None
+
 
     @property
     def has_holidays_periods(self):
