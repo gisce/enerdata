@@ -395,7 +395,7 @@ with description('Correct period for tariff an hour'):
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=24)).code == 'P2'
 
         with it('should have correct period on laboral summer data'):
-            dia = self.summer_holiday_day
+            dia = self.summer_laboral_day
             assert self.tarifa.get_period_by_date(dia).code == 'P2'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=1)).code == 'P2'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=2)).code == 'P2'
@@ -533,7 +533,7 @@ with description('Correct period for tariff an hour'):
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=24)).code == 'P2'
 
         with it('should have correct period on laboral summer data'):
-            dia = self.summer_holiday_day
+            dia = self.summer_laboral_day
             assert self.tarifa.get_period_by_date(dia).code == 'P2'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=1)).code == 'P2'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=2)).code == 'P3'
@@ -671,7 +671,7 @@ with description('Correct period for tariff an hour'):
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=24)).code == 'P2'
 
         with it('should have correct period on laboral summer data'):
-            dia = self.summer_holiday_day
+            dia = self.summer_laboral_day
             assert self.tarifa.get_period_by_date(dia).code == 'P2'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=1)).code == 'P2'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=2)).code == 'P2'
@@ -811,7 +811,7 @@ with description('Correct period for tariff an hour'):
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=24)).code == 'P2'
 
         with it('should have correct period on laboral summer data'):
-            dia = self.summer_holiday_day
+            dia = self.summer_laboral_day
             assert self.tarifa.get_period_by_date(dia).code == 'P2'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=1)).code == 'P2'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=2)).code == 'P3'
