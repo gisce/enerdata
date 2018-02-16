@@ -881,6 +881,20 @@ with description('Correct period for tariff an hour'):
             self.tarifa = T30A()
         with it('should have code 3.0A'):
             assert self.tarifa.code == '3.0A'
+
+        with it('should have correct period on holiday winter data'):
+            dia = self.winter_holiday_day
+            assert self.tarifa.get_period_by_date(dia).code == 'P2'  # points to friday 31/10/17
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=1)).code == 'P6'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=2)).code == 'P6'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=8)).code == 'P6'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=9)).code == 'P5'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=17)).code == 'P5'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=18)).code == 'P5'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=19)).code == 'P4'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=22)).code == 'P4'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=23)).code == 'P5'
+            assert self.tarifa.get_period_by_date(dia + timedelta(hours=24)).code == 'P5'
         with it('should have correct period on laboral winter data'):
             dia = self.winter_laboral_day
             assert self.tarifa.get_period_by_date(dia).code == 'P2'
