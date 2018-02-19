@@ -543,8 +543,9 @@ with description("An estimation"):
     with context("with accumulated energy"):
         with it("must handle accumulated values"):
             accumulated = Decimal(0.136)
-            self.profile = Profile(self.start, self.end, self.measures, accumulated)
-            tariff = T20DHA()
+            drag_by_perdiod = True
+            self.profile = Profile(self.start, self.end, self.measures, accumulated, drag_by_perdiod)
+            tariff = T21DHS()
             periods = tariff.energy_periods
 
             # This scenario, with an initial accumulated of 0.636 will raise a -1 total energy with an ending accumulated of 0.333962070125
@@ -552,9 +553,10 @@ with description("An estimation"):
             balance = {
                 'P1': 6.8,
                 'P2': 3,
+                'P3': 3.5,
             }
             total_expected = round(sum(balance.values()))
-            expected_last_accumulated = Decimal(-0.0639999999989999902300373833)
+            expected_last_accumulated = Decimal(0.3000000000036)
 
             estimation = self.profile.estimate(tariff, balance)
             total_estimated = sum([x.measure for x in estimation.measures])
