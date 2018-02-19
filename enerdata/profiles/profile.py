@@ -269,13 +269,16 @@ class Profile(object):
     """A Profile object representing hours and consumption.
     """
 
-    def __init__(self, start, end, measures, accumulated=None):
+    def __init__(self, start, end, measures, accumulated=None, drag_by_periods=True):
         self.measures = measures[:]
         self.gaps = []  # Containing the gaps and invalid measures
         self.adjusted_periods = [] # If a period is adjusted
         self.start_date = start
         self.end_date = end
         self.profile_class = REEProfile
+
+        assert type(drag_by_periods) == bool, "drag_by_periods must be a Boolean"
+        self.drag_by_periods = drag_by_periods
 
         self.accumulated = Decimal(0)
         if accumulated:
@@ -377,8 +380,13 @@ class Profile(object):
 
         # Initialize the Dragger with passed accumulated value
         if len(self.gaps) > 0:
-            # init_drag_key = tariff.get_period_by_date(self.gaps[0]).code
-            init_drag_key = "hardcoded_key"
+
+            # Drag by_hours
+            if not self.drag_by_periods:
+                init_drag_key = "default"
+            else:
+                init_drag_key = tariff.get_period_by_date(self.gaps[0]).code
+
             dragger.drag(self.accumulated, key=init_drag_key)
 
             for idx, gap in enumerate(self.gaps):
@@ -387,8 +395,7 @@ class Profile(object):
                 ))
                 period = tariff.get_period_by_date(gap)
 
-                # drag_key = period.code
-                drag_key = "hardcoded_key"
+                drag_key = period.code if not self.drag_by_periods else "default"
 
                 gap_cof = cofs.get(gap).cof[tariff.cof]
                 energy = energy_per_period[period.code]

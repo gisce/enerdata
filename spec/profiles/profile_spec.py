@@ -543,8 +543,9 @@ with description("An estimation"):
     with context("with accumulated energy"):
         with it("must handle accumulated values"):
             accumulated = Decimal(0.136)
-            self.profile = Profile(self.start, self.end, self.measures, accumulated)
-            tariff = T20DHA()
+            drag_by_perdiod = True
+            self.profile = Profile(self.start, self.end, self.measures, accumulated, drag_by_perdiod)
+            tariff = T21DHS()
             periods = tariff.energy_periods
 
             # This scenario, with an initial accumulated of 0.636 will raise a -1 total energy with an ending accumulated of 0.333962070125
@@ -552,9 +553,10 @@ with description("An estimation"):
             balance = {
                 'P1': 6.8,
                 'P2': 3,
+                'P3': 3.5,
             }
             total_expected = round(sum(balance.values()))
-            expected_last_accumulated = Decimal(-0.0639999999989999902300373833)
+            expected_last_accumulated = Decimal(0.3000000000036)
 
             estimation = self.profile.estimate(tariff, balance)
             total_estimated = sum([x.measure for x in estimation.measures])
@@ -568,6 +570,19 @@ with description("An estimation"):
             # [!] Last accumulated
             last_accumulated = estimation.measures[-1].accumulated
             assert float(last_accumulated) == float(expected_last_accumulated), "Last accumulated '{}' must match the expected '{}'".format(last_accumulated, expected_last_accumulated)
+
+            # [!] Now estimate it using a by hour dragging
+            # total energy will be +1kWh!
+            drag_by_perdiod = False
+            total_expected += 1
+            expected_last_accumulated = Decimal(2.2E-12)
+
+            self.profile = Profile(self.start, self.end, self.measures, accumulated, drag_by_perdiod)
+            estimation = self.profile.estimate(tariff, balance)
+            total_estimated_by_hour = sum([x.measure for x in estimation.measures])
+            last_accumulated_by_hour = estimation.measures[-1].accumulated
+            assert total_expected == total_estimated_by_hour, "Total energy dragged by hour '{}' must match the expected +1 '{}'".format(total_estimated_by_hour, total_expected)
+            assert float(last_accumulated_by_hour) == float(expected_last_accumulated), "Last accumulated by hour '{}' must match the expected '{}'".format(last_accumulated_by_hour, expected_last_accumulated)
 
 
         with it("must handle incorrect accumulated values"):
@@ -597,3 +612,5 @@ with description("An estimation"):
                 it_breaks = True
 
             assert it_breaks, "A non numeric accumulated must not work"
+
+
