@@ -269,13 +269,16 @@ class Profile(object):
     """A Profile object representing hours and consumption.
     """
 
-    def __init__(self, start, end, measures, accumulated=None):
+    def __init__(self, start, end, measures, accumulated=None, drag_by_periods=True):
         self.measures = measures[:]
         self.gaps = []  # Containing the gaps and invalid measures
         self.adjusted_periods = [] # If a period is adjusted
         self.start_date = start
         self.end_date = end
         self.profile_class = REEProfile
+
+        assert type(drag_by_periods) == bool, "drag_by_periods must be a Boolean"
+        self.drag_by_periods = drag_by_periods
 
         self.accumulated = Decimal(0)
         if accumulated:
