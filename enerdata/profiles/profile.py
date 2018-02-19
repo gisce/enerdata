@@ -380,8 +380,13 @@ class Profile(object):
 
         # Initialize the Dragger with passed accumulated value
         if len(self.gaps) > 0:
-            # init_drag_key = tariff.get_period_by_date(self.gaps[0]).code
-            init_drag_key = "hardcoded_key"
+
+            # Drag by_hours
+            if not self.drag_by_periods:
+                init_drag_key = "default"
+            else:
+                init_drag_key = tariff.get_period_by_date(self.gaps[0]).code
+
             dragger.drag(self.accumulated, key=init_drag_key)
 
             for idx, gap in enumerate(self.gaps):
@@ -390,8 +395,7 @@ class Profile(object):
                 ))
                 period = tariff.get_period_by_date(gap)
 
-                # drag_key = period.code
-                drag_key = "hardcoded_key"
+                drag_key = period.code if not self.drag_by_periods else "default"
 
                 gap_cof = cofs.get(gap).cof[tariff.cof]
                 energy = energy_per_period[period.code]
