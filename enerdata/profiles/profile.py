@@ -359,7 +359,7 @@ class Profile(object):
             tariff.code
         ))
 
-        # If it's a simplified T30A with just one period, adapt balance
+        # Adapt balance for simplified T30A with just one period
         if isinstance(tariff, T30A_one_period):
             balance = {
                 "P1": sum([values for values in balance.values()])
@@ -371,6 +371,7 @@ class Profile(object):
         cofs = self.profile_class.get_range(start, end)
         cofs = Coefficients(cofs)
         cofs_per_period = Counter()
+
         for gap in self.gaps:
             period = tariff.get_period_by_date(gap)
             gap_cof = cofs.get(gap)
@@ -387,7 +388,6 @@ class Profile(object):
 
         # Initialize the Dragger with passed accumulated value
         if len(self.gaps) > 0:
-
             # Drag by_hours
             if not self.drag_by_periods:
                 init_drag_key = "default"
@@ -407,7 +407,6 @@ class Profile(object):
                 gap_cof = cofs.get(gap).cof[tariff.cof]
                 energy = energy_per_period[period.code]
                 # If the balance[period] < energy_profile[period] fill with 0
-                # the gaps
                 if energy < 0:
                     energy = 0
 
