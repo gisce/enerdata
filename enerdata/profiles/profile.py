@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 
 from enerdata.profiles import Dragger
-from enerdata.contracts.tariff import Tariff
+from enerdata.contracts.tariff import Tariff, T30A_one_period
 from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure, EnergyMeasure
 
@@ -358,6 +358,13 @@ class Profile(object):
         logger.debug('Estimating for tariff: {0}'.format(
             tariff.code
         ))
+
+        # If it's a simplified T30A with just one period, adapt balance
+        if isinstance(tariff, T30A_one_period):
+            balance = {
+                "P1": sum([values for values in balance.values()])
+            }
+
         measures = [x for x in self.measures if x.valid]
         start = self.start_date
         end = self.end_date
