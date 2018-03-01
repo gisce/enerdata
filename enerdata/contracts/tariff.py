@@ -339,7 +339,7 @@ class T30A(Tariff):
         )
 
 
-class T30A_one_period(Tariff):
+class T30A_one_period(T30A):
     """
     A 3.0A with one unique period
     """
