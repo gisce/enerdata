@@ -13,7 +13,7 @@ from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 
 from enerdata.profiles import Dragger
-from enerdata.contracts.tariff import Tariff, T30A_one_period
+from enerdata.contracts.tariff import Tariff, T30A_one_period, T31A_one_period
 from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure, EnergyMeasure
 
@@ -360,7 +360,7 @@ class Profile(object):
         ))
 
         # Adapt balance for simplified T30A with just one period
-        if isinstance(tariff, T30A_one_period):
+        if isinstance(tariff, T30A_one_period) or isinstance(tariff, T31A_one_period):
             balance = {
                 "P1": sum([values for values in balance.values()])
             }
