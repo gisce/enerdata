@@ -339,6 +339,20 @@ class T30A(Tariff):
         )
 
 
+class T30A_one_period(Tariff):
+    """
+    A 3.0A with one unique period
+    """
+    def __init__(self):
+        super(T30A_one_period, self).__init__()
+        self.code = '3.0A'
+
+        self.periods = (
+            TariffPeriod('P1', 'te'),
+            TariffPeriod('P1', 'tp')
+        )
+
+
 class T31A(T30A):
     """
     3.1A Tariff
