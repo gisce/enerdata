@@ -971,6 +971,7 @@ with description('Correct period for tariff an hour'):
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=23)).code == 'P5'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=24)).code == 'P5'
 
+
     with context('3.0A with just one period'):
         with before.all:
             self.tarifa = T30A_one_period()
@@ -1104,3 +1105,40 @@ with description('Correct period for tariff an hour'):
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=20)).code == 'P5'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=23)).code == 'P5'
             assert self.tarifa.get_period_by_date(dia + timedelta(hours=24)).code == 'P5'
+
+
+    with context('3.1A with just one period'):
+        with before.all:
+            self.tarifa = T31A_one_period()
+        with it('should have code 3.1A'):
+            assert self.tarifa.code == '3.1A'
+
+        with it('should have correct period on holiday winter data'):
+            dia = self.winter_holiday_day
+            for hour in range(1,25):
+                assert self.tarifa.get_period_by_date(dia + timedelta(hours=hour)).code == 'P1'
+
+        with it('should have correct period on holiday summer data'):
+            dia = self.summer_holiday_day
+            for hour in range(1,25):
+                assert self.tarifa.get_period_by_date(dia + timedelta(hours=hour)).code == 'P1'
+
+        with it('should have correct period on laboral winter data'):
+            dia = self.winter_laboral_day
+            for hour in range(1,25):
+                assert self.tarifa.get_period_by_date(dia + timedelta(hours=hour)).code == 'P1'
+
+        with it('should have correct period on laboral summer data'):
+            dia = self.summer_laboral_day
+            for hour in range(1,25):
+                assert self.tarifa.get_period_by_date(dia + timedelta(hours=hour)).code == 'P1'
+
+        with it('should have correct period on weekend winter data'):
+            dia = self.winter_weekend_day
+            for hour in range(1,25):
+                assert self.tarifa.get_period_by_date(dia + timedelta(hours=hour)).code == 'P1'
+
+        with it('should have correct period on weekend summer data'):
+            dia = self.summer_weekend_day
+            for hour in range(1,25):
+                assert self.tarifa.get_period_by_date(dia + timedelta(hours=hour)).code == 'P1'
