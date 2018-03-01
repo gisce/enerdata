@@ -1,5 +1,5 @@
 from enerdata.profiles.profile import *
-from enerdata.contracts.tariff import T20A, T20DHA, T20DHS, T21A, T21DHA, T21DHS, T30A, T31A, T30A_one_period
+from enerdata.contracts.tariff import T20A, T20DHA, T20DHS, T21A, T21DHA, T21DHS, T30A, T31A, T30A_one_period, T31A_one_period
 from enerdata.metering.measure import *
 from expects import *
 import vcr
@@ -528,6 +528,14 @@ with description("An estimation"):
                     'P3': 60,
                     'P5': 15,
                     'P6': 15,
+                },
+            },
+            {
+                "tariff": T31A_one_period,
+                "balance": {
+                    'P1': 100,
+                    'P2': 80,
+                    'P3': 60,
                 },
             },
         ]
