@@ -345,8 +345,6 @@ class T30A_one_period(T30A):
     """
     def __init__(self):
         super(T30A_one_period, self).__init__()
-        self.code = '3.0A'
-
         self.periods = (
             TariffPeriod('P1', 'te'),
             TariffPeriod('P1', 'tp')
@@ -415,6 +413,18 @@ class T31A(T30A):
             raise NotAscendingPowers()
 
         return True
+
+
+class T31A_one_period(T31A):
+    """
+    A 3.1A with one unique period
+    """
+    def __init__(self):
+        super(T31A_one_period, self).__init__()
+        self.periods = (
+            TariffPeriod('P1', 'te'),
+            TariffPeriod('P1', 'tp')
+        )
 
 
 class T61A(Tariff):
