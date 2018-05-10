@@ -10,9 +10,10 @@ from datetime import datetime, date, timedelta
 from multiprocessing import Lock
 from StringIO import StringIO
 from dateutil.relativedelta import relativedelta
+from decimal import Decimal
 
 from enerdata.profiles import Dragger
-from enerdata.contracts.tariff import Tariff
+from enerdata.contracts.tariff import Tariff, T30A_one_period, T31A_one_period
 from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure, EnergyMeasure
 
@@ -247,7 +248,7 @@ class REEProfile(object):
             cls.down_lock.release()
 
 
-class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid'])):
+class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid', 'accumulated'])):
 
     __slots__ = ()
 
@@ -268,13 +269,22 @@ class Profile(object):
     """A Profile object representing hours and consumption.
     """
 
-    def __init__(self, start, end, measures):
+    def __init__(self, start, end, measures, accumulated=None, drag_by_periods=True):
         self.measures = measures[:]
         self.gaps = []  # Containing the gaps and invalid measures
         self.adjusted_periods = [] # If a period is adjusted
         self.start_date = start
         self.end_date = end
         self.profile_class = REEProfile
+
+        assert type(drag_by_periods) == bool, "drag_by_periods must be a Boolean"
+        self.drag_by_periods = drag_by_periods
+
+        self.accumulated = Decimal(0)
+        if accumulated:
+            assert type(accumulated) == float or isinstance(accumulated, Decimal), "Provided accumulated must be a Decimal or a float"
+            assert accumulated < 1 and accumulated > -1, "Provided accumulated '{}' must be -1 < accumulated < 1".format(accumulated)
+            self.accumulated = accumulated
 
         measures_by_date = dict(
             [(m.date, m.measure) for m in measures if m.valid]
@@ -348,12 +358,20 @@ class Profile(object):
         logger.debug('Estimating for tariff: {0}'.format(
             tariff.code
         ))
+
+        # Adapt balance for simplified T30A with just one period
+        if isinstance(tariff, T30A_one_period) or isinstance(tariff, T31A_one_period):
+            balance = {
+                "P1": sum([values for values in balance.values()])
+            }
+
         measures = [x for x in self.measures if x.valid]
         start = self.start_date
         end = self.end_date
         cofs = self.profile_class.get_range(start, end)
         cofs = Coefficients(cofs)
         cofs_per_period = Counter()
+
         for gap in self.gaps:
             period = tariff.get_period_by_date(gap)
             gap_cof = cofs.get(gap)
@@ -368,29 +386,44 @@ class Profile(object):
 
         dragger = Dragger()
 
-        for idx, gap in enumerate(self.gaps):
-            logger.debug('Gap {0}/{1}'.format(
-                idx + 1, len(self.gaps)
-            ))
-            period = tariff.get_period_by_date(gap)
-            drag_key = period.code
-            gap_cof = cofs.get(gap).cof[tariff.cof]
-            energy = energy_per_period[period.code]
-            # If the balance[period] < energy_profile[period] fill with 0
-            # the gaps
-            if energy < 0:
-                energy = 0
-            gap_energy = (energy * gap_cof) / cofs_per_period[period.code]
-            aprox = dragger.drag(gap_energy, key=drag_key)
-            energy_per_period_rem[period.code] -= gap_energy
-            logger.debug(
-                'Energy for hour {0} is {1}. {2} Energy {3}/{4}'.format(
-                    gap, aprox, period.code,
-                    energy_per_period_rem[period.code], energy
-            ))
-            pos = bisect.bisect_left(measures, ProfileHour(gap, 0, True))
-            profile_hour = ProfileHour(TIMEZONE.normalize(gap), aprox, True)
-            measures.insert(pos, profile_hour)
+        # Initialize the Dragger with passed accumulated value
+        if len(self.gaps) > 0:
+            # Drag by_hours
+            if not self.drag_by_periods:
+                init_drag_key = "default"
+            else:
+                init_drag_key = tariff.get_period_by_date(self.gaps[0]).code
+
+            dragger.drag(self.accumulated, key=init_drag_key)
+
+            for idx, gap in enumerate(self.gaps):
+                logger.debug('Gap {0}/{1}'.format(
+                    idx + 1, len(self.gaps)
+                ))
+                period = tariff.get_period_by_date(gap)
+
+                drag_key = period.code if not self.drag_by_periods else "default"
+
+                gap_cof = cofs.get(gap).cof[tariff.cof]
+                energy = energy_per_period[period.code]
+                # If the balance[period] < energy_profile[period] fill with 0
+                if energy < 0:
+                    energy = 0
+
+                gap_energy = (energy * gap_cof) / cofs_per_period[period.code]
+                aprox = dragger.drag(gap_energy, key=drag_key)
+                energy_per_period_rem[period.code] -= gap_energy
+
+                logger.debug(
+                    'Energy for hour {0} is {1}. {2} Energy {3}/{4}'.format(
+                        gap, aprox, period.code,
+                        energy_per_period_rem[period.code], energy
+                ))
+                pos = bisect.bisect_left(measures, ProfileHour(gap, 0, True, 0.0))
+                profile_hour = ProfileHour(TIMEZONE.normalize(gap), aprox, True, dragger[drag_key])
+
+                measures.insert(pos, profile_hour)
+
         profile = Profile(self.start_date, self.end_date, measures)
         return profile
 

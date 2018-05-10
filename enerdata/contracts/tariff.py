@@ -339,6 +339,49 @@ class T30A(Tariff):
         )
 
 
+class T30ANoFestivos(T30A):
+    def __init__(self):
+        super(T30ANoFestivos, self).__init__()
+        self.periods = (
+            TariffPeriod(
+                'P1', 'te',
+                winter_hours=[(18, 22)],
+                summer_hours=[(11, 15)]
+            ),
+            TariffPeriod(
+                'P2', 'te',
+                winter_hours=[(8, 18), (22, 24)],
+                summer_hours=[(8, 11), (15, 24)]
+            ),
+            TariffPeriod(
+                'P3', 'te',
+                winter_hours=[(0, 8)],
+                summer_hours=[(0, 8)]
+            ),
+            TariffPeriod(
+                'P1', 'tp'
+            ),
+            TariffPeriod(
+                'P2', 'tp'
+            ),
+            TariffPeriod(
+                'P3', 'tp'
+            )
+        )
+
+
+class T30A_one_period(T30A):
+    """
+    A 3.0A with one unique period
+    """
+    def __init__(self):
+        super(T30A_one_period, self).__init__()
+        self.periods = (
+            TariffPeriod('P1', 'te'),
+            TariffPeriod('P1', 'tp')
+        )
+
+
 class T31A(T30A):
     """
     3.1A Tariff
@@ -401,6 +444,18 @@ class T31A(T30A):
             raise NotAscendingPowers()
 
         return True
+
+
+class T31A_one_period(T31A):
+    """
+    A 3.1A with one unique period
+    """
+    def __init__(self):
+        super(T31A_one_period, self).__init__()
+        self.periods = (
+            TariffPeriod('P1', 'te'),
+            TariffPeriod('P1', 'tp')
+        )
 
 
 class T61A(Tariff):
@@ -520,6 +575,7 @@ def get_tariff_by_code(code):
         '2.1DHA': T21DHA,
         '2.1DHS': T21DHS,
         '3.0A': T30A,
+        '3.0A C2': T30ANoFestivos,
         '3.1A': T31A,
         '3.1A LB': T31A,
         '6.1A': T61A,

@@ -1,8 +1,9 @@
 from enerdata.profiles.profile import *
-from enerdata.contracts.tariff import T20DHA, T30A, T31A
+from enerdata.contracts.tariff import T20A, T20DHA, T20DHS, T21A, T21DHA, T21DHS, T30A, T31A, T30A_one_period, T31A_one_period
 from enerdata.metering.measure import *
 from expects import *
 import vcr
+import random
 
 
 
@@ -399,14 +400,13 @@ with description("When profiling"):
 
 with description('A profile'):
     with before.all:
-        import random
         measures = []
         start = TIMEZONE.localize(datetime(2015, 3, 1, 1))
         end = TIMEZONE.localize(datetime(2015, 4, 1, 0))
         start_idx = start
         while start_idx <= end:
             measures.append(ProfileHour(
-                TIMEZONE.normalize(start_idx), random.randint(0, 10), True
+                TIMEZONE.normalize(start_idx), random.randint(0, 10), True, 0.0
             ))
             start_idx += timedelta(hours=1)
         self.profile = Profile(start, end, measures)
@@ -442,3 +442,189 @@ with description('A profile'):
     with it('shouldn\'t have estimable hours'):
         estimable_hours = self.profile.get_estimable_hours(T20DHA())
         expect(sum(estimable_hours.values())).to(equal(0))
+
+
+with description("An estimation"):
+    with before.all:
+
+        self.measures = []
+        self.start = TIMEZONE.localize(datetime(2017, 9, 1))
+        self.end = TIMEZONE.localize(datetime(2017, 9, 5))
+
+        dates_difference_seconds = (self.end - self.start).total_seconds()
+        # Invoice hours with fixed first hour (timedelta performs natural substraction, so first hour must be handled)
+        self.expected_number_of_hours = (dates_difference_seconds / 3600) + 1
+        self.profile = Profile(self.start, self.end, self.measures)
+
+
+    with it("must analyze all hours if empty measures is provided"):
+        tariffs_list = [
+            {
+                "tariff": T20A,
+                "balance": {
+                    'P1': 20,
+                },
+            },
+            {
+                "tariff": T20DHA,
+                "balance": {
+                    'P1': 20,
+                    'P2': 10,
+                },
+            },
+            {
+                "tariff": T20DHS,
+                "balance": {
+                    'P1': 20,
+                    'P2': 10,
+                    'P3': 5,
+                },
+            },
+            {
+                "tariff": T21A,
+                "balance": {
+                    'P1': 20,
+                },
+            },
+            {
+                "tariff": T21DHA,
+                "balance": {
+                    'P1': 20,
+                    'P2': 10,
+                },
+            },
+            {
+                "tariff": T21DHS,
+                "balance": {
+                    'P1': 20,
+                    'P2': 10,
+                    'P3': 5,
+                },
+            },
+            {
+                "tariff": T30A,
+                "balance": {
+                    'P1': 100,
+                    'P2': 80,
+                    'P3': 60,
+                    'P4': 10,
+                    'P5': 10,
+                    'P6': 10,
+                },
+            },
+            {
+                "tariff": T30A_one_period,
+                "balance": {
+                    'P1': 100,
+                    'P2': 80,
+                    'P3': 60,
+                },
+            },
+            {
+                "tariff": T31A,
+                "balance": {
+                    'P1': 100,
+                    'P2': 80,
+                    'P3': 60,
+                    'P5': 15,
+                    'P6': 15,
+                },
+            },
+            {
+                "tariff": T31A_one_period,
+                "balance": {
+                    'P1': 100,
+                    'P2': 80,
+                    'P3': 60,
+                },
+            },
+        ]
+
+        for a_tariff in tariffs_list:
+            tariff = a_tariff["tariff"]()
+            periods = tariff.energy_periods
+            balance = a_tariff["balance"]
+            total_expected = sum(balance.values())
+
+            estimation = self.profile.estimate(tariff, balance)
+            total_estimated = sum([x.measure for x in estimation.measures])
+
+            # [!] Number of hours must match
+            assert self.expected_number_of_hours == len(estimation.measures), "Number of hours '{}' must match the expected '{}'".format(len(estimation.measures), self.expected_number_of_hours)
+
+            # [!] Energy must match
+            assert total_expected == total_estimated, "For tariff '{}' Total energy '{}' must match the expected '{}'".format(a_tariff["tariff"], total_estimated, total_expected)
+
+
+    with context("with accumulated energy"):
+        with it("must handle accumulated values"):
+            accumulated = Decimal(0.136)
+            drag_by_perdiod = True
+            self.profile = Profile(self.start, self.end, self.measures, accumulated, drag_by_perdiod)
+            tariff = T21DHS()
+            periods = tariff.energy_periods
+
+            # This scenario, with an initial accumulated of 0.636 will raise a -1 total energy with an ending accumulated of 0.333962070125
+            total_expected = 0
+            balance = {
+                'P1': 6.8,
+                'P2': 3,
+                'P3': 3.5,
+            }
+            total_expected = round(sum(balance.values()))
+            expected_last_accumulated = Decimal(0.3000000000036)
+
+            estimation = self.profile.estimate(tariff, balance)
+            total_estimated = sum([x.measure for x in estimation.measures])
+
+            # [!] Number of hours must match
+            assert self.expected_number_of_hours == len(estimation.measures), "Number of hours '{}' must match the expected '{}'".format(len(estimation.measures), self.expected_number_of_hours)
+
+            # [!] Energy must match
+            assert total_expected == total_estimated, "Total energy '{}' must match the expected '{}'".format(total_estimated, total_expected)
+
+            # [!] Last accumulated
+            last_accumulated = estimation.measures[-1].accumulated
+            assert float(last_accumulated) == float(expected_last_accumulated), "Last accumulated '{}' must match the expected '{}'".format(last_accumulated, expected_last_accumulated)
+
+            # [!] Now estimate it using a by hour dragging
+            # total energy will be +1kWh!
+            drag_by_perdiod = False
+            total_expected += 1
+            expected_last_accumulated = Decimal(2.2E-12)
+
+            self.profile = Profile(self.start, self.end, self.measures, accumulated, drag_by_perdiod)
+            estimation = self.profile.estimate(tariff, balance)
+            total_estimated_by_hour = sum([x.measure for x in estimation.measures])
+            last_accumulated_by_hour = estimation.measures[-1].accumulated
+            assert total_expected == total_estimated_by_hour, "Total energy dragged by hour '{}' must match the expected +1 '{}'".format(total_estimated_by_hour, total_expected)
+            assert float(last_accumulated_by_hour) == float(expected_last_accumulated), "Last accumulated by hour '{}' must match the expected '{}'".format(last_accumulated_by_hour, expected_last_accumulated)
+
+
+        with it("must handle incorrect accumulated values"):
+            it_breaks = False
+            accumulated = 2
+            try:
+                self.profile = Profile(self.start, self.end, self.measures, accumulated)
+            except:
+                it_breaks = True
+
+            assert it_breaks, "A >1 accumulated must not work"
+
+            it_breaks = False
+            accumulated = -5
+            try:
+                self.profile = Profile(self.start, self.end, self.measures, accumulated)
+            except:
+                it_breaks = True
+
+            assert it_breaks, "A <-1 accumulated must not work"
+
+            it_breaks = False
+            accumulated = "x"
+            try:
+                self.profile = Profile(self.start, self.end, self.measures, accumulated)
+            except:
+                it_breaks = True
+
+            assert it_breaks, "A non numeric accumulated must not work"
