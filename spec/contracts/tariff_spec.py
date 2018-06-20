@@ -143,11 +143,13 @@ with context('A tariff'):
         tari_T30A = T30A()
         expect(lambda: tari_T30A.evaluate_powers([-10, -5, 0])).to(
             raise_error(NotPositivePower))
-        expect(lambda: tari_T30A.evaluate_powers([10, 13, 15])).to(
+        expect(lambda: tari_T30A.evaluate_powers([15, 15, 15])).to(
             raise_error(IncorrectMaxPower))
-        expect(lambda: tari_T30A.evaluate_powers([10, 13, 16])).to(
+        expect(lambda: tari_T30A.evaluate_powers([16, 17.1, 16])).to(
             raise_error(NotNormalizedPower))
-        assert tari_T30A.evaluate_powers([2.304, 2.304, 16.454])
+        expect(lambda: tari_T30A.evaluate_powers([14, 15.242, 15.242])).to(
+            raise_error(IncorrectMinPower))
+        assert tari_T30A.evaluate_powers([15.242, 15.242, 16.454])
         expect(lambda: tari_T30A.evaluate_powers([16, 17])).to(
             raise_error(IncorrectPowerNumber, 'Expected 3 power(s) and got 2'))
 

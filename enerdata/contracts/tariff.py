@@ -39,6 +39,7 @@ class Tariff(object):
         self.code = code
         self._periods = tuple()
         self.cof = None
+        self.require_powers_above_min_power = False
 
     @property
     def periods(self):
@@ -125,6 +126,12 @@ class Tariff(object):
     def is_maximum_power_correct(self, max_pow):
         return self.min_power < max_pow <= self.max_power
 
+    def is_minimum_powers_correct(self, min_pow):
+        if self.require_powers_above_min_power:
+            return self.min_power < min_pow <= self.max_power
+        else:
+            return True
+
     @staticmethod
     def are_powers_normalized(powers):
         np = NormalizedPower()
@@ -141,6 +148,8 @@ class Tariff(object):
             raise IncorrectPowerNumber(len(powers), len(self.power_periods))
         if not self.is_maximum_power_correct(max(powers)):
             raise IncorrectMaxPower(max(powers), self.min_power, self.max_power)
+        if not self.is_minimum_powers_correct(min(powers)):
+            raise IncorrectMinPower(min(powers), self.min_power, self.max_power)
         if not self.are_powers_normalized(powers):
             raise NotNormalizedPower()
 
@@ -292,6 +301,7 @@ class T30A(Tariff):
         self.cof = 'C'
         self.min_power = 15
         self.max_power = 1000000
+        self.require_powers_above_min_power = True
         self.type = 'BT'
         self.periods = (
             TariffPeriod(
@@ -393,6 +403,7 @@ class T31A(T30A):
         self.min_power = 1
         self.max_power = 450
         self.type = 'AT'
+        self.require_powers_above_min_power = False
         self.periods = (
             TariffPeriod(
                 'P1', 'te',
@@ -545,6 +556,18 @@ class IncorrectPowerNumber(Exception):
 class IncorrectMaxPower(Exception):
     def __init__(self, power, min_power, max_power):
         super(IncorrectMaxPower, self).__init__(
+            'Power {0} is not between {1} and {2}'.format(
+                power, min_power, max_power
+            )
+        )
+        self.power = power
+        self.min_power = min_power
+        self.max_power = max_power
+
+
+class IncorrectMinPower(Exception):
+    def __init__(self, power, min_power, max_power):
+        super(IncorrectMinPower, self).__init__(
             'Power {0} is not between {1} and {2}'.format(
                 power, min_power, max_power
             )
