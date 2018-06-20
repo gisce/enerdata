@@ -39,7 +39,7 @@ class Tariff(object):
         self.code = code
         self._periods = tuple()
         self.cof = None
-        self.require_powers_avove_min_power = False
+        self.require_powers_above_min_power = False
 
     @property
     def periods(self):
@@ -127,7 +127,7 @@ class Tariff(object):
         return self.min_power < max_pow <= self.max_power
 
     def is_minimum_powers_correct(self, min_pow):
-        if self.require_powers_avove_min_power:
+        if self.require_powers_above_min_power:
             return self.min_power < min_pow <= self.max_power
         else:
             return True
@@ -301,7 +301,7 @@ class T30A(Tariff):
         self.cof = 'C'
         self.min_power = 15
         self.max_power = 1000000
-        self.require_powers_avove_min_power = True
+        self.require_powers_above_min_power = True
         self.type = 'BT'
         self.periods = (
             TariffPeriod(
@@ -403,7 +403,7 @@ class T31A(T30A):
         self.min_power = 1
         self.max_power = 450
         self.type = 'AT'
-        self.require_powers_avove_min_power = False
+        self.require_powers_above_min_power = False
         self.periods = (
             TariffPeriod(
                 'P1', 'te',
