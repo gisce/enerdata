@@ -368,7 +368,7 @@ class Profile(object):
         measures = [x for x in self.measures if x.valid]
         start = self.start_date
         end = self.end_date
-        cofs = self.profile_class.get_range(start, end)
+        cofs = self.profile_class.get_range(start, end - relativedelta(days=1))
         cofs = Coefficients(cofs)
         cofs_per_period = Counter()
 
