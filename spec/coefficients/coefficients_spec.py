@@ -18,6 +18,8 @@ def get_data_ranges(start, end):
         start += relativedelta(months=1)
     return cofs
 
+def final_day_of_month(end):
+    return end.day == 1 and end.hour >= 1
 
 with description('Downloading coefficients '):
     with it('it should not include the final month'):
@@ -30,26 +32,41 @@ with description('Downloading coefficients '):
     with it('Final date end of month'):
         di = datetime(2018, 3, 24, 0, 0)
         df = datetime(2018, 6, 1, 0, 0)
-        assert get_data_ranges(di, df - relativedelta(days=1)) == DATE_SET
+        if final_day_of_month(df):
+            assert get_data_ranges(di, df) == DATE_SET
+        else:
+            assert get_data_ranges(di, df - relativedelta(days=1)) == DATE_SET
 
     with it('Final date start of month'):
         di = datetime(2018, 3, 24, 0, 0)
         df = datetime(2018, 5, 1, 1, 0)
-        assert get_data_ranges(di, df - relativedelta(days=1)) == DATE_SET
+        if final_day_of_month(df):
+            assert get_data_ranges(di, df) == DATE_SET
+        else:
+            assert get_data_ranges(di, df - relativedelta(days=1)) == DATE_SET
 
     with it('Final date between month'):
         di = datetime(2018, 3, 24, 0, 0)
         df = datetime(2018, 5, 15, 0, 0)
-        assert get_data_ranges(di, df - relativedelta(days=1)) == DATE_SET
+        if final_day_of_month(df):
+            assert get_data_ranges(di, df) == DATE_SET
+        else:
+            assert get_data_ranges(di, df - relativedelta(days=1)) == DATE_SET
 
     with it('One month invoice'):
         di = datetime(2018, 1, 1, 1, 0)
-        df = datetime(2018, 1, 31, 0, 0)
-        assert get_data_ranges(
-            di, df - relativedelta(days=1)) == ONE_MONTH_DATE_SET
+        df = datetime(2018, 2, 1, 0, 0)
+        if final_day_of_month(df):
+            assert get_data_ranges(di, df) == ONE_MONTH_DATE_SET
+        else:
+            assert get_data_ranges(
+                di, df - relativedelta(days=1)) == ONE_MONTH_DATE_SET
 
     with it('One day invoice'):
         di = datetime(2018, 1, 1, 1, 0)
         df = datetime(2018, 1, 2, 0, 0)
-        assert get_data_ranges(
-            di, df - relativedelta(days=1)) == ONE_MONTH_DATE_SET
+        if final_day_of_month(df):
+            assert get_data_ranges(di, df) == ONE_MONTH_DATE_SET
+        else:
+            assert get_data_ranges(
+                di, df - relativedelta(days=1)) == ONE_MONTH_DATE_SET
