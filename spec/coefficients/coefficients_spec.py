@@ -32,6 +32,11 @@ with description('Downloading coefficients '):
         df = datetime(2018, 6, 1, 0, 0)
         assert get_data_ranges(di, df - relativedelta(days=1)) == DATE_SET
 
+    with it('Final date start of month'):
+        di = datetime(2018, 3, 24, 0, 0)
+        df = datetime(2018, 5, 1, 1, 0)
+        assert get_data_ranges(di, df - relativedelta(days=1)) == DATE_SET
+
     with it('Final date between month'):
         di = datetime(2018, 3, 24, 0, 0)
         df = datetime(2018, 5, 15, 0, 0)
