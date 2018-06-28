@@ -308,9 +308,9 @@ class Profile(object):
     def total_consumption(self):
         return sum(x[1] for x in self.measures)
 
-    @staticmethod
-    def final_day_of_month(date_end):
-        return date_end.day == 1 and date_end.hour >= 1
+    @property
+    def first_day_of_month(self):
+        return self.end_date.day == 1 and self.end_date.hour > 0
 
     def get_hours_per_period(self, tariff, only_valid=False):
         assert isinstance(tariff, Tariff)
@@ -373,7 +373,7 @@ class Profile(object):
         start = self.start_date
         end = self.end_date
 
-        if self.final_day_of_month(end):
+        if self.first_day_of_month:
             cofs = self.profile_class.get_range(start, end)
         else:
             cofs = self.profile_class.get_range(
