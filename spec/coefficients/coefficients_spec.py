@@ -114,3 +114,6 @@ with description('Profiling...'):
             estimation = profile.estimate(tariff, balance)
         except Exception as err:
             assert err.message != "Profiles from REE not found"
+        finally:
+            assert start == estimation.start_date
+            assert end == estimation.end_date
