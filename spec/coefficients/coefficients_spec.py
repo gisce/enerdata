@@ -1,7 +1,7 @@
-from enerdata.datetime import datetime
-from dateutil.relativedelta import relativedelta
 from enerdata.profiles.profile import *
 from enerdata.datetime.station import *
+from enerdata.contracts.tariff import T20A
+
 
 ONE_MONTH_DATE_SET = ['1/2018']
 DATE_SET = ['3/2018', '4/2018', '5/2018']
@@ -70,3 +70,47 @@ with description('Downloading coefficients '):
         else:
             assert get_data_ranges(
                 di, df - relativedelta(days=1)) == ONE_MONTH_DATE_SET
+
+with description('Profiling...'):
+    with before.all:
+        # Check that the get_coefs changes do not break the profiling"
+        self.measures = []
+        self.expected_hours = 744
+
+    with it("Profile a full month"):
+        start = TIMEZONE.localize(datetime(2018, 5, 1, 1))
+        end = TIMEZONE.localize(datetime(2018, 6, 1, 0))
+        tariff = T20A()
+        accumulated = 0
+        balance = {
+            'P1': 6.8,
+            'P2': 3,
+            'P3': 3.5,
+        }
+
+        profile = Profile(start, end, self.measures, accumulated)
+        estimation = profile.estimate(tariff, balance)
+
+        assert self.expected_hours == len(estimation.measures)
+        assert start == estimation.start_date
+        assert end == estimation.end_date
+
+    with it("Profile with current date to download REE coefficients last month"):
+        end_year = datetime.now().year
+        end_month = datetime.now().month
+        start = TIMEZONE.localize(datetime(2018, 5, 1, 1))
+        end = TIMEZONE.localize(datetime(end_year, end_month, 1, 0))
+
+        tariff = T20A()
+        accumulated = 0
+        balance = {
+            'P1': 6.8,
+            'P2': 3,
+            'P3': 3.5,
+        }
+
+        profile = Profile(start, end, self.measures, accumulated)
+        try:
+            estimation = profile.estimate(tariff, balance)
+        except Exception as err:
+            assert err.message != "Profiles from REE not found"
