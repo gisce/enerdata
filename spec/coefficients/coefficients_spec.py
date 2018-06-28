@@ -96,6 +96,24 @@ with description('Profiling...'):
         assert start == estimation.start_date
         assert end == estimation.end_date
 
+    with it("Profile with first day of month included"):
+        start = TIMEZONE.localize(datetime(2018, 1, 1, 1))
+        end = TIMEZONE.localize(datetime(2018, 2, 1, 1))
+        tariff = T20A()
+        accumulated = 0
+        balance = {
+            'P1': 6.8,
+            'P2': 3,
+            'P3': 3.5,
+        }
+
+        profile = Profile(start, end, self.measures, accumulated)
+        estimation = profile.estimate(tariff, balance)
+
+        assert self.expected_hours + 1 == len(estimation.measures)
+        assert start == estimation.start_date
+        assert end == estimation.end_date
+
     with it("Profile with current date to download REE coefficients last month"):
         end_year = datetime.now().year
         end_month = datetime.now().month
