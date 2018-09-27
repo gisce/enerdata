@@ -6,6 +6,7 @@ from enerdata.contracts.tariff import T20A
 ONE_MONTH_DATE_SET = ['1/2018']
 DATE_SET = ['3/2018', '4/2018', '5/2018']
 
+
 def get_data_ranges(start, end):
     from datetime import datetime
     from dateutil.relativedelta import relativedelta
@@ -17,6 +18,7 @@ def get_data_ranges(start, end):
         cofs.append(cof)
         start += relativedelta(months=1)
     return cofs
+
 
 def first_day_of_month(end):
     return end.day == 1 and end.hour > 0
@@ -133,3 +135,17 @@ with description('Profiling...'):
             estimation = profile.estimate(tariff, balance)
         except Exception as err:
             assert err.message != "Profiles from REE not found"
+
+    with it("Profile not habitual hours"):
+        start = TIMEZONE.localize(datetime(2018, 1, 1, 5))
+        end = TIMEZONE.localize(datetime(2018, 2, 1, 11))
+        tariff = T20A()
+        accumulated = 0
+        balance = {
+            'P1': 6.8,
+            'P2': 3,
+            'P3': 3.5,
+        }
+
+        assert start == estimation.start_date
+        assert end == estimation.end_date
