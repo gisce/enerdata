@@ -372,8 +372,10 @@ class Profile(object):
         measures = [x for x in self.measures if x.valid]
         start = self.start_date
         end = self.end_date
-
-        if self.first_day_of_month:
+        # - REE cofs get from (year/month)
+        # - Simel cofs get from (year/month/day hour) - can't substract one day
+        if self.first_day_of_month or not issubclass(self.profile_class,
+                                                     REEProfile):
             cofs = self.profile_class.get_range(start, end)
         else:
             cofs = self.profile_class.get_range(
