@@ -147,5 +147,7 @@ with description('Profiling...'):
             'P3': 3.5,
         }
 
+        profile = Profile(start, end, self.measures, accumulated)
+        estimation = profile.estimate(tariff, balance)
         assert start == estimation.start_date
         assert end == estimation.end_date
