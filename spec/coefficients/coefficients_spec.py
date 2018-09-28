@@ -24,15 +24,15 @@ def first_day_of_month(end):
     return end.day == 1 and end.hour > 0
 
 
-with description('Downloading coefficients '):
-    with it('it should not include the final month'):
+with description('Downloading coefficients fully months'):
+    with it("mustn't include the final month"):
         coeff = REEProfile.get_range(
             datetime(2018, 3, 24, 0, 0),
             datetime(2018, 5, 1, 0, 0) - relativedelta(days=1)
         )
         assert coeff[-1].hour.month == 5
 
-    with it('Final date end of month'):
+    with it('must include final date end of month'):
         di = datetime(2018, 3, 24, 0, 0)
         df = datetime(2018, 6, 1, 0, 0)
         if first_day_of_month(df):
@@ -40,7 +40,7 @@ with description('Downloading coefficients '):
         else:
             assert get_data_ranges(di, df - relativedelta(days=1)) == DATE_SET
 
-    with it('Final date start of month'):
+    with it('must include final date start of month'):
         di = datetime(2018, 3, 24, 0, 0)
         df = datetime(2018, 5, 1, 1, 0)
         if first_day_of_month(df):
@@ -48,7 +48,7 @@ with description('Downloading coefficients '):
         else:
             assert get_data_ranges(di, df - relativedelta(days=1)) == DATE_SET
 
-    with it('Final date between month'):
+    with it('must include final date between month'):
         di = datetime(2018, 3, 24, 0, 0)
         df = datetime(2018, 5, 15, 0, 0)
         if first_day_of_month(df):
@@ -56,7 +56,7 @@ with description('Downloading coefficients '):
         else:
             assert get_data_ranges(di, df - relativedelta(days=1)) == DATE_SET
 
-    with it('One month invoice'):
+    with it('must include one month invoice'):
         di = datetime(2018, 1, 1, 1, 0)
         df = datetime(2018, 2, 1, 0, 0)
         if first_day_of_month(df):
@@ -65,7 +65,7 @@ with description('Downloading coefficients '):
             assert get_data_ranges(
                 di, df - relativedelta(days=1)) == ONE_MONTH_DATE_SET
 
-    with it('One day invoice'):
+    with it('must include one day invoice'):
         di = datetime(2018, 1, 1, 1, 0)
         df = datetime(2018, 1, 2, 0, 0)
         if first_day_of_month(df):
