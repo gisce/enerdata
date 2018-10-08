@@ -207,7 +207,7 @@ class REEProfile(object):
                 logger.debug('Using CACHE for REEProfile {0}'.format(key))
                 return cls._CACHE[key]
             perff_file = 'PERFF_%(key)s.gz' % locals()
-            conn = httplib.HTTPConnection(cls.HOST)
+            conn = httplib.HTTPSConnection(cls.HOST)
             conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
             logger.debug('Downloading REEProfile from {0}/{1}'.format(
                 cls.PATH, perff_file
