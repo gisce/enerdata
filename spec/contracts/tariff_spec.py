@@ -132,7 +132,7 @@ with context('A tariff'):
             raise_error(NotPositivePower))
         expect(lambda: tari_T20A.evaluate_powers([0])).to(
             raise_error(NotPositivePower))
-        expect(lambda: tari_T20A.evaluate_powers([5])).to(
+        expect(lambda: tari_T20A.evaluate_powers([5.55])).to(
             raise_error(NotNormalizedPower))
         assert tari_T20A.evaluate_powers([5.5])
         expect(lambda: tari_T20A.evaluate_powers([5, 7])).to(
