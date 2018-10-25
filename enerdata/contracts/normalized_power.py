@@ -120,20 +120,25 @@ NORMALIZED_POWERS = {
     43648: ('3x400/230', '63')
 }
 
+NOT_NORMALIZED_100 = dict([(p, (None, None)) for p in range(100, 15001, 100)
+                           if p not in NORMALIZED_POWERS])
+
+ALL_POWERS = NOT_NORMALIZED_100.copy()
+ALL_POWERS.update(NORMALIZED_POWERS)
 
 class NormalizedPower(object):
 
     def get_volt_int(self, pot):
-        volt_int = NORMALIZED_POWERS.get(pot, None)
+        volt_int = ALL_POWERS.get(pot, None)
         if volt_int is None:
             raise ValueError('The given power is not normalized')
         return volt_int
 
     def is_normalized(self, pot):
-        return pot in NORMALIZED_POWERS
+        return pot in ALL_POWERS
 
     def get_norm_powers(self, pot_min, pot_max):
-        for norm_pow in sorted(NORMALIZED_POWERS):
+        for norm_pow in sorted(ALL_POWERS):
             if pot_min < norm_pow <= pot_max:
                 yield norm_pow
             elif norm_pow > pot_max:
