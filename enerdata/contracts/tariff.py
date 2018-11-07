@@ -394,9 +394,9 @@ class T30A_one_period(T30A):
 
 class T31A(T30A):
     """
-    3.1A Tariff
+    3.1A Tariff patched with 3.1ALB
     """
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(T31A, self).__init__()
         self.code = '3.1A'
         self.cof = 'C'
@@ -404,6 +404,19 @@ class T31A(T30A):
         self.max_power = 450
         self.type = 'AT'
         self.require_powers_above_min_power = False
+        if kwargs:
+            self.LB = kwargs['LB']
+            self.kva = kwargs['kva']
+        else:
+            self.LB = False
+        self.hours_by_period = {
+            'P1': 6,
+            'P2': 10,
+            'P3': 8,
+            'P4': 0,
+            'P5': 6,
+            'P6': 18
+        }
         self.periods = (
             TariffPeriod(
                 'P1', 'te',
