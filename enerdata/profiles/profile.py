@@ -317,11 +317,12 @@ class Profile(object):
     def T31A_LB_losses(self):
         return 0.04
 
-    def apply_31A_LB_cof(self, balance, start_date, end_date, holidays, kva, tariff):
+    def apply_31A_LB_cof(self, balance, start_date, end_date, kva, tariff):
         """balance: {'P1': x, 'P2': y...}
         period_hours = {'P1': 8...}"""
         consumptions = balance.copy()
         period_hours = tariff.hours_by_period
+        holidays = []
 
         festius = 1
         laborables = 1
@@ -394,6 +395,10 @@ class Profile(object):
             balance = {
                 "P1": sum([values for values in balance.values()])
             }
+        if isinstance(tariff, T31A) and tariff.LB:
+            balance = self.apply_31A_LB_cof(
+                balance, self.start_date, self.end_date, tariff.kva, tariff
+            )
 
         measures = [x for x in self.measures if x.valid]
         start = self.start_date
