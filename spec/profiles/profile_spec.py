@@ -555,6 +555,26 @@ with description("An estimation"):
             # [!] Energy must match
             assert total_expected == total_estimated, "For tariff '{}' Total energy '{}' must match the expected '{}'".format(a_tariff["tariff"], total_estimated, total_expected)
 
+    with it("3.1A_LB"):
+        the_tariff = {
+            "tariff": T31A,
+            "balance": {
+                'P1': 100,
+                'P2': 80,
+                'P3': 60,
+                'P5': 15,
+                'P6': 15,
+                }
+        }
+        tariff = the_tariff["tariff"]()
+        periods = tariff.energy_periods
+        balance = the_tariff["balance"]
+        total_expected = sum(balance.values())
+
+        estimation = self.profile.estimate(tariff, balance)
+        total_estimated = sum([x.measure for x in estimation.measures])
+        assert total_expected != total_estimated, "3.1A_LB"
+
 
     with context("with accumulated energy"):
         with it("must handle accumulated values"):

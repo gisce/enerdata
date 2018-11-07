@@ -13,7 +13,8 @@ from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 
 from enerdata.profiles import Dragger
-from enerdata.contracts.tariff import Tariff, T30A_one_period, T31A_one_period
+from enerdata.contracts.tariff import (Tariff, T30A_one_period,
+                                       T31A_one_period, T31A)
 from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure, EnergyMeasure
 
