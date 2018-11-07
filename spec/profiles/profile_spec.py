@@ -1,5 +1,6 @@
 from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import T20A, T20DHA, T20DHS, T21A, T21DHA, T21DHS, T30A, T31A, T30A_one_period, T31A_one_period
+from enerdata.datetime.holidays import get_holidays
 from enerdata.metering.measure import *
 from expects import *
 import vcr
@@ -556,22 +557,19 @@ with description("An estimation"):
             assert total_expected == total_estimated, "For tariff '{}' Total energy '{}' must match the expected '{}'".format(a_tariff["tariff"], total_estimated, total_expected)
 
     with it("3.1A_LB"):
-        the_tariff = {
-            "tariff": T31A,
-            "balance": {
-                'P1': 100,
-                'P2': 80,
-                'P3': 60,
-                'P5': 15,
-                'P6': 15,
-                }
+        kwargs = {'LB': True, 'kva': 1}
+        the_tariff = T31A(**kwargs)
+        balance = {
+            'P1': 100,
+            'P2': 80,
+            'P3': 60,
+            'P5': 15,
+            'P6': 15
         }
-        tariff = the_tariff["tariff"]()
-        periods = tariff.energy_periods
-        balance = the_tariff["balance"]
+        periods = the_tariff.energy_periods
         total_expected = sum(balance.values())
 
-        estimation = self.profile.estimate(tariff, balance)
+        estimation = self.profile.estimate(the_tariff, balance)
         total_estimated = sum([x.measure for x in estimation.measures])
         assert total_expected != total_estimated, "3.1A_LB"
 
