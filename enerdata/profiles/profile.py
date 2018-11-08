@@ -17,6 +17,9 @@ from enerdata.contracts.tariff import (Tariff, T30A_one_period,
                                        T31A_one_period, T31A)
 from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure, EnergyMeasure
+from enerdata.datetime.holidays import get_holidays
+from enerdata.datetime.work_and_holidays import get_num_of_workdays_holidays
+
 
 logger = logging.getLogger(__name__)
 
@@ -322,16 +325,17 @@ class Profile(object):
         period_hours = {'P1': 8...}"""
         consumptions = balance.copy()
         period_hours = tariff.hours_by_period
-        holidays = []
+        holidays_list = get_holidays(start_date.year)
+        (workdays, holidays) = get_num_of_workdays_holidays(
+            start_date, end_date, holidays_list
+        )
 
-        festius = 1
-        laborables = 1
         cofs = {}
         for period in period_hours:
             if period > 'P3':
-                cofs[period] = period_hours.get(period, 0) * festius
+                cofs[period] = period_hours.get(period, 0) * holidays
             else:
-                cofs[period] = period_hours.get(period, 0) * laborables
+                cofs[period] = period_hours.get(period, 0) * workdays
         for period, consumption in balance.items():
             consumptions[period] = round(
                 consumption * (1 + self.T31A_LB_losses), 2
