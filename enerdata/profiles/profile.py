@@ -316,13 +316,8 @@ class Profile(object):
     def first_day_of_month(self):
         return self.end_date.day == 1 and self.end_date.hour > 0
 
-    @property
-    def T31A_LB_losses(self):
-        return 0.04
-
-    def apply_31A_LB_cof(self, balance, start_date, end_date, kva, tariff):
-        """balance: {'P1': x, 'P2': y...}
-        period_hours = {'P1': 8...}"""
+    @staticmethod
+    def apply_31A_LB_cof(balance, start_date, end_date, kva, tariff):
         consumptions = balance.copy()
         period_hours = tariff.hours_by_period
         holidays_list = get_holidays(start_date.year)
@@ -338,7 +333,7 @@ class Profile(object):
                 cofs[period] = period_hours.get(period, 0) * workdays
         for period, consumption in balance.items():
             consumptions[period] = round(
-                consumption * (1 + self.T31A_LB_losses), 2
+                consumption * (1 + tariff.T31A_LB_losses), 2
             ) + round(0.01 * cofs[period] * kva, 2)
 
         return consumptions
@@ -399,6 +394,7 @@ class Profile(object):
             balance = {
                 "P1": sum([values for values in balance.values()])
             }
+        # Get balance for T31ALB
         if isinstance(tariff, T31A) and tariff.LB:
             balance = self.apply_31A_LB_cof(
                 balance, self.start_date, self.end_date, tariff.kva, tariff
