@@ -406,6 +406,8 @@ class T31A(T30A):
         self.type = 'AT'
         self.require_powers_above_min_power = False
         if kva:
+            if not isinstance(kva, int or float):
+                raise ValueError('kva must be an enter value')
             self.LB = True
             self.kva = kva
         else:

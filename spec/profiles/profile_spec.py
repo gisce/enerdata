@@ -94,6 +94,19 @@ with description("A coeficient"):
 
 
 with description("When profiling"):
+    with before.all:
+        measures = []
+        start = TIMEZONE.localize(datetime(2015, 3, 1, 1))
+        end = TIMEZONE.localize(datetime(2015, 4, 1, 0))
+        start_idx = start
+        while start_idx <= end:
+            measures.append(ProfileHour(
+                TIMEZONE.normalize(start_idx), random.randint(0, 10), True, 0.0
+            ))
+            start_idx += timedelta(hours=1)
+        self.profile = Profile(start, end, measures)
+        self.start_date = start
+        self.end_date = end
 
     with it('the total energy must be the sum of the profiled energy'):
         c = Coefficients(REEProfile.get(2014, 10))
@@ -399,6 +412,37 @@ with description("When profiling"):
             assert cons['P5'] == 0
             assert cons['P6'] == 0
 
+    with context('A 3.1A LB Tariff'):
+        with it('must indicate the kva with an integer'):
+            def createT31A_LB():
+                T31A(kva='1')
+
+            expect(createT31A_LB).to(raise_error(ValueError, 'kva must be an enter value'))
+
+        with it('must activate LB flag'):
+            the_tariff = T31A(kva=1)
+
+            assert the_tariff.LB
+
+        with it('must the initial_balance be different to result balance'):
+            the_tariff = T31A()
+
+            kva = 1
+            initial_balance = {
+                'P1': 100,
+                'P2': 80,
+                'P3': 60,
+                'P4': 12,
+                'P5': 15,
+                'P6': 15,
+            }
+            res = self.profile.apply_31A_LB_cof(
+                initial_balance, self.start_date, self.end_date, kva, the_tariff
+            )
+
+            assert res != initial_balance
+
+
 with description('A profile'):
     with before.all:
         measures = []
@@ -556,8 +600,8 @@ with description("An estimation"):
             # [!] Energy must match
             assert total_expected == total_estimated, "For tariff '{}' Total energy '{}' must match the expected '{}'".format(a_tariff["tariff"], total_estimated, total_expected)
 
-    with it("3.1A_LB"):
-        kwargs = {'LB': True, 'kva': 1}
+    with it("must calculate the consumptions for periods in 3.1A LB tariffs"):
+        kwargs = {'kva': 1}
         the_tariff = T31A(**kwargs)
         balance = {
             'P1': 100,

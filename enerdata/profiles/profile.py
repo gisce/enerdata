@@ -333,7 +333,7 @@ class Profile(object):
                 cofs[period] = period_hours.get(period, 0) * workdays
         for period, consumption in balance.items():
             consumptions[period] = round(
-                consumption * (1 + tariff.T31A_LB_losses), 2
+                consumption * (1 + tariff.losses), 2
             ) + round(0.01 * cofs[period] * kva, 2)
 
         return consumptions
