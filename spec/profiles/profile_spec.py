@@ -617,6 +617,43 @@ with description("An estimation"):
         total_estimated = sum([x.measure for x in estimation.measures])
         assert total_expected != total_estimated, "3.1A_LB"
 
+    with it("must apply the penalty in 3.1A LB Tariffs"):
+        fake_contract = {
+            'start': TIMEZONE.localize(datetime(2017, 11, 1, 1, 0, 0)),
+            'end': TIMEZONE.localize(datetime(2017, 12, 1, 0, 0, 0)),
+            'kva': 50,
+            'expected_profiled': 1244,
+            'expected_hours': 720
+        }
+        measures = []
+        profile = Profile(fake_contract['start'], fake_contract['end'], measures)
+
+        the_tariff = T31A(kva=fake_contract['kva'])
+        initial_balance = {
+            'P1': 56,
+            'P2': 231,
+            'P3': 348,
+            'P4': 0,
+            'P5': 10,
+            'P6': 205
+        }
+
+        estimation = profile.estimate(the_tariff, initial_balance)
+
+        # by total
+        total = sum([x.measure for x in estimation.measures])
+        total_hours = len([x.date for x in estimation.measures])
+
+        # by period
+        res = profile.apply_31A_LB_cof(
+            initial_balance, fake_contract['start'], fake_contract['end'],
+            fake_contract['kva'], the_tariff
+        )
+        sum_periods = sum([x for x in res.values()])
+
+        assert fake_contract['expected_hours'] == total_hours, "has not profiled all hours"
+        assert int(total) == fake_contract['expected_profiled'], "total not profiled correctly"
+        assert int(sum_periods) == fake_contract['expected_profiled'], "total per period correctly profiled"
 
     with context("with accumulated energy"):
         with it("must handle accumulated values"):
