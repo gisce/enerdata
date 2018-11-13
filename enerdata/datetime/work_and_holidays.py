@@ -7,7 +7,7 @@ def get_num_of_workdays_holidays(init_date, end_date, holidays_list):
     holidays = 0
 
     _date = init_date
-    while _date <= init_date:
+    while _date <= end_date:
         if (calendar.weekday(_date.year, _date.month, _date.day) in (5, 6)
         ) or (_date.date() in holidays_list):
             holidays += 1
