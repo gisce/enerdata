@@ -395,7 +395,7 @@ class Profile(object):
                 "P1": sum([values for values in balance.values()])
             }
         # Get balance for T31ALB
-        if isinstance(tariff, T31A) and tariff.LB:
+        if isinstance(tariff, T31A) and tariff.low_voltage_measure:
             balance = self.apply_31A_LB_cof(
                 balance, self.start_date, self.end_date, tariff.kva, tariff
             )
