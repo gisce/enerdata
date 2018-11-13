@@ -413,21 +413,9 @@ with description("When profiling"):
             assert cons['P6'] == 0
 
     with context('A 3.1A LB Tariff'):
-        with it('must indicate the kva with an integer'):
-            def createT31A_LB():
-                T31A(kva='1')
-
-            expect(createT31A_LB).to(raise_error(ValueError, 'kva must be an enter value'))
-
-        with it('must activate LB flag'):
-            the_tariff = T31A(kva=1)
-
-            assert the_tariff.LB
-
         with it('must the initial_balance be different to result balance'):
-            the_tariff = T31A()
-
             kva = 1
+            the_tariff = T31A(kva=kva)
             initial_balance = {
                 'P1': 100,
                 'P2': 80,
@@ -441,7 +429,6 @@ with description("When profiling"):
             )
 
             assert res != initial_balance
-
 
 with description('A profile'):
     with before.all:
