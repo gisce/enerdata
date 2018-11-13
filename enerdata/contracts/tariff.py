@@ -408,10 +408,10 @@ class T31A(T30A):
         if kva:
             if not isinstance(kva, int or float):
                 raise ValueError('kva must be an enter value')
-            self.LB = True
+            self.low_voltage_measure = True
             self.kva = kva
         else:
-            self.LB = False
+            self.low_voltage_measure = False
         self.hours_by_period = {
             'P1': 6,
             'P2': 10,

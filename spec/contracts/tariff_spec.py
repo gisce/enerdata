@@ -285,7 +285,7 @@ with context('A 3.1A LB Tariff'):
     with it('must activate LB flag'):
         the_tariff = T31A(kva=1)
 
-        assert the_tariff.LB
+        assert the_tariff.low_voltage_measure
 
 
 
