@@ -587,23 +587,6 @@ with description("An estimation"):
             # [!] Energy must match
             assert total_expected == total_estimated, "For tariff '{}' Total energy '{}' must match the expected '{}'".format(a_tariff["tariff"], total_estimated, total_expected)
 
-    with it("must calculate the consumptions for periods in 3.1A LB tariffs"):
-        kwargs = {'kva': 1}
-        the_tariff = T31A(**kwargs)
-        balance = {
-            'P1': 100,
-            'P2': 80,
-            'P3': 60,
-            'P5': 15,
-            'P6': 15
-        }
-        periods = the_tariff.energy_periods
-        total_expected = sum(balance.values())
-
-        estimation = self.profile.estimate(the_tariff, balance)
-        total_estimated = sum([x.measure for x in estimation.measures])
-        assert total_expected != total_estimated, "3.1A_LB"
-
     with it("must apply the penalty in 3.1A LB Tariffs"):
         fake_contract = {
             'start': TIMEZONE.localize(datetime(2017, 11, 1, 1, 0, 0)),
