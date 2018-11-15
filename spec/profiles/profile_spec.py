@@ -424,8 +424,8 @@ with description("When profiling"):
                 'P5': 15,
                 'P6': 15,
             }
-            res = self.profile.apply_31A_LB_cof(
-                initial_balance, self.start_date, self.end_date, kva, the_tariff
+            res = the_tariff.apply_31A_LB_cof(
+                initial_balance, self.start_date, self.end_date
             )
 
             assert res != initial_balance
@@ -615,9 +615,8 @@ with description("An estimation"):
         total_hours = len([x.date for x in estimation.measures])
 
         # by period
-        res = profile.apply_31A_LB_cof(
-            initial_balance, fake_contract['start'], fake_contract['end'],
-            fake_contract['kva'], the_tariff
+        res = the_tariff.apply_31A_LB_cof(
+            initial_balance, fake_contract['start'], fake_contract['end']
         )
         sum_periods = sum([x for x in res.values()])
 

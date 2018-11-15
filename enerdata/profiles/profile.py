@@ -316,28 +316,6 @@ class Profile(object):
     def first_day_of_month(self):
         return self.end_date.day == 1 and self.end_date.hour > 0
 
-    @staticmethod
-    def apply_31A_LB_cof(balance, start_date, end_date, kva, tariff):
-        consumptions = balance.copy()
-        period_hours = tariff.hours_by_period
-        holidays_list = get_holidays(start_date.year)
-        (workdays, holidays) = get_num_of_workdays_holidays(
-            start_date, end_date, holidays_list
-        )
-
-        cofs = {}
-        for period in period_hours:
-            if period > 'P3':
-                cofs[period] = period_hours.get(period, 0) * holidays
-            else:
-                cofs[period] = period_hours.get(period, 0) * workdays
-        for period, consumption in balance.items():
-            consumptions[period] = round(
-                consumption * (1 + tariff.losses), 2
-            ) + round(0.01 * cofs[period] * kva, 2)
-
-        return consumptions
-
     def get_hours_per_period(self, tariff, only_valid=False):
         assert isinstance(tariff, Tariff)
         hours_per_period = Counter()
@@ -396,8 +374,8 @@ class Profile(object):
             }
         # Get balance for T31ALB
         if isinstance(tariff, T31A) and tariff.low_voltage_measure:
-            balance = self.apply_31A_LB_cof(
-                balance, self.start_date, self.end_date, tariff.kva, tariff
+            balance = tariff.apply_31A_LB_cof(
+                balance, self.start_date, self.end_date
             )
 
         measures = [x for x in self.measures if x.valid]
