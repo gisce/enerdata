@@ -379,6 +379,29 @@ class T30ANoFestivos(T30A):
             )
         )
 
+class T31ANoFestivos(T30ANoFestivos):
+    def __init__(self, kva=None):
+        super(T31ANoFestivos, self).__init__()
+        self.code = '3.1A'
+        self.cof = 'C'
+        self.min_power = 1
+        self.max_power = 450
+        self.losses = 0.04
+        self.type = 'AT'
+        self.require_powers_above_min_power = False
+        if kva:
+            if not isinstance(kva, (int, float)):
+                raise ValueError('kva must be an enter value')
+            self.low_voltage_measure = True
+            self.kva = kva
+        else:
+            self.low_voltage_measure = False
+        self.hours_by_period = {
+            'P1': 6,
+            'P2': 16,
+            'P3': 26,
+        }
+
 
 class T30A_one_period(T30A):
     """
@@ -617,6 +640,7 @@ def get_tariff_by_code(code):
         '3.0A C2': T30ANoFestivos,
         '3.1A': T31A,
         '3.1A LB': T31A,
+        '3.1A C2': T31ANoFestivos,
         '6.1A': T61A,
         '6.1B': T61B,
     }
