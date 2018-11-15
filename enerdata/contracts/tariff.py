@@ -4,6 +4,7 @@ from datetime import timedelta
 from enerdata.contracts.normalized_power import NormalizedPower
 from enerdata.datetime.station import get_station
 from enerdata.datetime.holidays import get_holidays
+from enerdata.datetime.work_and_holidays import get_num_of_workdays_holidays
 
 
 def check_range_hours(hours):
@@ -379,28 +380,40 @@ class T30ANoFestivos(T30A):
             )
         )
 
-class T31ANoFestivos(T30ANoFestivos):
-    def __init__(self, kva=None):
+class T31ANoFestivos(T31A):
+    def __init__(self):
         super(T31ANoFestivos, self).__init__()
-        self.code = '3.1A'
-        self.cof = 'C'
-        self.min_power = 1
-        self.max_power = 450
-        self.losses = 0.04
-        self.type = 'AT'
-        self.require_powers_above_min_power = False
-        if kva:
-            if not isinstance(kva, (int, float)):
-                raise ValueError('kva must be an enter value')
-            self.low_voltage_measure = True
-            self.kva = kva
-        else:
-            self.low_voltage_measure = False
         self.hours_by_period = {
             'P1': 6,
-            'P2': 16,
-            'P3': 26,
+            'P2': 10,
+            'P3': 8,
         }
+        self.periods = (
+            TariffPeriod(
+                'P1', 'te',
+                winter_hours=[(17, 23)],
+                summer_hours=[(10, 16)]
+            ),
+            TariffPeriod(
+                'P2', 'te',
+                winter_hours=[(8, 17), (23, 24)],
+                summer_hours=[(8, 10), (16, 24)]
+            ),
+            TariffPeriod(
+                'P3', 'te',
+                winter_hours=[(0, 8)],
+                summer_hours=[(0, 8)]
+            ),
+            TariffPeriod(
+                'P1', 'tp'
+            ),
+            TariffPeriod(
+                'P2', 'tp'
+            ),
+            TariffPeriod(
+                'P3', 'tp'
+            )
+        )
 
 
 class T30A_one_period(T30A):
@@ -486,6 +499,27 @@ class T31A(T30A):
     def are_powers_normalized(powers):
         # 3.1A doesn't need to have normalized powers
         return True
+
+    def apply_31A_LB_cof(self, balance, start_date, end_date):
+        consumptions = balance.copy()
+        period_hours = self.hours_by_period
+        holidays_list = get_holidays(start_date.year)
+        (workdays, holidays) = get_num_of_workdays_holidays(
+            start_date, end_date, holidays_list
+        )
+
+        cofs = {}
+        for period in period_hours:
+            if period > 'P3':
+                cofs[period] = period_hours.get(period, 0) * holidays
+            else:
+                cofs[period] = period_hours.get(period, 0) * workdays
+        for period, consumption in balance.items():
+            consumptions[period] = round(
+                consumption * (1 + self.losses), 2
+            ) + round(0.01 * cofs[period] * self.kva, 2)
+
+        return consumptions
 
     def evaluate_powers(self, powers):
         super(T31A, self).evaluate_powers(powers)
