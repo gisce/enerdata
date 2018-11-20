@@ -380,42 +380,6 @@ class T30ANoFestivos(T30A):
             )
         )
 
-class T31ANoFestivos(T31A):
-    def __init__(self):
-        super(T31ANoFestivos, self).__init__()
-        self.hours_by_period = {
-            'P1': 6,
-            'P2': 10,
-            'P3': 8,
-        }
-        self.periods = (
-            TariffPeriod(
-                'P1', 'te',
-                winter_hours=[(17, 23)],
-                summer_hours=[(10, 16)]
-            ),
-            TariffPeriod(
-                'P2', 'te',
-                winter_hours=[(8, 17), (23, 24)],
-                summer_hours=[(8, 10), (16, 24)]
-            ),
-            TariffPeriod(
-                'P3', 'te',
-                winter_hours=[(0, 8)],
-                summer_hours=[(0, 8)]
-            ),
-            TariffPeriod(
-                'P1', 'tp'
-            ),
-            TariffPeriod(
-                'P2', 'tp'
-            ),
-            TariffPeriod(
-                'P3', 'tp'
-            )
-        )
-
-
 class T30A_one_period(T30A):
     """
     A 3.0A with one unique period
@@ -539,6 +503,42 @@ class T31A_one_period(T31A):
         self.periods = (
             TariffPeriod('P1', 'te'),
             TariffPeriod('P1', 'tp')
+        )
+
+
+class T31ANoFestivos(T31A):
+    def __init__(self):
+        super(T31ANoFestivos, self).__init__()
+        self.hours_by_period = {
+            'P1': 6,
+            'P2': 10,
+            'P3': 8,
+        }
+        self.periods = (
+            TariffPeriod(
+                'P1', 'te',
+                winter_hours=[(17, 23)],
+                summer_hours=[(10, 16)]
+            ),
+            TariffPeriod(
+                'P2', 'te',
+                winter_hours=[(8, 17), (23, 24)],
+                summer_hours=[(8, 10), (16, 24)]
+            ),
+            TariffPeriod(
+                'P3', 'te',
+                winter_hours=[(0, 8)],
+                summer_hours=[(0, 8)]
+            ),
+            TariffPeriod(
+                'P1', 'tp'
+            ),
+            TariffPeriod(
+                'P2', 'tp'
+            ),
+            TariffPeriod(
+                'P3', 'tp'
+            )
         )
 
 
