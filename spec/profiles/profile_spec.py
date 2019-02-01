@@ -628,3 +628,23 @@ with description("An estimation"):
                 it_breaks = True
 
             assert it_breaks, "A non numeric accumulated must not work"
+
+        with it("must profile just regim especial"):
+            drag_by_perdiod = True
+
+            start = TIMEZONE.localize(datetime(2018, 9, 1))
+            end = TIMEZONE.localize(datetime(2018, 9, 31))
+
+            measures = []
+            profile = Profile(start, end, measures, 0.0)
+
+            tariff = TRE()
+            periods = tariff.energy_periods
+
+            climatic_zone = 2
+            re_balance = {
+                'RE (P0)': 30.218
+            }
+
+            estimation = profile.estimate(tariff, balance, climatic_zone)
+            total_estimated = sum([x.measure for x in estimation.measures])
