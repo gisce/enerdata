@@ -247,6 +247,25 @@ class REEProfile(object):
                 conn.close()
             cls.down_lock.release()
 
+    @classmethod
+    def get_RE_cofs(self, start, end, tariff):
+        import pandas as pd
+        sheet_name = 'zona_{}'.format(tariff.climatic_zone)
+        df = pd.read_excel(
+            '/home/puig/codi/enerdata/enerdata/profiles/data/perfilesRE_por_zona_climatica.xlsx',
+            sheet_name=sheet_name
+        )
+        cofs = []
+        while start <= end:
+            if start.hour == 0:
+                coff_value = float(df[df['ZONA II'] == 'Enero'][start.hour +1])
+            else:
+                coff_value = float(df[df['ZONA II'] == 'Enero'][start.hour + 1])
+            coff = Coefficent(start, {'A': coff_value})
+            cofs.append(coff)
+            start += relativedelta(hours=1)
+        return cofs
+
 
 class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid', 'accumulated'])):
 
