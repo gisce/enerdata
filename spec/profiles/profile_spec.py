@@ -632,8 +632,8 @@ with description("An estimation"):
             assert it_breaks, "A non numeric accumulated must not work"
 
         with it("must profile just regim especial"):
-            di = '2019-01-01 01:00:00',
-            df = '2019-02-01 00:00:00',
+            di = '2019-01-01 01:00:00'
+            df = '2019-02-01 00:00:00'
             start = TIMEZONE.localize(datetime.strptime(di, '%Y-%m-%d %H:%M:%S'))
             end = TIMEZONE.localize(datetime.strptime(df, '%Y-%m-%d %H:%M:%S'))
 
