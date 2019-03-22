@@ -381,6 +381,10 @@ class Profile(object):
             cofs = self.profile_class.get_range(
                 start, end - relativedelta(days=1)
             )
+
+        if tariff.code == 'RE':
+            cofs = self.profile_class.get_RE_cofs(start, end, tariff)
+
         cofs = Coefficients(cofs)
         cofs_per_period = Counter()
 
