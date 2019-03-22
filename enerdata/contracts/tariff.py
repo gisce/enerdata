@@ -618,5 +618,6 @@ def get_tariff_by_code(code):
         '3.1A LB': T31A,
         '6.1A': T61A,
         '6.1B': T61B,
+        'RE': TRE,
     }
     return available.get(code, None)
