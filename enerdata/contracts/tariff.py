@@ -528,6 +528,21 @@ class T61B(T61A):
         self.code = '6.1B'
 
 
+class TRE(Tariff):
+    def __init__(self, climatic_zone=None):
+        super(TRE, self).__init__()
+        self.code = 'RE'
+        self.cof = 'A'
+
+        if climatic_zone:
+            self.climatic_zone = climatic_zone
+
+        self.periods = (
+            TariffPeriod('P0', 'te'),
+            TariffPeriod('P0', 'tp')
+        )
+
+
 class NotPositivePower(Exception):
     def __init__(self):
         super(NotPositivePower, self).__init__(
