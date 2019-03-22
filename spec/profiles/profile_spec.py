@@ -1,5 +1,7 @@
 from enerdata.profiles.profile import *
-from enerdata.contracts.tariff import T20A, T20DHA, T20DHS, T21A, T21DHA, T21DHS, T30A, T31A, T30A_one_period, T31A_one_period
+from enerdata.contracts.tariff import (T20A, T20DHA, T20DHS, T21A, T21DHA,
+                                       T21DHS, T30A, T31A, T30A_one_period,
+                                       T31A_one_period, TRE)
 from enerdata.metering.measure import *
 from expects import *
 import vcr
@@ -557,7 +559,7 @@ with description("An estimation"):
 
 
     with context("with accumulated energy"):
-        with it("must handle accumulated values"):
+        with it("must profile just regim especial"):
             accumulated = Decimal(0.136)
             drag_by_perdiod = True
             self.profile = Profile(self.start, self.end, self.measures, accumulated, drag_by_perdiod)
@@ -630,21 +632,21 @@ with description("An estimation"):
             assert it_breaks, "A non numeric accumulated must not work"
 
         with it("must profile just regim especial"):
-            drag_by_perdiod = True
-
-            start = TIMEZONE.localize(datetime(2018, 9, 1))
-            end = TIMEZONE.localize(datetime(2018, 9, 31))
+            di = '2019-01-01 01:00:00',
+            df = '2019-02-01 00:00:00',
+            start = TIMEZONE.localize(datetime.strptime(di, '%Y-%m-%d %H:%M:%S'))
+            end = TIMEZONE.localize(datetime.strptime(df, '%Y-%m-%d %H:%M:%S'))
 
             measures = []
+            drag_by_perdiod = True
             profile = Profile(start, end, measures, 0.0)
-
-            tariff = TRE()
-            periods = tariff.energy_periods
+            tariff = TRE(climatic_zone=2)
 
             climatic_zone = 2
             re_balance = {
-                'RE (P0)': 30.218
+                'P0': 252
             }
 
-            estimation = profile.estimate(tariff, balance, climatic_zone)
-            total_estimated = sum([x.measure for x in estimation.measures])
+            estimation = profile.estimate(tariff, re_balance)
+            total_estimated = estimation.total_consumption
+            assert total_estimated == re_balance['P0'], "RE not profiled correctly"
