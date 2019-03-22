@@ -179,6 +179,20 @@ class REEProfile(object):
     HOST = 'www.ree.es'
     PATH = '/sites/default/files/simel/perff'
     down_lock = Lock()
+    translate_month = {
+        1: 'Enero',
+        2: 'Febrero',
+        3: 'Marzo',
+        4: 'Abril',
+        5: 'Mayo',
+        6: 'Junio',
+        7: 'Julio',
+        8: 'Agosto',
+        9: 'Setiembre',
+        10: 'Octubre',
+        11: 'Noviembre',
+        12: 'Diciembre'
+    }
 
     _CACHE = {}
 
@@ -255,12 +269,15 @@ class REEProfile(object):
             '/home/puig/codi/enerdata/enerdata/profiles/data/perfilesRE_por_zona_climatica.xlsx',
             sheet_name=sheet_name
         )
+        key = df.keys()[0]
         cofs = []
         while start <= end:
-            if start.hour == 0:
-                coff_value = float(df[df['ZONA II'] == 'Enero'][start.hour +1])
+            month = self.translate_month[start.month]
+            if start.hour != 0:
+                hour = start.hour
             else:
-                coff_value = float(df[df['ZONA II'] == 'Enero'][start.hour + 1])
+                hour = 24
+            coff_value = float(df[df[key] == month][start.hour])
             coff = Coefficent(start, {'A': coff_value})
             cofs.append(coff)
             start += relativedelta(hours=1)
