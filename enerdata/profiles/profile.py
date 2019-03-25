@@ -278,7 +278,7 @@ class REEProfile(object):
                 hour = start.hour
             else:
                 hour = 24
-            coff_value = float(df[df[key] == month][start.hour])
+            coff_value = float(df[df[key] == month][hour])
             coff = Coefficent(start, {'A': coff_value})
             cofs.append(coff)
             start += relativedelta(hours=1)
