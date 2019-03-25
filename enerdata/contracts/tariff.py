@@ -529,13 +529,10 @@ class T61B(T61A):
 
 
 class TRE(Tariff):
-    def __init__(self, climatic_zone=None):
+    def __init__(self):
         super(TRE, self).__init__()
         self.code = 'RE'
         self.cof = 'A'
-
-        if climatic_zone:
-            self.climatic_zone = climatic_zone
 
         self.periods = (
             TariffPeriod('P0', 'te'),

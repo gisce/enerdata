@@ -640,7 +640,7 @@ with description("An estimation"):
             measures = []
             drag_by_perdiod = True
             profile = Profile(start, end, measures, 0.0)
-            tariff = TRE(climatic_zone=2)
+            tariff = TRE()
 
             climatic_zone = 2
             re_balance = {
