@@ -181,21 +181,6 @@ class REEProfile(object):
     HOST = 'www.ree.es'
     PATH = '/sites/default/files/simel/perff'
     down_lock = Lock()
-    translate_month = {
-        1: 'Enero',
-        2: 'Febrero',
-        3: 'Marzo',
-        4: 'Abril',
-        5: 'Mayo',
-        6: 'Junio',
-        7: 'Julio',
-        8: 'Agosto',
-        9: 'Setiembre',
-        10: 'Octubre',
-        11: 'Noviembre',
-        12: 'Diciembre'
-    }
-
     _CACHE = {}
 
     @classmethod
@@ -262,6 +247,23 @@ class REEProfile(object):
             if conn is not None:
                 conn.close()
             cls.down_lock.release()
+
+
+class REProfile(object):
+    translate_month = {
+        1: 'Enero',
+        2: 'Febrero',
+        3: 'Marzo',
+        4: 'Abril',
+        5: 'Mayo',
+        6: 'Junio',
+        7: 'Julio',
+        8: 'Agosto',
+        9: 'Setiembre',
+        10: 'Octubre',
+        11: 'Noviembre',
+        12: 'Diciembre'
+    }
 
     @classmethod
     def get_RE_cofs(self, start, end, tariff):
