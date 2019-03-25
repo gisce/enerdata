@@ -266,10 +266,10 @@ class REProfile(object):
     }
 
     @classmethod
-    def get_RE_cofs(self, start, end, tariff):
-        sheet_name = 'zona_{}'.format(tariff.climatic_zone)
-        filename = '{}/{}'.format(
-            path.dirname(path.realpath(__file__)) + 'data/coefficients_RE.xlsx'
+    def get_range(self, start, end):
+        sheet_name = 'zona_{}'.format(self.climatic_zone)
+        filename = path.join(
+            path.dirname(path.realpath(__file__)), 'data/coefficients_RE.xlsx'
         )
         df = pd.read_excel(filename, sheet_name=sheet_name)
         key = df.keys()[0]
