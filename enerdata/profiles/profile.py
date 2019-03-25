@@ -16,6 +16,8 @@ from enerdata.profiles import Dragger
 from enerdata.contracts.tariff import Tariff, T30A_one_period, T31A_one_period
 from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure, EnergyMeasure
+from os import path
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -263,12 +265,11 @@ class REEProfile(object):
 
     @classmethod
     def get_RE_cofs(self, start, end, tariff):
-        import pandas as pd
         sheet_name = 'zona_{}'.format(tariff.climatic_zone)
-        df = pd.read_excel(
-            '/home/puig/codi/enerdata/enerdata/profiles/data/perfilesRE_por_zona_climatica.xlsx',
-            sheet_name=sheet_name
+        filename = '{}/{}'.format(
+            path.dirname(path.realpath(__file__)) + 'data/coefficients_RE.xlsx'
         )
+        df = pd.read_excel(filename, sheet_name=sheet_name)
         key = df.keys()[0]
         cofs = []
         while start <= end:
