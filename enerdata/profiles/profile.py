@@ -287,6 +287,26 @@ class REProfile(object):
         return cofs
 
 
+class REProfileZone1(REProfile):
+    climatic_zone = 1
+
+
+class REProfileZone2(REProfile):
+    climatic_zone = 2
+
+
+class REProfileZone3(REProfile):
+    climatic_zone = 3
+
+
+class REProfileZone4(REProfile):
+    climatic_zone = 4
+
+
+class REProfileZone5(REProfile):
+    climatic_zone = 5
+
+
 class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid', 'accumulated'])):
 
     __slots__ = ()
