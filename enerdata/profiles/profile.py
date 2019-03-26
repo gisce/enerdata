@@ -181,6 +181,7 @@ class REEProfile(object):
     HOST = 'www.ree.es'
     PATH = '/sites/default/files/simel/perff'
     down_lock = Lock()
+
     _CACHE = {}
 
     @classmethod
@@ -440,7 +441,6 @@ class Profile(object):
             cofs = self.profile_class.get_range(
                 start, end - relativedelta(days=1)
             )
-
         cofs = Coefficients(cofs)
         cofs_per_period = Counter()
 

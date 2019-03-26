@@ -559,7 +559,7 @@ with description("An estimation"):
 
 
     with context("with accumulated energy"):
-        with it("handle accumulated values"):
+        with it("must handle accumulated values"):
             accumulated = Decimal(0.136)
             drag_by_perdiod = True
             self.profile = Profile(self.start, self.end, self.measures, accumulated, drag_by_perdiod)
