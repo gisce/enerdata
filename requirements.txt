@@ -1,2 +1,4 @@
 pytz
 workalendar
+pandas
+xlrd

@@ -1,5 +1,7 @@
 from enerdata.profiles.profile import *
-from enerdata.contracts.tariff import T20A, T20DHA, T20DHS, T21A, T21DHA, T21DHS, T30A, T31A, T30A_one_period, T31A_one_period
+from enerdata.contracts.tariff import (T20A, T20DHA, T20DHS, T21A, T21DHA,
+                                       T21DHS, T30A, T31A, T30A_one_period,
+                                       T31A_one_period, TRE)
 from enerdata.metering.measure import *
 from expects import *
 import vcr
@@ -628,3 +630,24 @@ with description("An estimation"):
                 it_breaks = True
 
             assert it_breaks, "A non numeric accumulated must not work"
+
+        with it("must profile just regim especial"):
+            di = '2019-01-01 01:00:00'
+            df = '2019-02-01 00:00:00'
+            start = TIMEZONE.localize(datetime.strptime(di, '%Y-%m-%d %H:%M:%S'))
+            end = TIMEZONE.localize(datetime.strptime(df, '%Y-%m-%d %H:%M:%S'))
+
+            measures = []
+            drag_by_perdiod = True
+            profile = Profile(start, end, measures, 0.0)
+            profile.profile_class = REProfileZone2
+            tariff = TRE()
+
+            climatic_zone = 2
+            re_balance = {
+                'P0': 252
+            }
+
+            estimation = profile.estimate(tariff, re_balance)
+            total_estimated = estimation.total_consumption
+            assert total_estimated == re_balance['P0'], "RE not profiled correctly"

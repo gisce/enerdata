@@ -528,6 +528,18 @@ class T61B(T61A):
         self.code = '6.1B'
 
 
+class TRE(Tariff):
+    def __init__(self):
+        super(TRE, self).__init__()
+        self.code = 'RE'
+        self.cof = 'A'
+
+        self.periods = (
+            TariffPeriod('P0', 'te'),
+            TariffPeriod('P0', 'tp')
+        )
+
+
 class NotPositivePower(Exception):
     def __init__(self):
         super(NotPositivePower, self).__init__(
@@ -603,5 +615,6 @@ def get_tariff_by_code(code):
         '3.1A LB': T31A,
         '6.1A': T61A,
         '6.1B': T61B,
+        'RE': TRE,
     }
     return available.get(code, None)
