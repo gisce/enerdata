@@ -1,6 +1,8 @@
 import sys
 from setuptools import setup, find_packages
 
+PACKAGES_DATA = {'enerdata': ['profiles/data/*.xlsx']}
+
 INSTALL_REQUIRES = ['pytz', 'workalendar']
 
 if sys.version_info < (2, 7):
@@ -15,5 +17,6 @@ setup(
     author='GISCE-TI, S.L.',
     author_email='devel@gisce.net',
     install_requires=INSTALL_REQUIRES,
+    package_data=PACKAGES_DATA,
     description=''
 )
