@@ -20,6 +20,8 @@ from enerdata.metering.measure import Measure, EnergyMeasure
 from enerdata.datetime.holidays import get_holidays
 from enerdata.datetime.work_and_holidays import get_num_of_workdays_holidays
 
+from os import path
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -250,6 +252,64 @@ class REEProfile(object):
             if conn is not None:
                 conn.close()
             cls.down_lock.release()
+
+
+class REProfile(object):
+    translate_month = {
+        1: 'Enero',
+        2: 'Febrero',
+        3: 'Marzo',
+        4: 'Abril',
+        5: 'Mayo',
+        6: 'Junio',
+        7: 'Julio',
+        8: 'Agosto',
+        9: 'Setiembre',
+        10: 'Octubre',
+        11: 'Noviembre',
+        12: 'Diciembre'
+    }
+
+    @classmethod
+    def get_range(self, start, end):
+        sheet_name = 'zona_{}'.format(self.climatic_zone)
+        filename = path.join(
+            path.dirname(path.realpath(__file__)), 'data/coefficients_RE.xlsx'
+        )
+        df = pd.read_excel(filename, sheet_name=sheet_name)
+        key = df.keys()[0]
+        cofs = []
+        while start <= end:
+            month = self.translate_month[start.month]
+            if start.hour != 0:
+                hour = start.hour
+            else:
+                hour = 24
+            coff_value = float(df[df[key] == month][hour])
+            coff = Coefficent(start, {'A': coff_value})
+            cofs.append(coff)
+            start += relativedelta(hours=1)
+        return cofs
+
+
+class REProfileZone1(REProfile):
+    climatic_zone = 1
+
+
+class REProfileZone2(REProfile):
+    climatic_zone = 2
+
+
+class REProfileZone3(REProfile):
+    climatic_zone = 3
+
+
+class REProfileZone4(REProfile):
+    climatic_zone = 4
+
+
+class REProfileZone5(REProfile):
+    climatic_zone = 5
 
 
 class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid', 'accumulated'])):
