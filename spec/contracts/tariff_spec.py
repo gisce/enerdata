@@ -275,6 +275,19 @@ with context('3.0A tariff'):
         assert 'P5' in self.periods.keys()
         assert 'P6' in self.periods.keys()
 
+with context('A 3.1A LB Tariff'):
+    with it('must indicate the kva with an integer'):
+        def createT31A_LB():
+            T31A(kva='1')
+
+        expect(createT31A_LB).to(raise_error(ValueError, 'kva must be an enter value'))
+
+    with it('must activate LB flag'):
+        the_tariff = T31A(kva=1)
+
+        assert the_tariff.low_voltage_measure
+
+
 
 with description('Getting a tariff by descripion'):
 

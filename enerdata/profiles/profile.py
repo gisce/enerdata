@@ -13,9 +13,13 @@ from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 
 from enerdata.profiles import Dragger
-from enerdata.contracts.tariff import Tariff, T30A_one_period, T31A_one_period
+from enerdata.contracts.tariff import (Tariff, T30A_one_period,
+                                       T31A_one_period, T31A)
 from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure, EnergyMeasure
+from enerdata.datetime.holidays import get_holidays
+from enerdata.datetime.work_and_holidays import get_num_of_workdays_holidays
+
 from os import path
 import pandas as pd
 
@@ -428,6 +432,11 @@ class Profile(object):
             balance = {
                 "P1": sum([values for values in balance.values()])
             }
+        # Get balance for T31ALB
+        if isinstance(tariff, T31A) and tariff.low_voltage_measure:
+            balance = tariff.apply_31A_LB_cof(
+                balance, self.start_date, self.end_date
+            )
 
         measures = [x for x in self.measures if x.valid]
         start = self.start_date
