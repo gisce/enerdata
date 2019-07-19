@@ -507,8 +507,8 @@ class T31A_one_period(T31A):
 
 
 class T31ANoFestivos(T31A):
-    def __init__(self):
-        super(T31ANoFestivos, self).__init__()
+    def __init__(self, kva=None):
+        super(T31ANoFestivos, self).__init__(kva=kva)
         self.hours_by_period = {
             'P1': 6,
             'P2': 10,
