@@ -437,6 +437,9 @@ class Profile(object):
             balance = tariff.apply_31A_LB_cof(
                 balance, self.start_date, self.end_date
             )
+        # Adapt T31A6P adding P4 to P1
+        if isinstance(tariff, T31A) and balance.get('P4', 0) > 0:
+            balance['P1'] += balance['P4']
 
         measures = [x for x in self.measures if x.valid]
         start = self.start_date
