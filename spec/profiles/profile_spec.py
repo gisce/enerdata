@@ -414,6 +414,27 @@ with description("When profiling"):
             assert cons['P5'] == 0
             assert cons['P6'] == 0
 
+        with context('And the tariff is RE'):
+            with fit('zero values for sun coefficient should not cause problems '):
+                measures = []
+                di = '2019-01-01 01:00:00'
+                df = '2019-02-01 00:00:00'
+                start = TIMEZONE.localize(datetime.strptime(di, '%Y-%m-%d %H:%M:%S'))
+                end = TIMEZONE.localize(datetime.strptime(df, '%Y-%m-%d %H:%M:%S'))
+                profile = Profile(start, end, measures)
+                profile.profile_class = REProfileZone5
+                tariff = TRE()
+                climatic_zone = 5
+                balance = {
+                    'P0': 0
+                }
+                total_expected = 0
+                estimation = profile.estimate(tariff, balance)
+                total_estimated = sum([x.measure for x in estimation.measures])
+                print('Expected: {}'.format(total_expected))
+                print('Estimated: {}'.format(total_estimated))
+                assert total_estimated == total_expected
+
     with context('A 3.1A LB Tariff'):
         with it('must the initial_balance be different to result balance'):
             kva = 1
