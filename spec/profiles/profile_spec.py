@@ -432,6 +432,23 @@ with description("When profiling"):
 
             assert res != initial_balance
 
+    with context('A 3.1A Tariff with 6 periods'):
+        with it('must take into acount P4 in the result balance'):
+            kva = 1
+            tariff = T31A(kva=kva)
+            balance = {
+                'P1': 100,
+                'P2': 80,
+                'P3': 60,
+                'P4': 12,
+                'P5': 15,
+                'P6': 15,
+            }
+            total_expected = sum([x for x in balance.values()])
+            estimation = self.profile.estimate(tariff, balance)
+            total_estimated = sum([x.measure for x in estimation.measures])
+            assert total_estimaded == total_expected
+
 with description('A profile'):
     with before.all:
         measures = []
