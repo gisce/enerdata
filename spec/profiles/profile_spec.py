@@ -434,18 +434,21 @@ with description("When profiling"):
 
     with context('A 3.1A Tariff with 6 periods'):
         with it('must take into account P4 in the result balance'):
-            kva = 1
-            tariff = T31A(kva=kva)
+            measures = []
+            start = TIMEZONE.localize(datetime(2017, 9, 1))
+            end = TIMEZONE.localize(datetime(2017, 9, 5))
+            profile = Profile(start, end, measures)
+            tariff = T31A()
             balance = {
-                'P1': 100,
-                'P2': 80,
-                'P3': 60,
-                'P4': 12,
-                'P5': 15,
-                'P6': 15,
+                'P1': 10,
+                'P2': 10,
+                'P3': 10,
+                'P4': 10,
+                'P5': 10,
+                'P6': 10,
             }
             total_expected = sum([x for x in balance.values()])
-            estimation = self.profile.estimate(tariff, balance)
+            estimation = profile.estimate(tariff, balance)
             total_estimated = sum([x.measure for x in estimation.measures])
             assert total_estimated == total_expected
 
