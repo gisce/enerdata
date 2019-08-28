@@ -440,6 +440,7 @@ class Profile(object):
         # Adapt T31A6P adding P4 to P1
         if isinstance(tariff, T31A) and balance.get('P4', 0) > 0:
             balance['P1'] += balance['P4']
+            balance['P4'] = 0
 
         measures = [x for x in self.measures if x.valid]
         start = self.start_date
