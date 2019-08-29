@@ -495,7 +495,12 @@ class Profile(object):
                 if energy < 0:
                     energy = 0
 
-                gap_energy = (energy * gap_cof) / cofs_per_period[period.code]
+                try:
+                    gap_energy = (energy * gap_cof) / cofs_per_period[period.code]
+                except ZeroDivisionError as error:
+                    gap_energy = 0
+                    logger.debug(error)
+
                 aprox = dragger.drag(gap_energy, key=drag_key)
                 energy_per_period_rem[period.code] -= gap_energy
 
