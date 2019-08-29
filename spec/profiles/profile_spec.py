@@ -452,6 +452,26 @@ with description("When profiling"):
 
             assert res != initial_balance
 
+    with context('A 3.1A Tariff with 6 periods'):
+        with it('must take into account P4 in the result balance'):
+            measures = []
+            start = TIMEZONE.localize(datetime(2017, 9, 1))
+            end = TIMEZONE.localize(datetime(2017, 9, 5))
+            profile = Profile(start, end, measures)
+            tariff = T31A()
+            balance = {
+                'P1': 10,
+                'P2': 10,
+                'P3': 10,
+                'P4': 10,
+                'P5': 10,
+                'P6': 10,
+            }
+            total_expected = sum([x for x in balance.values()])
+            estimation = profile.estimate(tariff, balance)
+            total_estimated = sum([x.measure for x in estimation.measures])
+            assert total_estimated == total_expected
+
 with description('A profile'):
     with before.all:
         measures = []
