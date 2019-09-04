@@ -264,7 +264,7 @@ class REProfile(object):
         6: 'Junio',
         7: 'Julio',
         8: 'Agosto',
-        9: 'Setiembre',
+        9: 'Septiembre',
         10: 'Octubre',
         11: 'Noviembre',
         12: 'Diciembre'
