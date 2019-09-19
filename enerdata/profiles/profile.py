@@ -282,9 +282,9 @@ class REProfile(object):
         cofs = []
         while start <= end:
             month = self.translate_month[start.month]
-            start = convert_to_solar_hour(start)
-            if start.hour != 0:
-                hour = start.hour
+            dt = convert_to_solar_hour(start)
+            if dt.hour != 0:
+                hour = dt.hour
             else:
                 hour = 24
             coff_value = float(df[df[key] == month][hour])
