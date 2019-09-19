@@ -19,6 +19,7 @@ from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure, EnergyMeasure
 from enerdata.datetime.holidays import get_holidays
 from enerdata.datetime.work_and_holidays import get_num_of_workdays_holidays
+from enerdata.datetime.solar_hour import convert_to_solar_hour
 
 from os import path
 import pandas as pd
