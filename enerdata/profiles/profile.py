@@ -281,6 +281,7 @@ class REProfile(object):
         cofs = []
         while start <= end:
             month = self.translate_month[start.month]
+            start = convert_to_solar_hour(start)
             if start.hour != 0:
                 hour = start.hour
             else:
