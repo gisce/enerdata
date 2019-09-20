@@ -3,7 +3,7 @@ from enerdata.datetime.station import get_station
 from enerdata.datetime.solar_hour import convert_to_solar_hour
 from enerdata.datetime.timezone import TIMEZONE
 from dateutil.relativedelta import relativedelta
-from expects import expect, equal
+from expects import expect, equal, start_with
 
 DIFFERENCE_HOURS = {'summer': 2, 'winter': 1}
 
@@ -37,3 +37,9 @@ with description("The solar hour"):
             solar_hour = convert_to_solar_hour(dtc)
             civil_hour_to_expect = dtc - relativedelta(hours=hours)
             expect(civil_hour_to_expect.hour).to(equal(solar_hour.hour))
+
+    with context("must be located"):
+        with it("even if the civil hour is not"):
+            dt = TIMEZONE.localize(datetime(2019, 11, 1, 1))
+            dt = convert_to_solar_hour(dt)
+            expect(dt.tzname()).to(start_with('UTC'))
