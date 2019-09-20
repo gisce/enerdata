@@ -43,3 +43,8 @@ with description("The solar hour"):
             dt = TIMEZONE.localize(datetime(2019, 11, 1, 1))
             dt = convert_to_solar_hour(dt)
             expect(dt.tzname()).to(start_with('UTC'))
+
+    with context("calculated correctly"):
+        with it("when civil hour not specified"):
+            dt = convert_to_solar_hour()
+            assert isinstance(dt, datetime)
