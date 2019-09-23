@@ -3,7 +3,7 @@ from enerdata.datetime.station import get_station
 from enerdata.datetime.solar_hour import convert_to_solar_hour
 from enerdata.datetime.timezone import TIMEZONE
 from dateutil.relativedelta import relativedelta
-from expects import expect, equal, start_with
+from expects import expect, equal, start_with, raise_error
 
 DIFFERENCE_HOURS = {'summer': 2, 'winter': 1}
 
@@ -48,3 +48,10 @@ with description("The solar hour"):
         with it("when civil hour not specified"):
             dt = convert_to_solar_hour()
             assert isinstance(dt, datetime)
+
+    with context("raise an error"):
+        with it("when civil hour is not datetime"):
+            def get_convert_to_solar_hour_error():
+                str_dt = '2019-01-01'
+                convert_to_solar_hour(str_dt)
+            expect(get_convert_to_solar_hour_error).to(raise_error(ValueError))

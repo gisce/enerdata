@@ -12,7 +12,7 @@ def convert_to_solar_hour(civil_hour=False):
     if not civil_hour:
         civil_hour = datetime.now()
     if not isinstance(civil_hour, datetime):
-        raise ValueError('% datetime was expected' % civil_hour)
+        raise ValueError('datetime was expected, found {}'.format(civil_hour))
     if not civil_hour.tzinfo:
         civil_hour = TIMEZONE.localize(civil_hour, is_dst=True)  # daylight saving time
     solar_hour = civil_hour.astimezone(utc)
