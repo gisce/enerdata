@@ -19,6 +19,7 @@ from enerdata.datetime.timezone import TIMEZONE
 from enerdata.metering.measure import Measure, EnergyMeasure
 from enerdata.datetime.holidays import get_holidays
 from enerdata.datetime.work_and_holidays import get_num_of_workdays_holidays
+from enerdata.datetime.solar_hour import convert_to_solar_hour
 
 from os import path
 import pandas as pd
@@ -281,8 +282,9 @@ class REProfile(object):
         cofs = []
         while start <= end:
             month = self.translate_month[start.month]
-            if start.hour != 0:
-                hour = start.hour
+            solar_hour = convert_to_solar_hour(start)
+            if solar_hour.hour != 0:
+                hour = solar_hour.hour
             else:
                 hour = 24
             coff_value = float(df[df[key] == month][hour])
