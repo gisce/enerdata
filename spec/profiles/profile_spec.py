@@ -94,6 +94,19 @@ with description("A coeficient"):
         dt = datetime(2014, 12, 23, 0)
         assert c.get(dt) is cof
 
+    with it('should be found by date in a list if it exists or return False otherwise'):
+        # set dates
+        start_date = '2019-01-01 01:00:00'
+        end_date = '2019-01-01 03:00:00'
+        fake_date = '2019-01-01 04:00:00'
+        start = TIMEZONE.localize(datetime.strptime(start_date, '%Y-%m-%d %H:%M:%S'))
+        end = TIMEZONE.localize(datetime.strptime(end_date, '%Y-%m-%d %H:%M:%S'))
+        fake = TIMEZONE.localize(datetime.strptime(fake_date, '%Y-%m-%d %H:%M:%S'))
+        coefficients = REProfileZone5.get_range(start, end)
+        real_found = REProfileZone5.get_coefficient_by_date(coefficients, start)
+        fake_found = REProfileZone5.get_coefficient_by_date(coefficients, fake)
+        assert real_found and not fake_found
+
 
 with description("When profiling"):
     with before.all:
@@ -460,7 +473,7 @@ with description("When profiling"):
                 # invalid profiles must be detected
                 assert valid == expected_valid and measures1 == expected_invalid_profiles
 
-                # VALID PROFILES CASE
+                # VALID PROFILES CASE (NIGHTTIME)
                 measures2 = [
                     ProfileHour(start, 0, True, 0),  # valid profile
                     ProfileHour(middle, 0, True, 0),  # valid profile
@@ -473,6 +486,25 @@ with description("When profiling"):
                 # valid profiles must pass the test
                 assert valid == expected_valid and measures2 == []
 
+                # VALID PROFILES CASE (DAYTIME)
+                # set dates
+                d1 = '2019-01-01 10:00:00'
+                d2 = '2019-01-01 11:00:00'
+                d3 = '2019-01-01 12:00:00'
+                start = TIMEZONE.localize(datetime.strptime(d1, '%Y-%m-%d %H:%M:%S'))
+                middle = TIMEZONE.localize(datetime.strptime(d2, '%Y-%m-%d %H:%M:%S'))
+                end = TIMEZONE.localize(datetime.strptime(d3, '%Y-%m-%d %H:%M:%S'))
+                measures2 = [
+                    ProfileHour(start, 4, True, 0),  # valid profile
+                    ProfileHour(middle, 4, True, 0),  # valid profile
+                    ProfileHour(end, 4, True, 0)  # valid profile
+                ]
+                # validate profiles
+                valid, measures3 = REProfileZone5.validate_exported_energy(start, end, measures2)
+                # test
+                expected_valid = True
+                # valid profiles must pass the test
+                assert valid == expected_valid and measures3 == []
 
     with context('A 3.1A LB Tariff'):
         with it('must the initial_balance be different to result balance'):
