@@ -293,32 +293,44 @@ class REProfile(object):
             start += relativedelta(hours=1)
         return cofs
 
+    @classmethod
     def validate_exported_energy(self, start, end, measures):
         """
         Return the measures, replacing the energy values different from
         zero by "warning" in the hours that export energy with RE coefficient == zero
         :param start: Start date
         :param end: End date
-        :param measures: A list of dicts with measures
-        :return valid: A boolean that indicates if the measures are valid
-        :return valid_measures: A list of dicts with validated measures
+        :param measures: A list ProfileHour objects
+        :return valid: A boolean that indicates if all the profiles in measures are valid
+        :return invalid_profiles: A list containing the invalid profiles in measures
         """
         # Check if measures list is valid
         valid = True
+        # Save invalid profiles
+        invalid_profiles = []
         # get and iterate RE coefficients
         coefficients = self.get_range(start, end)
         # iterate all RE measures
         for measure in measures:
             # if energy value is not zero
-            if measure['measure'] != 0:
-                hour = measure['date'].split(' ')[1]
-                # if coeff is zero
-                if coefficients[hour]['coff'] == 0:
-                    # replace energy value by 'warning'
-                    measure['measure'] = 'warning'
-                    # mark measures as invalid
-                    valid = False
-        return valid, measures
+            if measure[1] != 0:
+                # fetch coeff by profile date
+                cof = self.get_coefficient_by_date(coefficients, measure[0])
+                if cof:
+                    # if coeff is zero
+                    if cof.cof['A'] == 0:
+                        # replace energy value by 'warning'
+                        invalid_profiles.append(measure)
+                        # mark measures as invalid
+                        valid = False
+        return valid, invalid_profiles
+
+    @staticmethod
+    def get_coefficient_by_date(coefficients, d):
+        for c in coefficients:
+            if c.hour == d:
+                return c
+        return False
 
 
 class REProfileZone1(REProfile):
