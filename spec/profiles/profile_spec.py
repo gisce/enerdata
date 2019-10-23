@@ -434,6 +434,29 @@ with description("When profiling"):
                 total_estimated = sum([x.measure for x in estimation.measures])
                 assert total_estimated == total_expected
 
+            with it('zero values for sun coefficient should have zero energy value or show a warning'):
+                d1 = '2019-01-01 01:00:00'
+                d2 = '2019-01-01 02:00:00'
+                d3 = '2019-01-01 03:00:00'
+                start = TIMEZONE.localize(datetime.strptime(d1, '%Y-%m-%d %H:%M:%S'))
+                middle = TIMEZONE.localize(datetime.strptime(d2, '%Y-%m-%d %H:%M:%S'))
+                end = TIMEZONE.localize(datetime.strptime(d3, '%Y-%m-%d %H:%M:%S'))
+                measures = [
+                    {'date': start, 'measure': 1, 'valid': True},
+                    {'date': middle, 'measure': 0, 'valid': True},
+                    {'date': end, 'measure': 1, 'valid': True}
+                ]
+                profile = Profile(start, end, measures)
+                profile.profile_class = REProfile
+                # valid, measures = profile.profile.validate_exported_energy(start, end, measures)
+                # expected_result = False
+                # expected_values = [
+                #     {'date': start, 'measure': 'warning'},
+                #     {'date': middle, 'measure': 0},
+                #     {'date': end, 'measure': 'warning'}
+                # ]
+                # assert valid == expected_result and measures == expected_values
+
     with context('A 3.1A LB Tariff'):
         with it('must the initial_balance be different to result balance'):
             kva = 1

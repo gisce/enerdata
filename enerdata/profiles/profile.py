@@ -293,6 +293,33 @@ class REProfile(object):
             start += relativedelta(hours=1)
         return cofs
 
+    def validate_exported_energy(self, start, end, measures):
+        """
+        Return the measures, replacing the energy values different from
+        zero by "warning" in the hours that export energy with RE coefficient == zero
+        :param start: Start date
+        :param end: End date
+        :param measures: A list of dicts with measures
+        :return valid: A boolean that indicates if the measures are valid
+        :return valid_measures: A list of dicts with validated measures
+        """
+        # Check if measures list is valid
+        valid = True
+        # get and iterate RE coefficients
+        coefficients = self.get_range(start, end)
+        # iterate all RE measures
+        for measure in measures:
+            # if energy value is not zero
+            if measure['measure'] != 0:
+                hour = measure['date'].split(' ')[1]
+                # if coeff is zero
+                if coefficients[hour]['coff'] == 0:
+                    # replace energy value by 'warning'
+                    measure['measure'] = 'warning'
+                    # mark measures as invalid
+                    valid = False
+        return valid, measures
+
 
 class REProfileZone1(REProfile):
     climatic_zone = 1
