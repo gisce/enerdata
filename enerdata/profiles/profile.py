@@ -296,8 +296,7 @@ class REProfile(object):
     @classmethod
     def validate_exported_energy(self, start, end, measures):
         """
-        Return the measures, replacing the energy values different from
-        zero by "warning" in the hours that export energy with RE coefficient == zero
+        Check if there are ProfileHour with energy != 0 in periods with RE coefficient == 0
         :param start: Start date
         :param end: End date
         :param measures: A list ProfileHour objects
@@ -326,8 +325,12 @@ class REProfile(object):
         return valid, invalid_profiles
 
     @staticmethod
-    def get_coefficient_by_date(coefficients, d):
-        for c in coefficients:
+    def get_coefficient_by_date(coefficients_list, d):
+        """
+        Returns the first coefficient in coefficients_list that matches the date d
+        If there is no match, returns False
+        """
+        for c in coefficients_list:
             if c.hour == d:
                 return c
         return False

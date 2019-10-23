@@ -447,7 +447,7 @@ with description("When profiling"):
                 total_estimated = sum([x.measure for x in estimation.measures])
                 assert total_estimated == total_expected
 
-            with it('zero values for sun coefficient should have zero energy value or show a warning'):
+            with it('zero values for sun coefficient should have zero energy value'):
                 # set dates
                 d1 = '2019-01-01 01:00:00'
                 d2 = '2019-01-01 02:00:00'
