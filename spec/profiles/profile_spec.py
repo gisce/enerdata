@@ -434,6 +434,65 @@ with description("When profiling"):
                 total_estimated = sum([x.measure for x in estimation.measures])
                 assert total_estimated == total_expected
 
+            with it('zero values for sun coefficient should have zero energy value'):
+                # set dates
+                d1 = '2019-01-01 01:00:00'
+                d2 = '2019-01-01 02:00:00'
+                d3 = '2019-01-01 03:00:00'
+                start = TIMEZONE.localize(datetime.strptime(d1, '%Y-%m-%d %H:%M:%S'))
+                middle = TIMEZONE.localize(datetime.strptime(d2, '%Y-%m-%d %H:%M:%S'))
+                end = TIMEZONE.localize(datetime.strptime(d3, '%Y-%m-%d %H:%M:%S'))
+                # INVALID PROFILES CASE
+                # set measures
+                measures1 = [
+                    ProfileHour(start, 1, True, 0),  # invalid profile
+                    ProfileHour(middle, 0, True, 0),  # valid profile
+                    ProfileHour(end, 1, True, 0)  # invalid profile
+                ]
+                # validate profiles
+                valid, measures1 = REProfileZone5.validate_exported_energy(measures1)
+                # test
+                expected_valid = False
+                expected_invalid_profiles = [
+                    ProfileHour(start, 1, True, 0),  # invalid profile
+                    ProfileHour(end, 1, True, 0)  # invalid profile
+                ]
+                # invalid profiles must be detected
+                assert valid == expected_valid and measures1 == expected_invalid_profiles
+
+                # VALID PROFILES CASE (NIGHTTIME)
+                measures2 = [
+                    ProfileHour(start, 0, True, 0),  # valid profile
+                    ProfileHour(middle, 0, True, 0),  # valid profile
+                    ProfileHour(end, 0, True, 0)  # valid profile
+                ]
+                # validate profiles
+                valid, measures2 = REProfileZone5.validate_exported_energy(measures2)
+                # test
+                expected_valid = True
+                # valid profiles must pass the test
+                assert valid == expected_valid and measures2 == []
+
+                # VALID PROFILES CASE (DAYTIME)
+                # set dates
+                d1 = '2019-01-01 10:00:00'
+                d2 = '2019-01-01 11:00:00'
+                d3 = '2019-01-01 12:00:00'
+                start = TIMEZONE.localize(datetime.strptime(d1, '%Y-%m-%d %H:%M:%S'))
+                middle = TIMEZONE.localize(datetime.strptime(d2, '%Y-%m-%d %H:%M:%S'))
+                end = TIMEZONE.localize(datetime.strptime(d3, '%Y-%m-%d %H:%M:%S'))
+                measures3 = [
+                    ProfileHour(start, 4, True, 0),  # valid profile
+                    ProfileHour(middle, 4, True, 0),  # valid profile
+                    ProfileHour(end, 4, True, 0)  # valid profile
+                ]
+                # validate profiles
+                valid, measures3 = REProfileZone5.validate_exported_energy(measures3)
+                # test
+                expected_valid = True
+                # valid profiles must pass the test
+                assert valid == expected_valid and measures3 == []
+
     with context('A 3.1A LB Tariff'):
         with it('must the initial_balance be different to result balance'):
             kva = 1
