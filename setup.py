@@ -18,5 +18,5 @@ setup(
     author_email='devel@gisce.net',
     install_requires=INSTALL_REQUIRES,
     package_data=PACKAGES_DATA,
-    description=''
+    description='A set of energy models'
 )
