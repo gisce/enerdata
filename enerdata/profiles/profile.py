@@ -294,11 +294,9 @@ class REProfile(object):
         return cofs
 
     @classmethod
-    def validate_exported_energy(self, start, end, measures):
+    def validate_exported_energy(self, measures):
         """
         Check if there are ProfileHour with energy != 0 in periods with RE coefficient == 0
-        :param start: Start date
-        :param end: End date
         :param measures: A list ProfileHour objects
         :return valid: A boolean that indicates if all the profiles in measures are valid
         :return invalid_profiles: A list containing the invalid profiles in measures
@@ -308,7 +306,7 @@ class REProfile(object):
         # Save invalid profiles
         invalid_profiles = []
         # get and iterate RE coefficients
-        coefficients = self.get_range(start, end)
+        coefficients = self.get_range(min(measures).date, max(measures).date)
         # iterate all RE measures
         for measure in measures:
             # if energy value is not zero

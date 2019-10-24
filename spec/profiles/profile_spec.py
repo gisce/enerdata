@@ -450,7 +450,7 @@ with description("When profiling"):
                     ProfileHour(end, 1, True, 0)  # invalid profile
                 ]
                 # validate profiles
-                valid, measures1 = REProfileZone5.validate_exported_energy(start, end, measures1)
+                valid, measures1 = REProfileZone5.validate_exported_energy(measures1)
                 # test
                 expected_valid = False
                 expected_invalid_profiles = [
@@ -467,7 +467,7 @@ with description("When profiling"):
                     ProfileHour(end, 0, True, 0)  # valid profile
                 ]
                 # validate profiles
-                valid, measures2 = REProfileZone5.validate_exported_energy(start, end, measures2)
+                valid, measures2 = REProfileZone5.validate_exported_energy(measures2)
                 # test
                 expected_valid = True
                 # valid profiles must pass the test
@@ -481,13 +481,13 @@ with description("When profiling"):
                 start = TIMEZONE.localize(datetime.strptime(d1, '%Y-%m-%d %H:%M:%S'))
                 middle = TIMEZONE.localize(datetime.strptime(d2, '%Y-%m-%d %H:%M:%S'))
                 end = TIMEZONE.localize(datetime.strptime(d3, '%Y-%m-%d %H:%M:%S'))
-                measures2 = [
+                measures3 = [
                     ProfileHour(start, 4, True, 0),  # valid profile
                     ProfileHour(middle, 4, True, 0),  # valid profile
                     ProfileHour(end, 4, True, 0)  # valid profile
                 ]
                 # validate profiles
-                valid, measures3 = REProfileZone5.validate_exported_energy(start, end, measures2)
+                valid, measures3 = REProfileZone5.validate_exported_energy(measures3)
                 # test
                 expected_valid = True
                 # valid profiles must pass the test
