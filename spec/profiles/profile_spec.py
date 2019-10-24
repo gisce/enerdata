@@ -94,19 +94,6 @@ with description("A coeficient"):
         dt = datetime(2014, 12, 23, 0)
         assert c.get(dt) is cof
 
-    with it('should be found by date in a list if it exists or return False otherwise'):
-        # set dates
-        start_date = '2019-01-01 01:00:00'
-        end_date = '2019-01-01 03:00:00'
-        fake_date = '2019-01-01 04:00:00'
-        start = TIMEZONE.localize(datetime.strptime(start_date, '%Y-%m-%d %H:%M:%S'))
-        end = TIMEZONE.localize(datetime.strptime(end_date, '%Y-%m-%d %H:%M:%S'))
-        fake = TIMEZONE.localize(datetime.strptime(fake_date, '%Y-%m-%d %H:%M:%S'))
-        coefficients = REProfileZone5.get_range(start, end)
-        real_found = REProfileZone5.get_coefficient_by_date(coefficients, start)
-        fake_found = REProfileZone5.get_coefficient_by_date(coefficients, fake)
-        assert real_found and not fake_found
-
 
 with description("When profiling"):
     with before.all:

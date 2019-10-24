@@ -314,7 +314,11 @@ class REProfile(object):
             # if energy value is not zero
             if measure[1] != 0:
                 # fetch coeff by profile date
-                cof = self.get_coefficient_by_date(coefficients, measure[0])
+                cof = False
+                for c in coefficients:
+                    if c.hour == measure[0]:
+                        cof = c
+                        break
                 if cof:
                     # if coeff is zero
                     if cof.cof['A'] == 0:
@@ -323,17 +327,6 @@ class REProfile(object):
                         # mark measures as invalid
                         valid = False
         return valid, invalid_profiles
-
-    @staticmethod
-    def get_coefficient_by_date(coefficients_list, d):
-        """
-        Returns the first coefficient in coefficients_list that matches the date d
-        If there is no match, returns False
-        """
-        for c in coefficients_list:
-            if c.hour == d:
-                return c
-        return False
 
 
 class REProfileZone1(REProfile):
