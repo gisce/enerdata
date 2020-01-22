@@ -1,4 +1,4 @@
 pytz
-workalendar
+workalendar<8.0.0
 pandas
 xlrd
