@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 PACKAGES_DATA = {'enerdata': ['profiles/data/*.xlsx']}
 
-INSTALL_REQUIRES = ['pytz', 'workalendar']
+INSTALL_REQUIRES = ['pytz', 'workalendar<8.0.0']
 
 if sys.version_info < (2, 7):
     INSTALL_REQUIRES += ['backport_collections']
