@@ -273,20 +273,29 @@ class REProfile(object):
 
     @classmethod
     def get_range(self, start, end):
-        sheet_name = 'zona_{}'.format(self.climatic_zone)
-        filename = path.join(
-            path.dirname(path.realpath(__file__)), 'data/coefficients_RE.xlsx'
-        )
+        if issubclass(self, REProfileHydraulic):
+            sheet_name = 'hidraulic'
+            filename = path.join(
+                path.dirname(path.realpath(__file__)), 'data/coefficients_HIDRO_RE.xlsx'
+            )
+        else:
+            sheet_name = 'zona_{}'.format(self.climatic_zone)
+            filename = path.join(
+                path.dirname(path.realpath(__file__)), 'data/coefficients_RE.xlsx'
+            )
         df = pd.read_excel(filename, sheet_name=sheet_name)
         key = df.keys()[0]
         cofs = []
         while start <= end:
             month = self.translate_month[start.month]
-            solar_hour = convert_to_solar_hour(start)
-            if solar_hour.hour != 0:
-                hour = solar_hour.hour
+            if issubclass(self, REProfileHydraulic):
+                hour = 'Factor de funcionamiento'
             else:
-                hour = 24
+                solar_hour = convert_to_solar_hour(start)
+                if solar_hour.hour != 0:
+                    hour = solar_hour.hour
+                else:
+                    hour = 24
             coff_value = float(df[df[key] == month][hour])
             coff = Coefficent(start, {'A': coff_value})
             cofs.append(coff)
@@ -345,6 +354,10 @@ class REProfileZone4(REProfile):
 
 class REProfileZone5(REProfile):
     climatic_zone = 5
+
+
+class REProfileHydraulic(REProfile):
+    pass
 
 
 class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid', 'accumulated'])):
