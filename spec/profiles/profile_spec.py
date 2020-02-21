@@ -828,7 +828,7 @@ with description("An estimation"):
             measures = []
             drag_by_perdiod = True
             profile = Profile(start, end, measures, 0.0)
-            profile.profile_class = REProfileHidraulic
+            profile.profile_class = REProfileHydraulic
 
             tariff = TRE()
             balance = {
