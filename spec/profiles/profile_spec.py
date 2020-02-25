@@ -94,6 +94,17 @@ with description("A coeficient"):
         dt = datetime(2014, 12, 23, 0)
         assert c.get(dt) is cof
 
+    with fit('should be same on Hidraulic plant'):
+        di = '2020-01-01 01:00:00'
+        df = '2020-01-25 00:00:00'
+        start = TIMEZONE.localize(datetime.strptime(di, '%Y-%m-%d %H:%M:%S'))
+        end = TIMEZONE.localize(datetime.strptime(df, '%Y-%m-%d %H:%M:%S'))
+        profile = REProfileHydraulic()
+        cofs = profile.get_range(start, end)
+        random_cof = cofs[random.randint(0, len(cofs)-1)].cof
+        for act_cof in cofs:
+            assert act_cof.cof == random_cof, "RE HYDRAULIC not correctly coeffs"
+
 
 with description("When profiling"):
     with before.all:
