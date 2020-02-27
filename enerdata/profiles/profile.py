@@ -273,29 +273,20 @@ class REProfile(object):
 
     @classmethod
     def get_range(self, start, end):
-        if issubclass(self, REProfileHydraulic):
-            sheet_name = 'hidraulic'
-            filename = path.join(
-                path.dirname(path.realpath(__file__)), 'data/coefficients_HIDRO_RE.xlsx'
-            )
-        else:
-            sheet_name = 'zona_{}'.format(self.climatic_zone)
-            filename = path.join(
-                path.dirname(path.realpath(__file__)), 'data/coefficients_RE.xlsx'
-            )
+        sheet_name = 'zona_{}'.format(self.climatic_zone)
+        filename = path.join(
+            path.dirname(path.realpath(__file__)), 'data/coefficients_RE.xlsx'
+        )
         df = pd.read_excel(filename, sheet_name=sheet_name)
         key = df.keys()[0]
         cofs = []
         while start <= end:
             month = self.translate_month[start.month]
-            if issubclass(self, REProfileHydraulic):
-                hour = 'Factor de funcionamiento'
+            solar_hour = convert_to_solar_hour(start)
+            if solar_hour.hour != 0:
+                hour = solar_hour.hour
             else:
-                solar_hour = convert_to_solar_hour(start)
-                if solar_hour.hour != 0:
-                    hour = solar_hour.hour
-                else:
-                    hour = 24
+                hour = 24
             coff_value = float(df[df[key] == month][hour])
             coff = Coefficent(start, {'A': coff_value})
             cofs.append(coff)
@@ -357,7 +348,18 @@ class REProfileZone5(REProfile):
 
 
 class REProfileHydraulic(REProfile):
-    pass
+    @classmethod
+    def get_range(cls, start, end):
+        filename = path.join(path.dirname(path.realpath(__file__)), 'data/coefficients_HIDRO_RE.csv')
+        df = pd.read_csv(filename)
+        cofs = []
+        while start <= end:
+            month = cls.translate_month[start.month]
+            coff_value = float(df[df['MES'] == month]['Factor de funcionamiento'])
+            coff = Coefficent(start, {'A': coff_value})
+            cofs.append(coff)
+            start += relativedelta(hours=1)
+        return cofs
 
 
 class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid', 'accumulated'])):
