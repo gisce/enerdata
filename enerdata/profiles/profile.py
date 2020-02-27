@@ -347,6 +347,21 @@ class REProfileZone5(REProfile):
     climatic_zone = 5
 
 
+class REProfileHydraulic(REProfile):
+    @classmethod
+    def get_range(cls, start, end):
+        filename = path.join(path.dirname(path.realpath(__file__)), 'data/coefficients_HIDRO_RE.csv')
+        df = pd.read_csv(filename)
+        cofs = []
+        while start <= end:
+            month = cls.translate_month[start.month]
+            coff_value = float(df[df['MES'] == month]['Factor de funcionamiento'])
+            coff = Coefficent(start, {'A': coff_value})
+            cofs.append(coff)
+            start += relativedelta(hours=1)
+        return cofs
+
+
 class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid', 'accumulated'])):
 
     __slots__ = ()
