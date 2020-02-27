@@ -849,3 +849,22 @@ with description("An estimation"):
             estimation = profile.estimate(tariff, balance)
             total_estimated = estimation.total_consumption
             assert total_estimated == balance['P0'], "RE HYDRAULIC not profiled correctly"
+
+        with it("must profile just regim especial another plant"):
+            di = '2020-01-01 01:00:00'
+            df = '2020-02-01 00:00:00'
+            start = TIMEZONE.localize(datetime.strptime(di, '%Y-%m-%d %H:%M:%S'))
+            end = TIMEZONE.localize(datetime.strptime(df, '%Y-%m-%d %H:%M:%S'))
+
+            measures = []
+            profile = Profile(start, end, measures, 0.0)
+            profile.profile_class = REProfileFlat
+
+            tariff = TRE()
+            balance = {
+                'P0': 1912
+            }
+
+            estimation = profile.estimate(tariff, balance)
+            total_estimated = estimation.total_consumption
+            assert total_estimated == balance['P0'], "RE PLANT not profiled correctly"
