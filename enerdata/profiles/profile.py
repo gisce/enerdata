@@ -362,6 +362,17 @@ class REProfileHydraulic(REProfile):
         return cofs
 
 
+class REProfileFlat(REProfile):
+    flat_cof = 0.85
+    @classmethod
+    def get_range(cls, start, end):
+        cofs = []
+        while start <= end:
+            cofs.append(Coefficent(start, {'A': cls.flat_cof}))
+            start += relativedelta(hours=1)
+        return cofs
+
+
 class ProfileHour(namedtuple('ProfileHour', ['date', 'measure', 'valid', 'accumulated'])):
 
     __slots__ = ()
