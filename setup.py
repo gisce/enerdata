@@ -1,7 +1,7 @@
 import sys
 from setuptools import setup, find_packages
 
-PACKAGES_DATA = {'enerdata': ['profiles/data/*.xlsx']}
+PACKAGES_DATA = {'enerdata': ['profiles/data/*.xlsx', 'profiles/data/*.csv']}
 
 INSTALL_REQUIRES = ['pytz', 'workalendar<8.0.0']
 
