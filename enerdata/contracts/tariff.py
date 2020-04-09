@@ -601,6 +601,33 @@ class T61B(T61A):
         self.code = '6.1B'
 
 
+class T62(T61A):
+    """
+    6.2 Tariff
+    """
+    def __init__(self):
+        super(T62, self).__init__()
+        self.code = '6.2'
+
+
+class T63(T61A):
+    """
+    6.3 Tariff
+    """
+    def __init__(self):
+        super(T63, self).__init__()
+        self.code = '6.3'
+
+
+class T64(T61A):
+    """
+    6.4 Tariff
+    """
+    def __init__(self):
+        super(T64, self).__init__()
+        self.code = '6.4'
+
+
 class TRE(Tariff):
     def __init__(self):
         super(TRE, self).__init__()
@@ -689,6 +716,9 @@ def get_tariff_by_code(code):
         '3.1A C2': T31ANoFestivos,
         '6.1A': T61A,
         '6.1B': T61B,
+        '6.2': T62,
+        '6.3': T63,
+        '6.4': T64,
         'RE': TRE,
     }
     return available.get(code, None)
