@@ -272,8 +272,8 @@ class REProfile(object):
     }
 
     @classmethod
-    def get_range(self, start, end):
-        sheet_name = 'zona_{}'.format(self.climatic_zone)
+    def get_range(cls, start, end):
+        sheet_name = 'zona_{}'.format(cls.climatic_zone)
         filename = path.join(
             path.dirname(path.realpath(__file__)), 'data/coefficients_RE.xlsx'
         )
@@ -281,7 +281,7 @@ class REProfile(object):
         key = df.keys()[0]
         cofs = []
         while start <= end:
-            month = self.translate_month[start.month]
+            month = cls.translate_month[start.month]
             solar_hour = convert_to_solar_hour(start)
             if solar_hour.hour != 0:
                 hour = solar_hour.hour
@@ -294,7 +294,7 @@ class REProfile(object):
         return cofs
 
     @classmethod
-    def validate_exported_energy(self, measures):
+    def validate_exported_energy(cls, measures):
         """
         Check if there are ProfileHour with energy != 0 in periods with RE coefficient == 0
         :param measures: A list ProfileHour objects
@@ -306,7 +306,7 @@ class REProfile(object):
         # Save invalid profiles
         invalid_profiles = []
         # get and iterate RE coefficients
-        coefficients = self.get_range(min(measures).date, max(measures).date)
+        coefficients = cls.get_range(min(measures).date, max(measures).date)
         # iterate all RE measures
         for measure in measures:
             # if energy value is not zero
@@ -358,6 +358,17 @@ class REProfileHydraulic(REProfile):
             coff_value = float(df[df['MES'] == month]['Factor de funcionamiento'])
             coff = Coefficent(start, {'A': coff_value})
             cofs.append(coff)
+            start += relativedelta(hours=1)
+        return cofs
+
+
+class REProfileFlat(REProfile):
+    flat_cof = 0.85
+    @classmethod
+    def get_range(cls, start, end):
+        cofs = []
+        while start <= end:
+            cofs.append(Coefficent(start, {'A': cls.flat_cof}))
             start += relativedelta(hours=1)
         return cofs
 
