@@ -1,7 +1,7 @@
 import sys
 from setuptools import setup, find_packages
 
-PACKAGES_DATA = {'enerdata': ['profiles/data/*.xlsx']}
+PACKAGES_DATA = {'enerdata': ['profiles/data/*.xlsx', 'profiles/data/*.csv']}
 
 INSTALL_REQUIRES = ['pytz', 'workalendar<8.0.0']
 
@@ -10,7 +10,7 @@ if sys.version_info < (2, 7):
 
 setup(
     name='enerdata',
-    version='0.21.0',
+    version='0.22.2',
     packages=find_packages(),
     url='http://code.gisce.net',
     license='MIT',

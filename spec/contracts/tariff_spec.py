@@ -185,6 +185,43 @@ with context('A tariff'):
             lambda: tari_T61B.evaluate_powers([500, 600, 700, 700, 600, 500])
         ).to(
             raise_error(NotAscendingPowers))
+
+        tari_T62 = T62()
+        expect(lambda: tari_T62.evaluate_powers([-10, -5, 0, 10, 20])).to(
+            raise_error(NotPositivePower))
+        assert tari_T62.evaluate_powers([400, 410, 420, 430, 440, 451])
+        assert tari_T62.evaluate_powers([500, 600, 700, 800, 900, 1000])
+        expect(lambda: tari_T62.evaluate_powers([16, 17])).to(
+            raise_error(IncorrectPowerNumber, 'Expected 6 power(s) and got 2'))
+        expect(
+            lambda: tari_T62.evaluate_powers([500, 600, 700, 700, 600, 500])
+        ).to(
+            raise_error(NotAscendingPowers))
+
+        tari_T63 = T63()
+        expect(lambda: tari_T63.evaluate_powers([-10, -5, 0, 10, 20])).to(
+            raise_error(NotPositivePower))
+        assert tari_T63.evaluate_powers([400, 410, 420, 430, 440, 451])
+        assert tari_T63.evaluate_powers([500, 600, 700, 800, 900, 1000])
+        expect(lambda: tari_T63.evaluate_powers([16, 17])).to(
+            raise_error(IncorrectPowerNumber, 'Expected 6 power(s) and got 2'))
+        expect(
+            lambda: tari_T63.evaluate_powers([500, 600, 700, 700, 600, 500])
+        ).to(
+            raise_error(NotAscendingPowers))
+
+        tari_T64 = T64()
+        expect(lambda: tari_T64.evaluate_powers([-10, -5, 0, 10, 20])).to(
+            raise_error(NotPositivePower))
+        assert tari_T64.evaluate_powers([400, 410, 420, 430, 440, 451])
+        assert tari_T64.evaluate_powers([500, 600, 700, 800, 900, 1000])
+        expect(lambda: tari_T64.evaluate_powers([16, 17])).to(
+            raise_error(IncorrectPowerNumber, 'Expected 6 power(s) and got 2'))
+        expect(
+            lambda: tari_T64.evaluate_powers([500, 600, 700, 700, 600, 500])
+        ).to(
+            raise_error(NotAscendingPowers))
+
     with it('shouldn\'t fail due to bad rounding'):
         tari_T20A = T20A()
         assert tari_T20A.evaluate_powers([8050.0/1000])
@@ -206,6 +243,12 @@ with context('A tariff'):
             expect(lambda: T61A().correct_powers([1, 2, 3, 4, 5, 6])).to(
                 raise_error(NotImplementedError))
             expect(lambda: T61B().correct_powers([1, 2, 3, 4, 5, 6])).to(
+                raise_error(NotImplementedError))
+            expect(lambda: T62().correct_powers([1, 2, 3, 4, 5, 6])).to(
+                raise_error(NotImplementedError))
+            expect(lambda: T63().correct_powers([1, 2, 3, 4, 5, 6])).to(
+                raise_error(NotImplementedError))
+            expect(lambda: T64().correct_powers([1, 2, 3, 4, 5, 6])).to(
                 raise_error(NotImplementedError))
     with context('with correct_power implemented'):
         with it('should return a correct power if a wrong one is sent'):
@@ -250,6 +293,9 @@ with context('A tariff'):
         assert T31A().get_min_power() == 1
         assert T61A().get_min_power() == 450
         assert T61B().get_min_power() == 450
+        assert T62().get_min_power() == 450
+        assert T63().get_min_power() == 450
+        assert T64().get_min_power() == 450
 
         assert T20A().get_max_power() == 10
         assert T20DHA().get_max_power() == 10
