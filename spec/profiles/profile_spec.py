@@ -850,7 +850,7 @@ with description("An estimation"):
             total_estimated = estimation.total_consumption
             assert total_estimated == balance['P0'], "RE HYDRAULIC not profiled correctly"
 
-        with it("must profile just regim especial another plant"):
+        with it("must profile just regim especial another plant - flat coef"):
             di = '2020-01-01 01:00:00'
             df = '2020-02-01 00:00:00'
             start = TIMEZONE.localize(datetime.strptime(di, '%Y-%m-%d %H:%M:%S'))
