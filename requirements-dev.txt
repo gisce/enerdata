@@ -1,3 +1,3 @@
-mamba
+mamba<=0.10.0
 expects
 vcrpy
