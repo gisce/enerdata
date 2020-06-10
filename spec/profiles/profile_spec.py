@@ -868,3 +868,36 @@ with description("An estimation"):
             estimation = profile.estimate(tariff, balance)
             total_estimated = estimation.total_consumption
             assert total_estimated == balance['P0'], "RE PLANT not profiled correctly"
+
+with description('When fixing'):
+    with context("Curves without losses"):
+        with it('must the initial_balance be different to result balance'):
+            # 31A with kva detects tariff with losses
+            kva = 160
+            the_tariff = T31A(kva=kva)
+
+            start = TIMEZONE.localize(datetime(2015, 3, 1, 1))
+            end = TIMEZONE.localize(datetime(2015, 4, 1, 0))
+            start_idx = start
+            balance_without_losses = {}
+            measures = []
+            # set curve without losses
+            # set balances without losses
+            while start_idx <= end:
+                consumption = random.randint(0, 10)
+                period = the_tariff.get_period_by_date(start_idx).code
+                if period in balance_without_losses:
+                    balance_without_losses[period] += consumption
+                else:
+                    balance_without_losses[period] = consumption
+                measures.append(ProfileHour(
+                    TIMEZONE.normalize(start_idx), consumption, True, 0.0
+                ))
+                start_idx += timedelta(hours=1)
+            # check curve and billings sum is equal
+            assert sum([x for x in balance_without_losses.values()]) == sum([x.measure for x in measures])
+
+            profile = Profile(start, end, measures)
+            fixed_profile = profile.fixit(the_tariff, balance_without_losses, 1)
+
+            assert sum([x.measure for x in fixed_profile.measures]) != sum([x.measure for x in measures])
