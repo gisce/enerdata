@@ -870,11 +870,10 @@ with description("An estimation"):
             assert total_estimated == balance['P0'], "RE PLANT not profiled correctly"
 
 with description('When fixing'):
-    with context("Curves without losses"):
-        with it('must the initial_balance be different to result balance'):
-            # 31A with kva detects tariff with losses
+    with context("curves that need to apply losses"):
+        with it('consumption should increase when it is full curve'):
             kva = 160
-            the_tariff = T31A(kva=kva)
+            the_tariff = T31A()
 
             start = TIMEZONE.localize(datetime(2015, 3, 1, 1))
             end = TIMEZONE.localize(datetime(2015, 4, 1, 0))
@@ -895,9 +894,95 @@ with description('When fixing'):
                 ))
                 start_idx += timedelta(hours=1)
             # check curve and billings sum is equal
-            assert sum([x for x in balance_without_losses.values()]) == sum([x.measure for x in measures])
+            billing = sum([int(x) for x in balance_without_losses.values()])
+            assert billing >= sum([x.measure for x in measures])
 
+            # fixit without losses
             profile = Profile(start, end, measures)
             fixed_profile = profile.fixit(the_tariff, balance_without_losses, 1)
+            total_consumption = fixed_profile.total_consumption
 
-            assert sum([x.measure for x in fixed_profile.measures]) != sum([x.measure for x in measures])
+            # Apply losses with trafo kva
+            fixed_profile_with_losses = the_tariff.apply_curve_losses(fixed_profile.measures, kva)
+            total_consumption_with_losses = sum([x.measure for x in fixed_profile_with_losses])
+
+            assert total_consumption_with_losses > total_consumption
+            assert total_consumption_with_losses > billing
+
+        with it('consumption should increase when it is incomplete curve'):
+            kva = 200
+            the_tariff = T31A()
+
+            start = TIMEZONE.localize(datetime(2015, 7, 1, 1))
+            end = TIMEZONE.localize(datetime(2015, 8, 1, 0))
+            start_idx = start
+            balance_without_losses = {}
+            measures = []
+            # set gapped curve without losses
+            # set balances without losses
+            counter = 0
+            while start_idx <= end:
+                gap_flag = random.randint(0, 1)
+                consumption = random.randint(0, 10)
+                period = the_tariff.get_period_by_date(start_idx).code
+                if period in balance_without_losses:
+                    balance_without_losses[period] += consumption
+                else:
+                    balance_without_losses[period] = consumption
+                if not gap_flag:
+                    measures.append(ProfileHour(
+                        TIMEZONE.normalize(start_idx), consumption, True, 0.0
+                    ))
+                start_idx += timedelta(hours=1)
+                counter += 1
+
+            # check gapped curve
+            assert counter > len(measures)
+            # check curve and billings sum is equal
+            billing = sum([int(x) for x in balance_without_losses.values()])
+            assert billing >= sum([x.measure for x in measures])
+
+            # fixit incomplete curve without losses
+            profile = Profile(start, end, measures)
+            fixed_profile = profile.fixit(the_tariff, balance_without_losses, 1)
+            total_consumption = fixed_profile.total_consumption
+
+            # Apply losses with trafo kva to complete curve
+            fixed_profile_with_losses = the_tariff.apply_curve_losses(fixed_profile.measures, kva)
+            total_consumption_with_losses = sum([x.measure for x in fixed_profile_with_losses])
+
+            assert total_consumption_with_losses > total_consumption
+            assert total_consumption_with_losses > billing
+
+        with it('consumption should increase when it is empty curve'):
+            kva = 100
+            the_tariff = T31A()
+
+            start = TIMEZONE.localize(datetime(2015, 10, 1, 1))
+            end = TIMEZONE.localize(datetime(2015, 11, 1, 0))
+            start_idx = start
+            balance_without_losses = {
+                'P1': 130,
+                'P2': 89,
+                'P3': 15,
+                'P4': 0,
+                'P5': 19,
+                'P6': 84,
+            }
+            measures = []
+
+            # fixit empty curve without losses
+            profile = Profile(start, end, measures)
+            fixed_profile = profile.fixit(the_tariff, balance_without_losses, 1)
+            total_consumption = fixed_profile.total_consumption
+
+            # check curve and billings sum is equal
+            billing = sum([int(x) for x in balance_without_losses.values()])
+            assert billing >= total_consumption
+
+            # Apply losses with trafo kva to complete curve
+            fixed_profile_with_losses = the_tariff.apply_curve_losses(fixed_profile.measures, kva)
+            total_consumption_with_losses = sum([x.measure for x in fixed_profile_with_losses])
+
+            assert total_consumption_with_losses > total_consumption
+            assert total_consumption_with_losses > billing
