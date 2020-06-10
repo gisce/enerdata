@@ -482,8 +482,17 @@ class T31A(T30A):
             consumptions[period] = round(
                 consumption * (1 + self.losses), 2
             ) + round(0.01 * cofs[period] * self.kva, 2)
-
         return consumptions
+
+    def apply_curve_losses(self, measures, kva):
+        from enerdata.profiles import Dragger
+        dragger = Dragger()
+        for idx, measure in enumerate(measures):
+            values = measure._asdict()
+            consumption = dragger.drag(round(measure.measure * (1 + self.losses), 2) + round(0.01 * kva, 2))
+            values['measure'] = consumption
+            measures[idx] = measure._replace(**values)
+        return measures
 
     def evaluate_powers(self, powers):
         super(T31A, self).evaluate_powers(powers)
