@@ -493,11 +493,6 @@ class Profile(object):
             balance = {
                 "P1": sum([values for values in balance.values()])
             }
-        # Get balance for T31ALB
-        if isinstance(tariff, T31A) and tariff.low_voltage_measure:
-            balance = tariff.apply_31A_LB_cof(
-                balance, self.start_date, self.end_date
-            )
         # Adapt T31A6P adding P4 to P1
         if isinstance(tariff, T31A) and balance.get('P4', 0) > 0:
             balance['P1'] += balance['P4']
@@ -611,6 +606,9 @@ class Profile(object):
         profile = self.estimate(tariff, balance)
         # Adjust to the balance
         profile = profile.adjust(tariff, balance, diff)
+
+        if isinstance(tariff, T31A) and tariff.low_voltage_measure:
+            profile.measures = tariff.apply_curve_losses(profile.measures)
         return profile
 
     def __repr__(self):
