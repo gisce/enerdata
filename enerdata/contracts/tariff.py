@@ -485,11 +485,9 @@ class T31A(T30A):
         return consumptions
 
     def apply_curve_losses(self, measures):
-        from enerdata.profiles import Dragger
-        dragger = Dragger()
         for idx, measure in enumerate(measures):
             values = measure._asdict()
-            consumption = dragger.drag(round(measure.measure * (1 + self.losses), 2) + round(0.01 * self.kva, 2))
+            consumption = round(measure.measure * (1 + self.losses), 2) + round(0.01 * self.kva, 2)
             values['measure'] = consumption
             measures[idx] = measure._replace(**values)
         return measures
