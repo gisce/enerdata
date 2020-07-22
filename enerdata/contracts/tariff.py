@@ -482,6 +482,7 @@ class T31A(T30A):
             consumptions[period] = round(
                 consumption * (1 + self.losses), 2
             ) + round(0.01 * cofs[period] * self.kva, 2)
+
         return consumptions
 
     def apply_curve_losses(self, measures):
