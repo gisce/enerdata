@@ -721,6 +721,7 @@ with description("An estimation"):
         }
 
         estimation = profile.estimate(the_tariff, initial_balance)
+        estimation.measures = the_tariff.apply_curve_losses(estimation.measures)
 
         # by total
         total = sum([x.measure for x in estimation.measures])
@@ -733,7 +734,8 @@ with description("An estimation"):
         sum_periods = sum([x for x in res.values()])
 
         assert fake_contract['expected_hours'] == total_hours, "has not profiled all hours"
-        assert int(total) == fake_contract['expected_profiled'], "total not profiled correctly"
+
+        assert int(total) + 1 == fake_contract['expected_profiled'], "total not profiled correctly"
         assert int(sum_periods) == fake_contract['expected_profiled'], "total per period correctly profiled"
 
     with context("with accumulated energy"):
@@ -873,7 +875,7 @@ with description('When fixing'):
     with context("curves that need to apply losses"):
         with it('consumption should increase when it is full curve'):
             kva = 160
-            the_tariff = T31A()
+            the_tariff = T31A(kva)
 
             start = TIMEZONE.localize(datetime(2015, 3, 1, 1))
             end = TIMEZONE.localize(datetime(2015, 4, 1, 0))
@@ -900,18 +902,14 @@ with description('When fixing'):
             # fixit without losses
             profile = Profile(start, end, measures)
             fixed_profile = profile.fixit(the_tariff, balance_without_losses, 1)
-            total_consumption = fixed_profile.total_consumption
+            total_consumption_with_losses = fixed_profile.total_consumption
+            balance_without_losses = billing
 
-            # Apply losses with trafo kva
-            fixed_profile_with_losses = the_tariff.apply_curve_losses(fixed_profile.measures, kva)
-            total_consumption_with_losses = sum([x.measure for x in fixed_profile_with_losses])
-
-            assert total_consumption_with_losses > total_consumption
-            assert total_consumption_with_losses > billing
+            assert total_consumption_with_losses > balance_without_losses
 
         with it('consumption should increase when it is incomplete curve'):
             kva = 200
-            the_tariff = T31A()
+            the_tariff = T31A(kva)
 
             start = TIMEZONE.localize(datetime(2015, 7, 1, 1))
             end = TIMEZONE.localize(datetime(2015, 8, 1, 0))
@@ -945,18 +943,13 @@ with description('When fixing'):
             # fixit incomplete curve without losses
             profile = Profile(start, end, measures)
             fixed_profile = profile.fixit(the_tariff, balance_without_losses, 1)
-            total_consumption = fixed_profile.total_consumption
+            total_consumption_with_losses = fixed_profile.total_consumption
 
-            # Apply losses with trafo kva to complete curve
-            fixed_profile_with_losses = the_tariff.apply_curve_losses(fixed_profile.measures, kva)
-            total_consumption_with_losses = sum([x.measure for x in fixed_profile_with_losses])
-
-            assert total_consumption_with_losses > total_consumption
             assert total_consumption_with_losses > billing
 
         with it('consumption should increase when it is empty curve'):
             kva = 100
-            the_tariff = T31A()
+            the_tariff = T31A(kva)
 
             start = TIMEZONE.localize(datetime(2015, 10, 1, 1))
             end = TIMEZONE.localize(datetime(2015, 11, 1, 0))
@@ -976,13 +969,6 @@ with description('When fixing'):
             fixed_profile = profile.fixit(the_tariff, balance_without_losses, 1)
             total_consumption = fixed_profile.total_consumption
 
-            # check curve and billings sum is equal
-            billing = sum([int(x) for x in balance_without_losses.values()])
-            assert billing >= total_consumption
-
-            # Apply losses with trafo kva to complete curve
-            fixed_profile_with_losses = the_tariff.apply_curve_losses(fixed_profile.measures, kva)
-            total_consumption_with_losses = sum([x.measure for x in fixed_profile_with_losses])
-
-            assert total_consumption_with_losses > total_consumption
-            assert total_consumption_with_losses > billing
+            # check curve with losses and curve without losses
+            balance_without_losses = sum([int(x) for x in balance_without_losses.values()])
+            assert balance_without_losses <= total_consumption
