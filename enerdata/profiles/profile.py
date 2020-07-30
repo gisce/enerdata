@@ -221,10 +221,11 @@ class REEProfile(object):
             except ssl.SSLError:
                 conn = httplib.HTTPSConnection(cls.HOST, context=ssl._create_unverified_context())
                 conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
-            logger.debug('Downloading REEProfile from {0}/{1}'.format(
-                cls.PATH, perff_file
-            ))
-            r = conn.getresponse()
+            finally:
+                logger.debug('Downloading REEProfile from {0}/{1}'.format(
+                    cls.PATH, perff_file
+                ))
+                r = conn.getresponse()
             if r.msg.type == 'application/x-gzip':
                 import gzip
                 c = StringIO(r.read())
