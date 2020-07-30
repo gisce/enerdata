@@ -205,27 +205,31 @@ class REEProfile(object):
     @classmethod
     def get(cls, year, month):
         try:
+            import ssl
+            try:
+                _create_unverified_https_context = ssl._create_unverified_context
+            except AttributeError:
+                pass
+            else:
+                ssl._create_default_https_context = _create_unverified_https_context
+        except ImportError:
+            pass
+        try:
             cls.down_lock.acquire()
             import csv
             import httplib
-            import ssl
             key = '%(year)s%(month)02i' % locals()
             conn = None
             if key in cls._CACHE:
                 logger.debug('Using CACHE for REEProfile {0}'.format(key))
                 return cls._CACHE[key]
             perff_file = 'PERFF_%(key)s.gz' % locals()
-            try:
-                conn = httplib.HTTPSConnection(cls.HOST)
-                conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
-            except ssl.SSLError:
-                conn = httplib.HTTPSConnection(cls.HOST, context=ssl._create_unverified_context())
-                conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
-            finally:
-                logger.debug('Downloading REEProfile from {0}/{1}'.format(
-                    cls.PATH, perff_file
-                ))
-                r = conn.getresponse()
+            conn = httplib.HTTPSConnection(cls.HOST)
+            conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
+            logger.debug('Downloading REEProfile from {0}/{1}'.format(
+                cls.PATH, perff_file
+            ))
+            r = conn.getresponse()
             if r.msg.type == 'application/x-gzip':
                 import gzip
                 c = StringIO(r.read())
