@@ -208,14 +208,19 @@ class REEProfile(object):
             cls.down_lock.acquire()
             import csv
             import httplib
+            import ssl
             key = '%(year)s%(month)02i' % locals()
             conn = None
             if key in cls._CACHE:
                 logger.debug('Using CACHE for REEProfile {0}'.format(key))
                 return cls._CACHE[key]
             perff_file = 'PERFF_%(key)s.gz' % locals()
-            conn = httplib.HTTPSConnection(cls.HOST)
-            conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
+            try:
+                conn = httplib.HTTPSConnection(cls.HOST)
+                conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
+            except ssl.SSLError:
+                conn = httplib.HTTPSConnection(cls.HOST, context=ssl._create_unverified_context())
+                conn.request('GET', '%s/%s' % (cls.PATH, perff_file))
             logger.debug('Downloading REEProfile from {0}/{1}'.format(
                 cls.PATH, perff_file
             ))
