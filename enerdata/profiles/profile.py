@@ -205,6 +205,16 @@ class REEProfile(object):
     @classmethod
     def get(cls, year, month):
         try:
+            import ssl
+            try:
+                _create_unverified_https_context = ssl._create_unverified_context
+            except AttributeError:
+                pass
+            else:
+                ssl._create_default_https_context = _create_unverified_https_context
+        except ImportError:
+            pass
+        try:
             cls.down_lock.acquire()
             import csv
             import httplib
