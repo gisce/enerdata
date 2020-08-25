@@ -699,44 +699,73 @@ with description("An estimation"):
             # [!] Energy must match
             assert total_expected == total_estimated, "For tariff '{}' Total energy '{}' must match the expected '{}'".format(a_tariff["tariff"], total_estimated, total_expected)
 
-    with it("must apply the penalty in 3.1A LB Tariffs"):
-        fake_contract = {
-            'start': TIMEZONE.localize(datetime(2017, 11, 1, 1, 0, 0)),
-            'end': TIMEZONE.localize(datetime(2017, 12, 1, 0, 0, 0)),
-            'kva': 50,
-            'expected_profiled': 1244,
-            'expected_hours': 720
-        }
-        measures = []
-        profile = Profile(fake_contract['start'], fake_contract['end'], measures)
+    with context("a Tariff with losses"):
+        with fit("doesn't must apply the penalty"):
+            fake_contract = {
+                'start': TIMEZONE.localize(datetime(2017, 11, 1, 1, 0, 0)),
+                'end': TIMEZONE.localize(datetime(2017, 12, 1, 0, 0, 0)),
+                'kva': 50,
+                'expected_profiled': 1244,
+                'expected_hours': 720
+            }
+            measures = []
+            profile = Profile(fake_contract['start'], fake_contract['end'], measures)
 
-        the_tariff = T31A(kva=fake_contract['kva'])
-        initial_balance = {
-            'P1': 56,
-            'P2': 231,
-            'P3': 348,
-            'P4': 0,
-            'P5': 10,
-            'P6': 205
-        }
+            the_tariff = T31A(kva=fake_contract['kva'])
+            initial_balance = {
+                'P1': 56,
+                'P2': 231,
+                'P3': 348,
+                'P4': 0,
+                'P5': 10,
+                'P6': 205
+            }
 
-        estimation = profile.estimate(the_tariff, initial_balance)
-        estimation.measures = the_tariff.apply_curve_losses(estimation.measures)
+            estimation = profile.estimate(the_tariff, initial_balance)
+            estimation.measures = the_tariff.apply_curve_losses(estimation.measures)
 
-        # by total
-        total = sum([x.measure for x in estimation.measures])
-        total_hours = len([x.date for x in estimation.measures])
+            # by total
+            total = sum([x.measure for x in estimation.measures])
+            total_hours = len([x.date for x in estimation.measures])
 
-        # by period
-        res = the_tariff.apply_31A_LB_cof(
-            initial_balance, fake_contract['start'], fake_contract['end']
-        )
-        sum_periods = sum([x for x in res.values()])
+            # by period
+            res = the_tariff.apply_31A_LB_cof(
+                initial_balance, fake_contract['start'], fake_contract['end']
+            )
+            sum_periods = sum([x for x in res.values()])
 
-        assert fake_contract['expected_hours'] == total_hours, "has not profiled all hours"
+            assert fake_contract['expected_hours'] == total_hours, "has not profiled all hours"
 
-        assert int(total) + 1 == fake_contract['expected_profiled'], "total not profiled correctly"
-        assert int(sum_periods) == fake_contract['expected_profiled'], "total per period correctly profiled"
+            assert int(total) + 1 == fake_contract['expected_profiled'], "total not profiled correctly"
+            assert int(sum_periods) != total, "total per period applied losses on estimate"
+
+        with it("must apply losses separately"):
+            fake_contract = {
+                'start': TIMEZONE.localize(datetime(2017, 11, 1, 1, 0, 0)),
+                'end': TIMEZONE.localize(datetime(2017, 12, 1, 0, 0, 0)),
+                'kva': 50,
+                'expected_profiled': 1244,
+                'expected_hours': 720
+            }
+            measures = []
+
+            the_tariff = T31A(kva=fake_contract['kva'])
+            initial_balance = {
+                'P1': 56,
+                'P2': 231,
+                'P3': 348,
+                'P4': 0,
+                'P5': 10,
+                'P6': 205
+            }
+
+            # by period
+            res = the_tariff.apply_31A_LB_cof(
+                initial_balance, fake_contract['start'], fake_contract['end']
+            )
+            sum_periods = sum([x for x in res.values()])
+
+            assert int(sum_periods) == fake_contract['expected_profiled'], "total per period correctly profiled"
 
     with context("with accumulated energy"):
         with it("must handle accumulated values"):
@@ -870,6 +899,27 @@ with description("An estimation"):
             estimation = profile.estimate(tariff, balance)
             total_estimated = estimation.total_consumption
             assert total_estimated == balance['P0'], "RE PLANT not profiled correctly"
+
+    with context("a empty curve"):
+        with it("should be the same as a fixit"):
+            di = '2020-07-01 01:00:00'
+            df = '2020-08-01 00:00:00'
+            start = TIMEZONE.localize(datetime.strptime(di, '%Y-%m-%d %H:%M:%S'))
+            end = TIMEZONE.localize(datetime.strptime(df, '%Y-%m-%d %H:%M:%S'))
+
+            profile = Profile(start, end, [], 0.0)
+
+            tariff = T20A()
+            balance = {
+                'P1': 325
+            }
+
+            estimated_profile = profile.estimate(tariff, balance)
+            fixed_profile = profile.fixit(tariff, balance, 0)
+
+            total_estimated = estimated_profile.total_consumption
+            total_fixed = fixed_profile.total_consumption
+            assert total_estimated == total_fixed, "estimate and fixit method do not match"
 
 with description('When fixing'):
     with context("curves that need to apply losses"):
