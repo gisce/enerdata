@@ -700,7 +700,7 @@ with description("An estimation"):
             assert total_expected == total_estimated, "For tariff '{}' Total energy '{}' must match the expected '{}'".format(a_tariff["tariff"], total_estimated, total_expected)
 
     with context("a Tariff with losses"):
-        with fit("doesn't must apply the penalty"):
+        with it("doesn't must apply the penalty"):
             fake_contract = {
                 'start': TIMEZONE.localize(datetime(2017, 11, 1, 1, 0, 0)),
                 'end': TIMEZONE.localize(datetime(2017, 12, 1, 0, 0, 0)),
