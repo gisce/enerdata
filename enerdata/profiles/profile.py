@@ -447,6 +447,16 @@ class Profile(object):
     def first_day_of_month(self):
         return self.end_date.day == 1 and self.end_date.hour > 0
 
+    @staticmethod
+    def simple_dragger(measures):
+        dragger = Dragger()
+        for idx, measure in enumerate(measures):
+            values = measure._asdict()
+            consumption = dragger.drag(measure.measure)
+            values['measure'] = consumption
+            measures[idx] = measure._replace(**values)
+        return measures
+
     def get_hours_per_period(self, tariff, only_valid=False):
         assert isinstance(tariff, Tariff)
         hours_per_period = Counter()
@@ -618,13 +628,9 @@ class Profile(object):
         profile = profile.adjust(tariff, balance, diff)
 
         if isinstance(tariff, T31A) and tariff.low_voltage_measure:
+            # Apply losses
             profile.measures = tariff.apply_curve_losses(profile.measures)
-            # Drag curve losses to set measure without decimals
-            dragger_consumption = Dragger()
-            for idx, measure in enumerate(profile.measures):
-                values = measure._asdict()
-                consumption = dragger_consumption.drag(measure.measure)
-                profile.measures[idx] = measure._replace(**values)
+            profile.measures = self.simple_dragger(profile.measures)
         return profile
 
     def __repr__(self):
