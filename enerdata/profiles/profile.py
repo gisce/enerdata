@@ -619,6 +619,12 @@ class Profile(object):
 
         if isinstance(tariff, T31A) and tariff.low_voltage_measure:
             profile.measures = tariff.apply_curve_losses(profile.measures)
+            # Drag curve losses to set measure without decimals
+            dragger_consumption = Dragger()
+            for idx, measure in enumerate(profile.measures):
+                values = measure._asdict()
+                consumption = dragger_consumption.drag(measure.measure)
+                profile.measures[idx] = measure._replace(**values)
         return profile
 
     def __repr__(self):
