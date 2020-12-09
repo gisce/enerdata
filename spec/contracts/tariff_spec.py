@@ -149,6 +149,9 @@ with context('A tariff'):
             raise_error(NotNormalizedPower))
         expect(lambda: tari_T30A.evaluate_powers([14, 15.242, 15.242])).to(
             raise_error(IncorrectMinPower))
+        expect(lambda: tari_T30A.evaluate_powers([14, 14.242, 14.342], True)).to(
+            raise_error(IncorrectMinPower))
+        assert tari_T30A.evaluate_powers([14, 14.242, 15.242], True)
         assert tari_T30A.evaluate_powers([15.242, 15.242, 16.454])
         expect(lambda: tari_T30A.evaluate_powers([16, 17])).to(
             raise_error(IncorrectPowerNumber, 'Expected 3 power(s) and got 2'))
