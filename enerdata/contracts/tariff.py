@@ -142,7 +142,7 @@ class Tariff(object):
 
         return True
 
-    def evaluate_powers(self, powers):
+    def evaluate_powers(self, powers, allow_only_1_min_period=False):
         if min(powers) <= 0:
             raise NotPositivePower()
         if not len(self.power_periods) == len(powers):
@@ -150,7 +150,8 @@ class Tariff(object):
         if not self.is_maximum_power_correct(max(powers)):
             raise IncorrectMaxPower(max(powers), self.min_power, self.max_power)
         if not self.is_minimum_powers_correct(min(powers)):
-            raise IncorrectMinPower(min(powers), self.min_power, self.max_power)
+            if not (allow_only_1_min_period and self.is_minimum_powers_correct(max(powers))):
+                raise IncorrectMinPower(min(powers), self.min_power, self.max_power)
         if not self.are_powers_normalized(powers):
             raise NotNormalizedPower()
 
@@ -485,8 +486,8 @@ class T31A(T30A):
 
         return consumptions
 
-    def evaluate_powers(self, powers):
-        super(T31A, self).evaluate_powers(powers)
+    def evaluate_powers(self, powers, allow_only_1_min_period=False):
+        super(T31A, self).evaluate_powers(powers, allow_only_1_min_period)
 
         if not are_powers_ascending(powers):
             raise NotAscendingPowers()
@@ -583,8 +584,8 @@ class T61A(Tariff):
         # 6.1A doesn't need to have normalized powers
         return True
 
-    def evaluate_powers(self, powers):
-        super(T61A, self).evaluate_powers(powers)
+    def evaluate_powers(self, powers, allow_only_1_min_period=False):
+        super(T61A, self).evaluate_powers(powers, allow_only_1_min_period)
 
         if not are_powers_ascending(powers):
             raise NotAscendingPowers()
