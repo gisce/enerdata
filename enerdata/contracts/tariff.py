@@ -513,6 +513,13 @@ class T31A(T30A):
 
         return True
 
+    def evaluate_powers_all_checks(self, powers):
+        errors = super(T31A, self).evaluate_powers_all_checks(powers)
+        if not are_powers_ascending(powers):
+            errors.append(NotAscendingPowers())
+
+        return errors
+
 
 class T31A_one_period(T31A):
     """
@@ -610,6 +617,13 @@ class T61A(Tariff):
             raise NotAscendingPowers()
 
         return True
+
+    def evaluate_powers_all_checks(self, powers):
+        errors = super(T61A, self).evaluate_powers_all_checks(powers)
+        if not are_powers_ascending(powers):
+            errors.append(NotAscendingPowers())
+
+        return errors
 
 
 class T61B(T61A):
