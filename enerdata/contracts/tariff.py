@@ -162,7 +162,6 @@ class Tariff(object):
 
         return errors
 
-
     def evaluate_powers(self, powers):
         if min(powers) <= 0:
             raise NotPositivePower()
