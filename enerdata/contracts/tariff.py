@@ -603,7 +603,7 @@ class T61A(Tariff):
         # 6.1A doesn't need to have normalized powers
         return True
 
-    def evaluate_powers(self, powers, allow_only_1_min_period=False):
+    def evaluate_powers(self, powers):
         super(T61A, self).evaluate_powers(powers)
 
         if not are_powers_ascending(powers):
