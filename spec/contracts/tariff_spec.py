@@ -221,6 +221,34 @@ with context('A tariff'):
             lambda: tari_T64.evaluate_powers([500, 600, 700, 700, 600, 500])
         ).to(
             raise_error(NotAscendingPowers))
+    with it('should allow to check if a set of powers is correct'):
+        tari_T20A = T20A()
+        assert len(tari_T20A.evaluate_powers_all_checks([-10]))
+        assert len(tari_T20A.evaluate_powers_all_checks([0]))
+        assert len(tari_T20A.evaluate_powers_all_checks([5.55])) == 0
+        assert len(tari_T20A.evaluate_powers_all_checks([5, 7]))
+        assert len(tari_T20A.evaluate_powers_all_checks([100]))
+
+        tari_T30A = T30A()
+        assert len(tari_T30A.evaluate_powers_all_checks([-10, -5, 0]))
+        assert len(tari_T30A.evaluate_powers_all_checks([15, 15, 15]))
+        assert len(tari_T30A.evaluate_powers_all_checks([16, 17.1, 16]))
+        assert len(tari_T30A.evaluate_powers_all_checks([14, 15.242, 15.242]))
+        assert len(tari_T30A.evaluate_powers_all_checks([15.242, 15.242, 16.454])) == 0
+        assert len(tari_T30A.evaluate_powers_all_checks([16, 17]))
+
+        tari_T31A = T31A()
+        assert len(tari_T31A.evaluate_powers_all_checks([-10, -5, 0]))
+        assert len(tari_T31A.evaluate_powers_all_checks([10, 13, 16])) == 0
+        assert len(tari_T31A.evaluate_powers_all_checks([16, 17]))
+        assert len(tari_T31A.evaluate_powers_all_checks([16, 20, 16]))
+
+        tari_T61A = T61A()
+        assert len(tari_T61A.evaluate_powers_all_checks([-10, -5, 0, 10, 20]))
+        assert len(tari_T61A.evaluate_powers_all_checks([400, 410, 420, 430, 440, 451])) == 0
+        assert len(tari_T61A.evaluate_powers_all_checks([500, 600, 700, 800, 900, 1000])) == 0
+        assert len(tari_T61A.evaluate_powers_all_checks([16, 17]))
+        assert len(tari_T61A.evaluate_powers_all_checks([500, 600, 700, 700, 600, 500]))
 
     with it('shouldn\'t fail due to bad rounding'):
         tari_T20A = T20A()
