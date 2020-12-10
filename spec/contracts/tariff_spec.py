@@ -225,7 +225,7 @@ with context('A tariff'):
         tari_T20A = T20A()
         assert len(tari_T20A.evaluate_powers_all_checks([-10]))
         assert len(tari_T20A.evaluate_powers_all_checks([0]))
-        assert len(tari_T20A.evaluate_powers_all_checks([5.55])) == 0
+        assert len(tari_T20A.evaluate_powers_all_checks([3.5])) == 0
         assert len(tari_T20A.evaluate_powers_all_checks([5, 7]))
         assert len(tari_T20A.evaluate_powers_all_checks([100]))
 
