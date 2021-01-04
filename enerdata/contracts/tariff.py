@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import calendar
 from datetime import timedelta
 
@@ -640,6 +641,119 @@ class TRE(Tariff):
         )
 
 
+# Tariffs from BOE-A-2020-1066 (https://www.boe.es/eli/es/cir/2020/01/15/3)
+class T20TD(Tariff):
+    """Classe que implementa la Tarifa 2.0TD."""
+    def __init__(self):
+        super(T20TD, self).__init__()
+        self.code = '2.0TD'
+        self.cof = '2.0TD'
+        self.min_power = 0
+        self.max_power = 15
+
+        self.type = 'BT'
+
+        self.periods = (
+            TariffPeriod('P1', 'te'),
+            TariffPeriod('P2', 'te'),
+            TariffPeriod('P3', 'te'),
+            TariffPeriod('P1', 'tp'),
+            TariffPeriod('P2', 'tp')
+        )
+
+
+class T30TD(Tariff):
+    """Classe que implementa la Tarifa 3.0TD."""
+    def __init__(self):
+        super(T30TD, self).__init__()
+        self.code = '3.0TD'
+        self.cof = '3.0TD'
+        self.min_power = 15
+        self.max_power = 100000
+
+        self.type = 'BT'
+
+        self.periods = (
+            TariffPeriod('P1', 'te'),
+            TariffPeriod('P2', 'te'),
+            TariffPeriod('P3', 'te'),
+            TariffPeriod('P4', 'te'),
+            TariffPeriod('P5', 'te'),
+            TariffPeriod('P6', 'te'),
+            TariffPeriod('P1', 'tp'),
+            TariffPeriod('P2', 'tp'),
+            TariffPeriod('P3', 'tp'),
+            TariffPeriod('P4', 'tp'),
+            TariffPeriod('P5', 'tp'),
+            TariffPeriod('P6', 'tp')
+        )
+
+
+class T61TD(T30TD):
+    """Classe que implementa la Tarifa 6.1TD."""
+    def __init__(self):
+        super(T61TD, self).__init__()
+        self.code = '6.1TD'
+        self.cof = '6.1TD'
+        self.min_power = 0
+        self.max_power = 100000
+
+        self.type = 'AT'
+
+
+class T62TD(T61TD):
+    """Classe que implementa la Tarifa 6.2TD."""
+    def __init__(self):
+        super(T62TD, self).__init__()
+        self.code = '6.2TD'
+
+
+class T63TD(T61TD):
+    """Classe que implementa la Tarifa 6.3TD."""
+    def __init__(self):
+        super(T63TD, self).__init__()
+        self.code = '6.3TD'
+
+
+class T64TD(T61TD):
+    """Classe que implementa la Tarifa 6.4TD."""
+    def __init__(self):
+        super(T64TD, self).__init__()
+        self.code = '6.4TD'
+
+
+# Vehículo Eléctrico
+class T30TDVE(Tariff):
+    """Classe que implementa la Tarifa 3.0TDVE."""
+    def __init__(self):
+        super(T30TDVE, self).__init__()
+        self.code = '3.0TDVE'
+        self.min_power = 15
+        self.max_power = 100000
+
+        self.type = 'BT'
+
+        self.periods = (
+            TariffPeriod('P1', 'te'),
+            TariffPeriod('P2', 'te'),
+            TariffPeriod('P3', 'te'),
+            TariffPeriod('P4', 'te'),
+            TariffPeriod('P5', 'te'),
+            TariffPeriod('P6', 'te')
+        )
+
+
+class T61TDVE(T30TDVE):
+    """Classe que implementa la Tarifa 6.1TDVE."""
+    def __init__(self):
+        super(T61TDVE, self).__init__()
+        self.code = '6.1TDVE'
+        self.min_power = 0
+        self.max_power = 100000
+
+        self.type = 'AT'
+
+
 class NotPositivePower(Exception):
     def __init__(self):
         super(NotPositivePower, self).__init__(
@@ -720,5 +834,14 @@ def get_tariff_by_code(code):
         '6.3': T63,
         '6.4': T64,
         'RE': TRE,
+        # New access tariffs 2021
+        '2.0TD': T20TD,
+        '3.0TD': T30TD,
+        '6.1TD': T61TD,
+        '6.2TD': T62TD,
+        '6.3TD': T63TD,
+        '6.4TD': T64TD,
+        '3.0TDVE': T30TDVE,
+        '6.1TDVE': T61TDVE
     }
     return available.get(code, None)
