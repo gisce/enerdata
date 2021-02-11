@@ -42,6 +42,7 @@ class Tariff(object):
         self._periods = tuple()
         self.cof = None
         self.require_powers_above_min_power = False
+        self.require_summer_winter_hours = True
 
     @property
     def periods(self):
@@ -49,39 +50,40 @@ class Tariff(object):
 
     @periods.setter
     def periods(self, value):
-        self._periods = value
-        hours = {
-            'holidays': [],
-            'no_holidays': []
-        }
-        for period in self.energy_periods.values():
-            if period.holiday:
-                hours['holidays'].append(period)
-            else:
-                hours['no_holidays'].append(period)
+        if self.require_summer_winter_hours:
+            self._periods = value
+            hours = {
+                'holidays': [],
+                'no_holidays': []
+            }
+            for period in self.energy_periods.values():
+                if period.holiday:
+                    hours['holidays'].append(period)
+                else:
+                    hours['no_holidays'].append(period)
 
-        for station in ('summer', 'winter'):
-            for holiday in (False, True):
-                total_hours = 0
-                range_hours = []
-                for period in self.energy_periods.values():
-                    if period.holiday == holiday:
-                        total_hours += getattr(period, 'total_%s_hours' % station)
-                        range_hours += getattr(period, '%s_hours' % station)
-                range_hours = sorted(range_hours)
-                if total_hours != 24:
-                    if (holiday and total_hours) or not holiday:
+            for station in ('summer', 'winter'):
+                for holiday in (False, True):
+                    total_hours = 0
+                    range_hours = []
+                    for period in self.energy_periods.values():
+                        if period.holiday == holiday:
+                            total_hours += getattr(period, 'total_%s_hours' % station)
+                            range_hours += getattr(period, '%s_hours' % station)
+                    range_hours = sorted(range_hours)
+                    if total_hours != 24:
+                        if (holiday and total_hours) or not holiday:
+                            raise ValueError(
+                                'The sum of hours in %s%s must be 24h: %s'
+                                % (station, holiday and ' (in holidays)' or '',
+                                range_hours)
+                            )
+                    if not check_range_hours(range_hours):
                         raise ValueError(
-                            'The sum of hours in %s%s must be 24h: %s'
+                            'Invalid range of hours in %s%s: %s'
                             % (station, holiday and ' (in holidays)' or '',
-                            range_hours)
+                               range_hours)
                         )
-                if not check_range_hours(range_hours):
-                    raise ValueError(
-                        'Invalid range of hours in %s%s: %s'
-                        % (station, holiday and ' (in holidays)' or '',
-                           range_hours)
-                    )
 
     @property
     def energy_periods(self):
@@ -650,6 +652,7 @@ class T20TD(Tariff):
         self.cof = '2.0TD'
         self.min_power = 0
         self.max_power = 15
+        self.require_summer_winter_hours = False
 
         self.type = 'BT'
 
@@ -670,6 +673,7 @@ class T30TD(Tariff):
         self.cof = '3.0TD'
         self.min_power = 15
         self.max_power = 100000
+        self.require_summer_winter_hours = False
 
         self.type = 'BT'
 
@@ -697,6 +701,7 @@ class T61TD(T30TD):
         self.cof = '6.1TD'
         self.min_power = 0
         self.max_power = 100000
+        self.require_summer_winter_hours = False
 
         self.type = 'AT'
 
@@ -730,6 +735,7 @@ class T30TDVE(Tariff):
         self.code = '3.0TDVE'
         self.min_power = 15
         self.max_power = 100000
+        self.require_summer_winter_hours = False
 
         self.type = 'BT'
 
@@ -750,6 +756,7 @@ class T61TDVE(T30TDVE):
         self.code = '6.1TDVE'
         self.min_power = 0
         self.max_power = 100000
+        self.require_summer_winter_hours = False
 
         self.type = 'AT'
 
