@@ -479,9 +479,9 @@ class T31A(T30A):
             else:
                 cofs[period] = period_hours.get(period, 0) * workdays
         for period, consumption in balance.items():
-            consumptions[period] = round(
-                consumption * (1 + self.losses), 2
-            ) + round(0.01 * cofs[period] * self.kva, 2)
+            consumptions[period] = round(consumption * (1 + self.losses), 2)
+            if consumptions[period] > 0.0:
+                consumptions[period] += round(0.01 * cofs[period] * self.kva, 2)
 
         return consumptions
 
