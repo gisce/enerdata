@@ -447,6 +447,16 @@ class Profile(object):
     def first_day_of_month(self):
         return self.end_date.day == 1 and self.end_date.hour > 0
 
+    @staticmethod
+    def simple_dragger(measures):
+        dragger = Dragger()
+        for idx, measure in enumerate(measures):
+            values = measure._asdict()
+            consumption = dragger.drag(measure.measure)
+            values['measure'] = consumption
+            measures[idx] = measure._replace(**values)
+        return measures
+
     def get_hours_per_period(self, tariff, only_valid=False):
         assert isinstance(tariff, Tariff)
         hours_per_period = Counter()
@@ -503,11 +513,6 @@ class Profile(object):
             balance = {
                 "P1": sum([values for values in balance.values()])
             }
-        # Get balance for T31ALB
-        if isinstance(tariff, T31A) and tariff.low_voltage_measure:
-            balance = tariff.apply_31A_LB_cof(
-                balance, self.start_date, self.end_date
-            )
         # Adapt T31A6P adding P4 to P1
         if isinstance(tariff, T31A) and balance.get('P4', 0) > 0:
             balance['P1'] += balance['P4']
@@ -621,6 +626,11 @@ class Profile(object):
         profile = self.estimate(tariff, balance)
         # Adjust to the balance
         profile = profile.adjust(tariff, balance, diff)
+
+        if isinstance(tariff, T31A) and tariff.low_voltage_measure:
+            # Apply losses
+            profile.measures = tariff.apply_curve_losses(profile.measures)
+            profile.measures = self.simple_dragger(profile.measures)
         return profile
 
     def __repr__(self):
