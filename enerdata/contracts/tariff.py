@@ -50,8 +50,8 @@ class Tariff(object):
 
     @periods.setter
     def periods(self, value):
+        self._periods = value
         if self.require_summer_winter_hours:
-            self._periods = value
             hours = {
                 'holidays': [],
                 'no_holidays': []
