@@ -145,6 +145,26 @@ class Tariff(object):
 
         return True
 
+    def evaluate_powers_all_checks(self, powers):
+        """
+
+        :param powers: [pow1, pow2,...]
+        :return: [Error1, Error2] if errors else []
+        """
+        errors = []
+        if min(powers) <= 0:
+            errors.append(NotPositivePower())
+        if not len(self.power_periods) == len(powers):
+            errors.append(IncorrectPowerNumber(len(powers), len(self.power_periods)))
+        if not self.is_maximum_power_correct(max(powers)):
+            errors.append(IncorrectMaxPower(max(powers), self.min_power, self.max_power))
+        if not self.is_minimum_powers_correct(min(powers)):
+            errors.append(IncorrectMinPower(min(powers), self.min_power, self.max_power))
+        if not self.are_powers_normalized(powers):
+            errors.append(NotNormalizedPower())
+
+        return errors
+
     def evaluate_powers(self, powers):
         if min(powers) <= 0:
             raise NotPositivePower()
@@ -488,6 +508,14 @@ class T31A(T30A):
 
         return consumptions
 
+    def apply_curve_losses(self, measures):
+        for idx, measure in enumerate(measures):
+            values = measure._asdict()
+            consumption = round(measure.measure * (1 + self.losses), 2) + round(0.01 * self.kva, 2)
+            values['measure'] = consumption
+            measures[idx] = measure._replace(**values)
+        return measures
+
     def evaluate_powers(self, powers):
         super(T31A, self).evaluate_powers(powers)
 
@@ -495,6 +523,13 @@ class T31A(T30A):
             raise NotAscendingPowers()
 
         return True
+
+    def evaluate_powers_all_checks(self, powers):
+        errors = super(T31A, self).evaluate_powers_all_checks(powers)
+        if not are_powers_ascending(powers):
+            errors.append(NotAscendingPowers())
+
+        return errors
 
 
 class T31A_one_period(T31A):
@@ -593,6 +628,13 @@ class T61A(Tariff):
             raise NotAscendingPowers()
 
         return True
+
+    def evaluate_powers_all_checks(self, powers):
+        errors = super(T61A, self).evaluate_powers_all_checks(powers)
+        if not are_powers_ascending(powers):
+            errors.append(NotAscendingPowers())
+
+        return errors
 
 
 class T61B(T61A):

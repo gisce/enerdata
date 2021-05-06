@@ -1,5 +1,6 @@
 import sys
 from setuptools import setup, find_packages
+from enerdata import __version__
 
 PACKAGES_DATA = {'enerdata': ['profiles/data/*.xlsx', 'profiles/data/*.csv']}
 
@@ -10,7 +11,7 @@ if sys.version_info < (2, 7):
 
 setup(
     name='enerdata',
-    version='0.23.1',
+    version=__version__,
     packages=find_packages(),
     url='http://code.gisce.net',
     license='MIT',
