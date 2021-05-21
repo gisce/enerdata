@@ -10,6 +10,7 @@ ELECTRIC_ZONES = {
 }
 
 # Tariffs from BOE-A-2020-1066 (https://www.boe.es/eli/es/cir/2020/01/15/3)
+TARIFFS_START_DATE_STR = '2021-06-01'
 
 # month/day
 DAYTYPE_BY_ELECTRIC_ZONE_CIR03_2020 = {

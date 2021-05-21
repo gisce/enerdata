@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import calendar
-from datetime import timedelta
-
+from datetime import datetime, timedelta
 from enerdata.contracts.normalized_power import NormalizedPower
 from enerdata.datetime.station import get_station
 from enerdata.datetime.holidays import get_holidays
+from enerdata.datetime.timezone import TIMEZONE
 from enerdata.datetime.work_and_holidays import get_num_of_workdays_holidays
+from enerdata.contracts.electrical_seasons import PERIODS_2x_BY_ELECTRIC_ZONE_CIR03_2020, \
+    PERIODS_3x_BY_ELECTRIC_ZONE_CIR03_2020, PERIODS_6x_BY_ELECTRIC_ZONE, DAYTYPE_BY_ELECTRIC_ZONE, \
+    DAYTYPE_BY_ELECTRIC_ZONE_CIR03_2020, TARIFFS_START_DATE_STR, PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020
 
 
 def check_range_hours(hours):
@@ -34,7 +37,248 @@ def are_powers_ascending(powers):
     return True
 
 
+def set_day_type_electric_zone(current_date):
+    if current_date.strftime('%Y-%m-%d') >= TARIFFS_START_DATE_STR:
+        day_type_by_zone = DAYTYPE_BY_ELECTRIC_ZONE_CIR03_2020
+    else:
+        day_type_by_zone = DAYTYPE_BY_ELECTRIC_ZONE
+    return day_type_by_zone
+
+def get_daytype_by_date_and_zone(date_time, zone='1', holidays=None):
+    """
+    Calcultes daytype from date and zone.
+    :param date_time in datetime format
+    :param zone in ['1', '2', '3' ,'4', '5']
+    :param holidays list of holidays
+    :returns char ('A', 'A1', 'B', 'B1', 'C', 'D')
+    """
+    is_weekend = (
+        calendar.weekday(
+            date_time.year,
+            date_time.month,
+            date_time.day
+        ) in (5, 6)
+    )
+    if is_weekend or date_time.date() in holidays:
+        return 'D'
+
+    day_type_by_zone = set_day_type_electric_zone(date_time)
+
+    monthday = date_time.strftime('%m/%d')
+    for daytype, periods in day_type_by_zone[zone].items():
+        for period in periods:
+            if period[0] <= monthday <= period[1]:
+                return daytype
+
+
 class Tariff(object):
+    """Energy DSO Tariff.
+    """
+    def __init__(self, code=None, **kwargs):
+        self.code = code
+        self._periods = tuple()
+        self.cof = None
+        self.require_powers_above_min_power = False
+        self.require_summer_winter_hours = True
+        self.periods_validation = True
+
+    @property
+    def periods(self):
+        return self._periods
+
+    @periods.setter
+    def periods(self, value):
+        self._periods = value
+        validate = self.periods_validation
+        hours = {
+            'holidays': [],
+            'no_holidays': []
+        }
+        for period in self.energy_periods.values():
+            if period.holiday:
+                hours['holidays'].append(period)
+            else:
+                hours['no_holidays'].append(period)
+
+        for station in ('summer', 'winter'):
+            for holiday in (False, True):
+                total_hours = 0
+                range_hours = []
+                for period in self.energy_periods.values():
+                    if period.holiday == holiday:
+                        total_hours += getattr(period, 'total_%s_hours' % station)
+                        range_hours += getattr(period, '%s_hours' % station)
+                range_hours = sorted(range_hours)
+                if total_hours != 24 and validate:
+                    if (holiday and total_hours) or not holiday:
+                        raise ValueError(
+                            'The sum of hours in %s%s must be 24h: %s'
+                            % (station, holiday and ' (in holidays)' or '',
+                               range_hours)
+                        )
+                if not check_range_hours(range_hours) and validate:
+                    raise ValueError(
+                        'Invalid range of hours in %s%s: %s'
+                        % (station, holiday and ' (in holidays)' or '',
+                           range_hours)
+                    )
+
+    @property
+    def energy_periods(self):
+        return dict((p.code, p) for p in self.periods if p.type == 'te')
+
+    @property
+    def power_periods(self):
+        return dict((p.code, p) for p in self.periods if p.type == 'tp')
+
+    def get_number_of_periods(self):
+        return len([p for p in self.periods if p.type == 'te'])
+
+    def get_min_power(self):
+        return self.min_power
+
+    def get_max_power(self):
+        return self.max_power
+
+    def get_period_by_date(self, date_time, holidays=None, magn='te'):
+        station = get_station(date_time)
+        if holidays is None:
+            holidays = []
+        date = date_time.date()
+        if (calendar.weekday(date.year, date.month, date.day) in (5, 6)
+                or date in holidays):
+            holiday = True
+        else:
+            holiday = False
+        periods = self.energy_periods
+        if magn == 'tp':
+            periods = self.power_periods
+        for period in periods.values():
+            if period.holiday == holiday or not self.has_holidays_periods:
+                if period.daytype:
+                    zone = period.geom_zone
+                    daytype = get_daytype_by_date_and_zone(
+                        date_time, zone, holidays
+                    )
+                    periods_ranges = period.periods_by_zone_and_day[zone][daytype]
+                    range_list = periods_ranges[int(period.code[-1]) - 1]
+                else:
+                    range_list = getattr(period, '%s_hours' % station)
+                for range_h in range_list:
+                    if range_h[0] <= date_time.hour < range_h[1]:
+                        return period
+            elif magn == 'tp':
+                if period.daytype:
+                    zone = period.geom_zone
+                    daytype = get_daytype_by_date_and_zone(
+                        date_time, zone, holidays
+                    )
+                    periods_ranges = period.periods_by_zone_and_day[zone][daytype]
+                    range_list = periods_ranges[int(period.code[-1]) - 1]
+                else:
+                    if holiday and self.has_holidays_hours_in_periods:
+                        if period.holiday_hours:
+                            range_list = getattr(period, 'holiday_hours')
+                        else:
+                            continue
+                    else:
+                        range_list = getattr(period, '%s_hours' % station)
+                for range_h in range_list:
+                    if range_h[0] <= date_time.hour < range_h[1]:
+                        return period
+        return None
+
+    def get_hours_by_period(self, start_time, end_time, holidays=None,
+                            zone='1'):
+        hours_by_period = {}
+        for period in self.energy_periods.values():
+            hours_by_period[period.code] = period.get_hours_between_dates(
+                start_time, end_time, holidays, zone
+            )
+        return hours_by_period
+
+    def get_period_by_timestamp(self, timestamp):
+        """
+        Gets the number of energy period
+        :param timestamp: datetime in format 'YYYY-MM-DD HH'
+        :return: period number
+        """
+        day, hours = timestamp.split(' ')
+        dt_tz = TIMEZONE.normalize(TIMEZONE.localize(datetime.strptime(day, '%Y-%m-%d')) + timedelta(hours=int(hours)))
+        # "get_period_by_date" expects a local timestamp without timezone
+        # decreases 1 minute because is final datetime open interval (not included)
+        dt = dt_tz.replace(tzinfo=None) - timedelta(minutes=1)
+        return self.get_period_by_date(dt).code
+
+    @property
+    def has_holidays_periods(self):
+        return any(p.holiday for p in self.energy_periods.values())
+
+    @property
+    def has_holidays_hours_in_periods(self):
+        return any(p.holiday_hours for p in self.periods)
+
+    @property
+    def has_holidays_periods(self):
+        return any(p.holiday for p in self.energy_periods.values())
+
+    def is_maximum_power_correct(self, max_pow):
+        return self.min_power < max_pow <= self.max_power
+
+    def is_minimum_powers_correct(self, min_pow):
+        if self.require_powers_above_min_power:
+            return self.min_power < min_pow <= self.max_power
+        else:
+            return True
+
+    @staticmethod
+    def are_powers_normalized(powers):
+        np = NormalizedPower()
+        for power in powers:
+            if not np.is_normalized(int(power * 1000)):
+                return False
+
+        return True
+
+    def evaluate_powers_all_checks(self, powers):
+        """
+
+        :param powers: [pow1, pow2,...]
+        :return: [Error1, Error2] if errors else []
+        """
+        errors = []
+        if min(powers) <= 0:
+            errors.append(NotPositivePower())
+        if not len(self.power_periods) == len(powers):
+            errors.append(IncorrectPowerNumber(len(powers), len(self.power_periods)))
+        if not self.is_maximum_power_correct(max(powers)):
+            errors.append(IncorrectMaxPower(max(powers), self.min_power, self.max_power))
+        if not self.is_minimum_powers_correct(min(powers)):
+            errors.append(IncorrectMinPower(min(powers), self.min_power, self.max_power))
+        if not self.are_powers_normalized(powers):
+            errors.append(NotNormalizedPower())
+
+        return errors
+
+    def evaluate_powers(self, powers):
+        if min(powers) <= 0:
+            raise NotPositivePower()
+        if not len(self.power_periods) == len(powers):
+            raise IncorrectPowerNumber(len(powers), len(self.power_periods))
+        if not self.is_maximum_power_correct(max(powers)):
+            raise IncorrectMaxPower(max(powers), self.min_power, self.max_power)
+        if not self.is_minimum_powers_correct(min(powers)):
+            raise IncorrectMinPower(min(powers), self.min_power, self.max_power)
+        if not self.are_powers_normalized(powers):
+            raise NotNormalizedPower()
+
+        return True
+
+    def correct_powers(self, powers):
+        raise NotImplementedError
+
+
+class TariffPreTD(Tariff):
     """Energy DSO Tariff.
     """
     def __init__(self, code=None):
@@ -198,7 +442,27 @@ class TariffPeriod(object):
         if not check_range_hours(summer_hours):
             raise ValueError('Invalid summer hours')
         self.summer_hours = summer_hours
+        holiday_hours = kwargs.pop('holiday_hours', [])
+        if holiday_hours:
+            if not check_range_hours(holiday_hours):
+                raise ValueError('Invalid holiday hours')
         self.holiday = kwargs.pop('holiday', False)
+        self.tariff_has_holiday_periods = kwargs.pop(
+            'tariff_has_holiday_periods', self.holiday
+        )
+        # daytype tariffs (6.x)
+        self.periods_by_zone_and_day = kwargs.pop('periods_by_zone_and_day', PERIODS_6x_BY_ELECTRIC_ZONE)
+        self.daytype = kwargs.pop('daytype', False)
+        if self.daytype:
+            self.geom_zone = kwargs.pop('geom_zone', '1')
+            periods_dict = self.periods_by_zone_and_day[self.geom_zone]
+            for daytype in periods_dict.keys():
+                hours = [p for lp in periods_dict[daytype] if lp for p in lp]
+                if not check_range_hours(hours):
+                    raise ValueError(
+                        'Invalid {0} hours for {1} '
+                        'geographic zone '.format(daytype, self.geom_zone)
+                    )
 
     @property
     def total_summer_hours(self):
@@ -215,7 +479,7 @@ class TariffPeriod(object):
         return hours
 
 
-class T20A(Tariff):
+class T20A(TariffPreTD):
     def __init__(self):
         super(T20A, self).__init__()
         self.code = '2.0A'
@@ -318,7 +582,7 @@ class T21DHS(T20DHS):
         self.max_power = 15
 
 
-class T30A(Tariff):
+class T30A(TariffPreTD):
     def __init__(self):
         super(T30A, self).__init__()
         self.code = '3.0A'
@@ -580,7 +844,7 @@ class T31ANoFestivos(T31A):
         )
 
 
-class T61A(Tariff):
+class T61A(TariffPreTD):
     """
     6.1A Tariff
     """
@@ -673,7 +937,7 @@ class T64(T61A):
         self.code = '6.4'
 
 
-class TRE(Tariff):
+class TRE(TariffPreTD):
     def __init__(self):
         super(TRE, self).__init__()
         self.code = 'RE'
@@ -688,8 +952,8 @@ class TRE(Tariff):
 # Tariffs from BOE-A-2020-1066 (https://www.boe.es/eli/es/cir/2020/01/15/3)
 class T20TD(Tariff):
     """Classe que implementa la Tarifa 2.0TD."""
-    def __init__(self):
-        super(T20TD, self).__init__()
+    def __init__(self, **kwargs):
+        super(T20TD, self).__init__(**kwargs)
         self.code = '2.0TD'
         self.cof = '2.0TD'
         self.min_power = 0
@@ -698,19 +962,50 @@ class T20TD(Tariff):
 
         self.type = 'BT'
 
+        # set subsystem and periods by zone
+        self.geom_zone = kwargs.pop('geom_zone', '1')
+        self.periods_by_zone_and_day = PERIODS_3x_BY_ELECTRIC_ZONE_CIR03_2020
+
+        self.periods_validation = False
+
         self.periods = (
-            TariffPeriod('P1', 'te'),
-            TariffPeriod('P2', 'te'),
-            TariffPeriod('P3', 'te'),
-            TariffPeriod('P1', 'tp'),
-            TariffPeriod('P2', 'tp')
+            TariffPeriod('P1', 'te',
+                         tariff_has_holiday_periods=True,
+                         periods_by_zone_and_day=PERIODS_3x_BY_ELECTRIC_ZONE_CIR03_2020,
+                         daytype=True,
+                         geom_zone=self.geom_zone
+                         ),
+            TariffPeriod('P2', 'te',
+                         tariff_has_holiday_periods=True,
+                         periods_by_zone_and_day=PERIODS_3x_BY_ELECTRIC_ZONE_CIR03_2020,
+                         daytype=True,
+                         geom_zone=self.geom_zone
+                         ),
+            TariffPeriod('P3', 'te',
+                         tariff_has_holiday_periods=True,
+                         periods_by_zone_and_day=PERIODS_3x_BY_ELECTRIC_ZONE_CIR03_2020,
+                         daytype=True,
+                         geom_zone=self.geom_zone
+                         ),
+            TariffPeriod('P1', 'tp',
+                         tariff_has_holiday_periods=True,
+                         periods_by_zone_and_day=PERIODS_2x_BY_ELECTRIC_ZONE_CIR03_2020,
+                         daytype=True,
+                         geom_zone=self.geom_zone
+                         ),
+            TariffPeriod('P2', 'tp',
+                         tariff_has_holiday_periods=True,
+                         periods_by_zone_and_day=PERIODS_2x_BY_ELECTRIC_ZONE_CIR03_2020,
+                         daytype=True,
+                         geom_zone=self.geom_zone
+                         )
         )
 
 
 class T30TD(Tariff):
     """Classe que implementa la Tarifa 3.0TD."""
-    def __init__(self):
-        super(T30TD, self).__init__()
+    def __init__(self, **kwargs):
+        super(T30TD, self).__init__(**kwargs)
         self.code = '3.0TD'
         self.cof = '3.0TD'
         self.min_power = 15
@@ -718,30 +1013,80 @@ class T30TD(Tariff):
         self.require_summer_winter_hours = False
 
         self.type = 'BT'
+        self.geom_zone = kwargs.pop('geom_zone', '1')
 
+        self.periods_validation = False
         self.periods = (
-            TariffPeriod('P1', 'te'),
-            TariffPeriod('P2', 'te'),
-            TariffPeriod('P3', 'te'),
-            TariffPeriod('P4', 'te'),
-            TariffPeriod('P5', 'te'),
-            TariffPeriod('P6', 'te'),
-            TariffPeriod('P1', 'tp'),
-            TariffPeriod('P2', 'tp'),
-            TariffPeriod('P3', 'tp'),
-            TariffPeriod('P4', 'tp'),
-            TariffPeriod('P5', 'tp'),
-            TariffPeriod('P6', 'tp')
+            TariffPeriod('P1', 'te',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P2', 'te',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P3', 'te',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P4', 'te',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P5', 'te',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P6', 'te',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P1', 'tp',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P2', 'tp',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P3', 'tp',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P4', 'tp',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P5', 'tp',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P6', 'tp',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone)
         )
 
 
 class T61TD(T30TD):
     """Classe que implementa la Tarifa 6.1TD."""
-    def __init__(self):
-        super(T61TD, self).__init__()
+    def __init__(self, **kwargs):
+        super(T61TD, self).__init__(**kwargs)
         self.code = '6.1TD'
         self.cof = '6.1TD'
-        self.min_power = 0
+        self.min_power = 15
         self.max_power = 100000
         self.require_summer_winter_hours = False
 
@@ -750,53 +1095,80 @@ class T61TD(T30TD):
 
 class T62TD(T61TD):
     """Classe que implementa la Tarifa 6.2TD."""
-    def __init__(self):
-        super(T62TD, self).__init__()
+    def __init__(self, **kwargs):
+        super(T62TD, self).__init__(**kwargs)
         self.code = '6.2TD'
 
 
 class T63TD(T61TD):
     """Classe que implementa la Tarifa 6.3TD."""
-    def __init__(self):
-        super(T63TD, self).__init__()
+    def __init__(self, **kwargs):
+        super(T63TD, self).__init__(**kwargs)
         self.code = '6.3TD'
 
 
 class T64TD(T61TD):
     """Classe que implementa la Tarifa 6.4TD."""
-    def __init__(self):
-        super(T64TD, self).__init__()
+    def __init__(self, **kwargs):
+        super(T64TD, self).__init__(**kwargs)
         self.code = '6.4TD'
 
 
 # Vehículo Eléctrico
 class T30TDVE(Tariff):
     """Classe que implementa la Tarifa 3.0TDVE."""
-    def __init__(self):
-        super(T30TDVE, self).__init__()
+    def __init__(self, **kwargs):
+        super(T30TDVE, self).__init__(**kwargs)
         self.code = '3.0TDVE'
         self.min_power = 15
         self.max_power = 100000
         self.require_summer_winter_hours = False
 
         self.type = 'BT'
+        self.geom_zone = kwargs.pop('geom_zone', '1')
+
+        self.periods_validation = False
 
         self.periods = (
-            TariffPeriod('P1', 'te'),
-            TariffPeriod('P2', 'te'),
-            TariffPeriod('P3', 'te'),
-            TariffPeriod('P4', 'te'),
-            TariffPeriod('P5', 'te'),
-            TariffPeriod('P6', 'te')
+            TariffPeriod('P1', 'te',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P2', 'te',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P3', 'te',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P4', 'te',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P5', 'te',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone),
+            TariffPeriod('P6', 'te',
+                          tariff_has_holiday_periods=True,
+                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
+                          daytype=True,
+                          geom_zone=self.geom_zone)
         )
 
 
 class T61TDVE(T30TDVE):
     """Classe que implementa la Tarifa 6.1TDVE."""
-    def __init__(self):
-        super(T61TDVE, self).__init__()
+    def __init__(self, **kwargs):
+        super(T61TDVE, self).__init__(**kwargs)
         self.code = '6.1TDVE'
-        self.min_power = 0
+        self.min_power = 15
         self.max_power = 100000
         self.require_summer_winter_hours = False
 
