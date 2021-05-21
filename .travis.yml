@@ -1,7 +1,10 @@
-sudo: false
 language: python
+arch: amd64
+os: linux
+dist: bionic
 python:
 - '2.7'
+- '3.7'
 install:
 - pip install -r requirements.txt
 - pip install -r requirements-dev.txt
@@ -14,7 +17,7 @@ after_success:
 - coverage report
 deploy:
   provider: pypi
-  user: gisce
+  username: gisce
   password:
     secure: ANYBqENKkDm1ykW0pnRwjrIZkpTZf9eofn1gLFzvc3Jp3OlcC056aEjU1rdVB0cNwuagQrLLd8s7/0WnbAVRTv6ACXhIc5J3sH9dVg3N8neaNxL8sJUZZIoB+I61QR7rjEJflR1mSIVgsQiW7mrhfE/Inkr9Mh7l9vALEW310LdZsK2N5eNdS0acIUd/UkSlbznWTGcK3wxoP5s3R2dIOZYZeQ3QiEU7wUQkzvSFFer+vYbu2Oiv3tRA4hEoiajlY+Hz8T3LCJwe32Ye9KvR1oCc2Id8Jsyck6Eeu0tOvQO7sTGVmSPuy/0Trn0V3lLWTxULJBtusdUzXsg4Of6ofwBSEeD8C7dmP4QCLr4s5Da3E30zhhLq72VL7zVfqIWrwJ2/eO7nPfEkh4A5pIYza4hR5tixsQ0iiJ6717IB7n0p0Za4PNEIjKRETLIOd5JS39yVku84nFCXfId4JFwXpRnUF/Rh62Mx8dK4PH4OhzRwjPHYzqhfaDAXhpRnK0v1fSpPU3QiG/xxBSnX/Dd7UrH4N6P6CBMriKg7GWzrw0Ck+JMH87ofxY6W9EFPKHVkzbPfL+2foDhrGeLBvVC+JMClgr/yTfc7exdEF4DAaq0ICWyRl0cy1dCnJ8Nogrs8OX0nVnNlOum4Pt4e/Ud8n/PWPOGnxloftYNGEBumtG0=
   on:
