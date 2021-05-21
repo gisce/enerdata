@@ -8,7 +8,7 @@ except ImportError:
     from backport_collections import namedtuple, Counter
 from datetime import datetime, date, timedelta
 from multiprocessing import Lock
-from StringIO import StringIO
+from six.moves import StringIO
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 
