@@ -34,6 +34,11 @@ with description('A dragger object'):
         expect(aprox).to(be(6))
         expect(d['key2']).to(equal(Decimal('-0.5')))
 
+    with it('has a special key "disabled" which returns the number'):
+        d = Dragger()
+        aprox = d.drag(1.123456789, key='disabled')
+        expect(aprox).to(equal(1.123456789))
+
 
     with context('Has to use the drag of antecesor drag'):
 
