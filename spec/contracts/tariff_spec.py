@@ -1981,7 +1981,7 @@ with description("TD tariffs"):
 
         with it('should have correct power margins and type'):
             assert self.tarifa.type == 'AT'
-            assert self.tarifa.min_power == 15
+            assert self.tarifa.min_power == 0
             assert self.tarifa.max_power == 100000
 
         with it('should have correct energy and power periods'):
@@ -2000,7 +2000,7 @@ with description("TD tariffs"):
 
         with it('should have correct power margins and type'):
             assert self.tarifa.type == 'AT'
-            assert self.tarifa.min_power == 15
+            assert self.tarifa.min_power == 0
             assert self.tarifa.max_power == 100000
 
         with it('should have correct energy and power periods'):
@@ -2019,7 +2019,7 @@ with description("TD tariffs"):
 
         with it('should have correct power margins and type'):
             assert self.tarifa.type == 'AT'
-            assert self.tarifa.min_power == 15
+            assert self.tarifa.min_power == 0
             assert self.tarifa.max_power == 100000
 
         with it('should have correct energy and power periods'):
@@ -2038,7 +2038,7 @@ with description("TD tariffs"):
 
             with it('should have correct power margins and type'):
                 assert self.tarifa.type == 'AT'
-                assert self.tarifa.min_power == 15
+                assert self.tarifa.min_power == 0
                 assert self.tarifa.max_power == 100000
 
             with it('should have correct energy and power periods'):
@@ -2074,7 +2074,7 @@ with description("TD tariffs"):
 
             with it('should have correct power margins and type'):
                 assert self.tarifa.type == 'AT'
-                assert self.tarifa.min_power == 15
+                assert self.tarifa.min_power == 0
                 assert self.tarifa.max_power == 100000
 
             with it('should have correct energy and power periods'):
