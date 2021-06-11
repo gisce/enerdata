@@ -1,7 +1,7 @@
 from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import (T20A, T20DHA, T20DHS, T21A, T21DHA,
                                        T21DHS, T30A, T31A, T30A_one_period,
-                                       T31A_one_period, TRE)
+                                       T31A_one_period, TRE, T20TD)
 from enerdata.datetime.holidays import get_holidays
 from enerdata.metering.measure import *
 from expects import *
