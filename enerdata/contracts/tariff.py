@@ -1115,64 +1115,18 @@ class T64TD(T61TD):
 
 
 # Vehículo Eléctrico
-class T30TDVE(Tariff):
+class T30TDVE(T30TD):
     """Classe que implementa la Tarifa 3.0TDVE."""
     def __init__(self, **kwargs):
         super(T30TDVE, self).__init__(**kwargs)
         self.code = '3.0TDVE'
-        self.min_power = 15
-        self.max_power = 100000
-        self.require_summer_winter_hours = False
-
-        self.type = 'BT'
-        self.geom_zone = kwargs.pop('geom_zone', '1')
-
-        self.periods_validation = False
-
-        self.periods = (
-            TariffPeriod('P1', 'te',
-                          tariff_has_holiday_periods=True,
-                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
-                          daytype=True,
-                          geom_zone=self.geom_zone),
-            TariffPeriod('P2', 'te',
-                          tariff_has_holiday_periods=True,
-                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
-                          daytype=True,
-                          geom_zone=self.geom_zone),
-            TariffPeriod('P3', 'te',
-                          tariff_has_holiday_periods=True,
-                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
-                          daytype=True,
-                          geom_zone=self.geom_zone),
-            TariffPeriod('P4', 'te',
-                          tariff_has_holiday_periods=True,
-                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
-                          daytype=True,
-                          geom_zone=self.geom_zone),
-            TariffPeriod('P5', 'te',
-                          tariff_has_holiday_periods=True,
-                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
-                          daytype=True,
-                          geom_zone=self.geom_zone),
-            TariffPeriod('P6', 'te',
-                          tariff_has_holiday_periods=True,
-                          periods_by_zone_and_day=PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020,
-                          daytype=True,
-                          geom_zone=self.geom_zone)
-        )
 
 
-class T61TDVE(T30TDVE):
+class T61TDVE(T61TD):
     """Classe que implementa la Tarifa 6.1TDVE."""
     def __init__(self, **kwargs):
         super(T61TDVE, self).__init__(**kwargs)
         self.code = '6.1TDVE'
-        self.min_power = 0
-        self.max_power = 100000
-        self.require_summer_winter_hours = False
-
-        self.type = 'AT'
 
 
 class NotPositivePower(Exception):
