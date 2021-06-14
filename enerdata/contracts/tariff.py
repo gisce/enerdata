@@ -1085,7 +1085,7 @@ class T61TD(T30TD):
     def __init__(self, **kwargs):
         super(T61TD, self).__init__(**kwargs)
         self.code = '6.1TD'
-        self.cof = '6.1TD'
+        self.cof = '3.0TD'
         self.min_power = 0
         self.max_power = 100000
         self.require_summer_winter_hours = False
