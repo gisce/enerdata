@@ -252,7 +252,7 @@ class REEProfile(object):
                     n_hour += 1
                     cofs.append(Coefficent(
                         TIMEZONE.normalize(day), dict(
-                            (k, float(vals[i])) for i, k in enumerate(['A', 'B', 'C', 'D', '20TD', '30TD', '30TDVE'], 5)
+                            (k, float(vals[i])) for i, k in enumerate(['A', 'B', 'C', 'D', '2.0TD', '3.0TD', '3.0TDVE'], 5)
                         ))
                     )
                 cls._CACHE[key] = cofs
