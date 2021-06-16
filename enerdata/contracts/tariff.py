@@ -1129,6 +1129,17 @@ class T61TDVE(T61TD):
         self.code = '6.1TDVE'
 
 
+class T1P(Tariff):
+    def __init__(self):
+        super(T1P, self).__init__()
+        self.code = '1P'
+        self.cof = '2.0TD'
+        self.periods = (
+            TariffPeriod('P1', 'te'),
+            TariffPeriod('P1', 'tp')
+        )
+
+
 class NotPositivePower(Exception):
     def __init__(self):
         super(NotPositivePower, self).__init__(
@@ -1209,6 +1220,7 @@ def get_tariff_by_code(code):
         '6.3': T63,
         '6.4': T64,
         'RE': TRE,
+        '1P': T1P,
         # New access tariffs 2021
         '2.0TD': T20TD,
         '3.0TD': T30TD,
