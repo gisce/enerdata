@@ -27,6 +27,19 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
+COEFFS = ['A', 'B', 'C', 'D']
+EXTRA_COEFFS = ['2.0TD', '3.0TD', '3.0TDVE']
+
+
+def get_tariff_coeffs_list(year, month):
+    assert isinstance(year, int)
+    assert isinstance(month, int)
+    if year >= 2021 and month >= 6:
+        return COEFFS + EXTRA_COEFFS
+    else:
+        return COEFFS
+
+
 class Coefficent(namedtuple('Coefficient', ['hour', 'cof'])):
     __slots__ = ()
 
@@ -238,6 +251,7 @@ class REEProfile(object):
                 reader = csv.reader(m, delimiter=';')
                 header = True
                 cofs = []
+                coeffs_list = get_tariff_coeffs_list(year, month)
                 for vals in reader:
                     if header:
                         header = False
@@ -252,7 +266,7 @@ class REEProfile(object):
                     n_hour += 1
                     cofs.append(Coefficent(
                         TIMEZONE.normalize(day), dict(
-                            (k, float(vals[i])) for i, k in enumerate('ABCD', 5)
+                            (k, float(vals[i])) for i, k in enumerate(coeffs_list, 5)
                         ))
                     )
                 cls._CACHE[key] = cofs
