@@ -35,7 +35,7 @@ def get_tariff_coeffs_list(year, month):
     assert isinstance(year, int)
     assert isinstance(month, int)
     if year >= 2021 and month >= 6:
-        return COEFFS + EXTRA_COEFFS
+        return EXTRA_COEFFS
     else:
         return COEFFS
 
