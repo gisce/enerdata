@@ -34,7 +34,7 @@ EXTRA_COEFFS = ['2.0TD', '3.0TD', '3.0TDVE']
 def get_tariff_coeffs_list(year, month):
     assert isinstance(year, int)
     assert isinstance(month, int)
-    if year >= 2021 and month >= 6:
+    if (year >= 2021 and month >= 6) or year >= 2022:  # temporal solution, till REE publish new coeffs for 2022
         return EXTRA_COEFFS
     else:
         return COEFFS
