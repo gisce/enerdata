@@ -34,7 +34,7 @@ EXTRA_COEFFS = ['2.0TD', '3.0TD', '3.0TDVE']
 def get_tariff_coeffs_list(year, month):
     assert isinstance(year, int)
     assert isinstance(month, int)
-    if year >= 2021 and month >= 6:
+    if (year >= 2021 and month >= 6) or year >= 2022:  # temporal solution, till REE publish new coeffs for 2022
         return EXTRA_COEFFS
     else:
         return COEFFS
@@ -113,7 +113,8 @@ class Coefficients(object):
         sum_cofs = dict.fromkeys(tariff.energy_periods.keys(), 0)
         for hour, coef in self.get_range(start, end):
             if len(sum_cofs) > 1:
-                period = tariff.get_period_by_date(hour)
+                dt = hour - timedelta(minutes=1)
+                period = tariff.get_period_by_date(dt)
                 p_name = period.code
             else:
                 p_name = sum_cofs.keys()[0]
@@ -155,7 +156,8 @@ class Profiler(object):
             sum_cofs = self.coefficient.get_coefs_by_tariff(tariff, start, end)
             dragger = Dragger()
             for hour, cof in self.coefficient.get_range(start, end):
-                period = tariff.get_period_by_date(hour)
+                dt = hour - timedelta(minutes=1)
+                period = tariff.get_period_by_date(dt)
                 if drag_method == 'hour':
                     dp = 'hour'
                 else:

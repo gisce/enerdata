@@ -1,7 +1,7 @@
 from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import (T20A, T20DHA, T20DHS, T21A, T21DHA,
                                        T21DHS, T30A, T31A, T30A_one_period,
-                                       T31A_one_period, TRE, T20TD)
+                                       T31A_one_period, TRE, T20TD, T30TD)
 from enerdata.datetime.holidays import get_holidays
 from enerdata.metering.measure import *
 from expects import *
@@ -183,7 +183,7 @@ with description("When profiling"):
         consum = sum([i[1]['aprox'] for i in prof])
         group = Counter()
         for p in prof:
-            per = t.get_period_by_date(p[0]).code
+            per = p[1]['period']
             group[per] += p[1]['aprox']
         consums = {'P1': 3395, 'P2': 6246, 'P3': 6349}
         for p in consums:
@@ -541,6 +541,112 @@ with description("When profiling"):
             estimation = profile.estimate(tariff, balance)
             total_estimated = sum([x.measure for x in estimation.measures])
             assert total_estimated == total_expected
+
+    with it('a 2.0TD tariff must have same total energy as the sum of the profiled energy'):
+        c = Coefficients(REEProfile.get(2021, 6))
+        profiler = Profiler(c)
+        measures = [
+            EnergyMeasure(
+                date(2021, 6, 1),
+                TariffPeriod('P1', 'te'), 135134, consumption=0
+            ),
+            EnergyMeasure(
+                date(2021, 6, 1),
+                TariffPeriod('P2', 'te'), 261635, consumption=0
+            ),
+            EnergyMeasure(
+                date(2021, 6, 1),
+                TariffPeriod('P3', 'te'), 251742, consumption=0
+            ),
+            EnergyMeasure(
+                date(2021, 6, 30),
+                TariffPeriod('P1', 'te'), 138529, consumption=3395
+            ),
+            EnergyMeasure(
+                date(2021, 6, 30),
+                TariffPeriod('P2', 'te'), 267881, consumption=6246
+            ),
+            EnergyMeasure(
+                date(2021, 6, 30),
+                TariffPeriod('P3', 'te'), 258091, consumption=6349
+            ),
+        ]
+        t = T20TD()
+        prof = list(profiler.profile(t, measures, drag_method='period'))
+        assert len(prof) == (30 * 24)
+        consum = sum([i[1]['aprox'] for i in prof])
+        group = Counter()
+        for p in prof:
+            per = p[1]['period']
+            group[per] += p[1]['aprox']
+        consums = {'P1': 3395, 'P2': 6246, 'P3': 6349}
+        for p in consums:
+            assert group[p] == consums[p]
+
+    with it('a 3.0TD tariff must have same total energy as the sum of the profiled energy'):
+        c = Coefficients(REEProfile.get(2021, 6))
+        profiler = Profiler(c)
+        measures = [
+            EnergyMeasure(
+                date(2021, 6, 1),
+                TariffPeriod('P1', 'te'), 135134, consumption=0
+            ),
+            EnergyMeasure(
+                date(2021, 6, 1),
+                TariffPeriod('P2', 'te'), 261635, consumption=0
+            ),
+            EnergyMeasure(
+                date(2021, 6, 1),
+                TariffPeriod('P3', 'te'), 251742, consumption=0
+            ),
+            EnergyMeasure(
+                date(2021, 6, 1),
+                TariffPeriod('P4', 'te'), 135134, consumption=0
+            ),
+            EnergyMeasure(
+                date(2021, 6, 1),
+                TariffPeriod('P5', 'te'), 261635, consumption=0
+            ),
+            EnergyMeasure(
+                date(2021, 6, 1),
+                TariffPeriod('P6', 'te'), 251742, consumption=0
+            ),
+            EnergyMeasure(
+                date(2021, 6, 30),
+                TariffPeriod('P1', 'te'), 135134, consumption=0
+            ),
+            EnergyMeasure(
+                date(2021, 6, 30),
+                TariffPeriod('P2', 'te'), 261635, consumption=0
+            ),
+            EnergyMeasure(
+                date(2021, 6, 30),
+                TariffPeriod('P3', 'te'), 258091, consumption=2971
+            ),
+            EnergyMeasure(
+                date(2021, 6, 30),
+                TariffPeriod('P4', 'te'), 138529, consumption=3163
+            ),
+            EnergyMeasure(
+                date(2021, 6, 30),
+                TariffPeriod('P5', 'te'), 261635, consumption=0
+            ),
+            EnergyMeasure(
+                date(2021, 6, 30),
+                TariffPeriod('P6', 'te'), 258091, consumption=5368
+            ),
+        ]
+        t = T30TD()
+        prof = list(profiler.profile(t, measures, drag_method='period'))
+        assert len(prof) == (30 * 24)
+        consum = sum([i[1]['aprox'] for i in prof])
+        group = Counter()
+        for p in prof:
+            per = p[1]['period']
+            group[per] += p[1]['aprox']
+        consums = {'P3': 2971, 'P4': 3163, 'P6': 5368}
+        for p in consums:
+            assert group[p] == consums[p]
 
 with description('A profile'):
     with before.all:
