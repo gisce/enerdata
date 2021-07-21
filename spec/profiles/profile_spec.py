@@ -1042,13 +1042,14 @@ with description('When fixing'):
             # set balances without losses
             while start_idx <= end:
                 consumption = random.randint(0, 10)
-                period = the_tariff.get_period_by_date(start_idx).code
+                dt = start_idx - timedelta(minutes=1)
+                period = the_tariff.get_period_by_date(dt).code
                 if period in balance_without_losses:
                     balance_without_losses[period] += consumption
                 else:
                     balance_without_losses[period] = consumption
                 measures.append(ProfileHour(
-                    TIMEZONE.normalize(start_idx), consumption, True, 0.0
+                    TIMEZONE.normalize(dt), consumption, True, 0.0
                 ))
                 start_idx += timedelta(hours=1)
             # check curve and billings sum is equal
@@ -1078,14 +1079,15 @@ with description('When fixing'):
             while start_idx <= end:
                 gap_flag = random.randint(0, 1)
                 consumption = random.randint(0, 10)
-                period = the_tariff.get_period_by_date(start_idx).code
+                dt = start_idx - timedelta(minutes=1)
+                period = the_tariff.get_period_by_date(dt).code
                 if period in balance_without_losses:
                     balance_without_losses[period] += consumption
                 else:
                     balance_without_losses[period] = consumption
                 if not gap_flag:
                     measures.append(ProfileHour(
-                        TIMEZONE.normalize(start_idx), consumption, True, 0.0
+                        TIMEZONE.normalize(dt), consumption, True, 0.0
                     ))
                 start_idx += timedelta(hours=1)
                 counter += 1

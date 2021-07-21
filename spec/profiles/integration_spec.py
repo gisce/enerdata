@@ -140,7 +140,8 @@ with description('Profiles integration with third party data'):
             tariff.cof = 'A'
 
             for ph in self.measures:
-                period = tariff.get_period_by_date(ph['timestamp'])
+                dt = ph['timestamp'] - timedelta(minutes=1)
+                period = tariff.get_period_by_date(dt)
                 balance[period.code] += ph['ai']
 
             with vcr.use_cassette('spec/fixtures/ree/201505.yaml'):
@@ -170,7 +171,8 @@ with description('Profiles integration with third party data'):
 
             # Fix the gaps
             for ph in self.measures:
-                period = tariff.get_period_by_date(ph['timestamp'])
+                dt = ph['timestamp'] - timedelta(minutes=1)
+                period = tariff.get_period_by_date(dt)
                 balance[period.code] += ph['ai']
 
             with vcr.use_cassette('spec/fixtures/ree/201505.yaml'):
@@ -178,7 +180,8 @@ with description('Profiles integration with third party data'):
 
             # Fake balance to adjust the profile
             for ph in self.measures:
-                period = tariff.get_period_by_date(ph['timestamp'])
+                dt = ph['timestamp'] - timedelta(minutes=1)
+                period = tariff.get_period_by_date(dt)
                 balance[period.code] += ph['ai'] + 1
 
             profile_estimated = profile.adjust(tariff, balance)
