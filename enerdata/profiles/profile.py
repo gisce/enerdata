@@ -479,13 +479,15 @@ class Profile(object):
         if only_valid:
             for m in self.measures:
                 if m.valid:
-                    period = tariff.get_period_by_date(m.date)
+                    dt = m.date - timedelta(minutes=1)
+                    period = tariff.get_period_by_date(dt)
                     hours_per_period[period.code] += 1
         else:
             start_idx = self.start_date
             end = self.end_date
             while start_idx <= end:
-                period = tariff.get_period_by_date(start_idx)
+                dt = start_idx - timedelta(minutes=1)
+                period = tariff.get_period_by_date(dt)
                 hours_per_period[period.code] += 1
                 start_idx += timedelta(hours=1)
         return hours_per_period
@@ -497,7 +499,8 @@ class Profile(object):
             consumption_per_period[period] = 0
         for m in self.measures:
             if m.valid:
-                period = tariff.get_period_by_date(m.date)
+                dt = m.date - timedelta(minutes=1)
+                period = tariff.get_period_by_date(dt)
                 consumption_per_period[period.code] += m.measure
         return consumption_per_period
 
@@ -550,8 +553,9 @@ class Profile(object):
         cofs_per_period = Counter()
 
         for gap in self.gaps:
-            period = tariff.get_period_by_date(gap)
-            gap_cof = cofs.get(gap)
+            dt = gap - timedelta(minutes=1)
+            period = tariff.get_period_by_date(dt)
+            gap_cof = cofs.get(dt)
             cofs_per_period[period.code] += gap_cof.cof[tariff.cof]
 
         logger.debug('Coefficients per period calculated: {0}'.format(
@@ -569,7 +573,8 @@ class Profile(object):
             if not self.drag_by_periods:
                 init_drag_key = "default"
             else:
-                init_drag_key = tariff.get_period_by_date(self.gaps[0]).code
+                dt = self.gaps[0] - timedelta(minutes=1)
+                init_drag_key = tariff.get_period_by_date(dt).code
 
             dragger.drag(self.accumulated, key=init_drag_key)
 
@@ -577,7 +582,8 @@ class Profile(object):
                 logger.debug('Gap {0}/{1}'.format(
                     idx + 1, len(self.gaps)
                 ))
-                period = tariff.get_period_by_date(gap)
+                dt = gap - timedelta(minutes=1)
+                period = tariff.get_period_by_date(dt)
 
                 drag_key = period.code if not self.drag_by_periods else "default"
 
@@ -623,7 +629,8 @@ class Profile(object):
             if not margin_bottom <= period_profile <= margin_top:
                 profile.adjusted_periods.append(period_name)
                 for idx, measure in enumerate(profile.measures):
-                    period = tariff.get_period_by_date(measure.date).code
+                    dt = measure.date - timedelta(minutes=1)
+                    period = tariff.get_period_by_date(dt).code
                     if period != period_name:
                         continue
                     values = measure._asdict()
