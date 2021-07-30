@@ -58,7 +58,8 @@ with description('A profile with gaps'):
         tariff = T20DHA()
         balance = Counter()
         for ph in self.complete_profile:
-            period = tariff.get_period_by_date(ph.date)
+            dt = ph.date - timedelta(minutes=1)
+            period = tariff.get_period_by_date(dt)
             balance[period.code] += ph.measure
 
         total = sum(balance.values())
@@ -75,7 +76,8 @@ with description('A profile with gaps'):
         tariff = T20DHA()
         tariff.cof = 'A'
         for ph in self.complete_profile:
-            period = tariff.get_period_by_date(ph.date)
+            dt = ph.date - timedelta(minutes=1)
+            period = tariff.get_period_by_date(dt)
             balance[period.code] += ph.measure
         with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
             profile_estimated = self.profile.estimate(tariff, balance)
@@ -103,7 +105,8 @@ with description('A profile with gaps'):
                 self.profile.start_date, self.profile.end_date, []
             )
             for ph in self.complete_profile:
-                period = tariff.get_period_by_date(ph.date)
+                dt = ph.date - timedelta(minutes=1)
+                period = tariff.get_period_by_date(dt)
                 balance[period.code] += ph.measure
             with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
                 profile_estimated = profile.estimate(tariff, balance)
@@ -119,7 +122,8 @@ with description('A profile with gaps'):
 
             measures = []
             for ph in self.complete_profile:
-                period = tariff.get_period_by_date(ph.date)
+                dt = ph.date - timedelta(minutes=1)
+                period = tariff.get_period_by_date(dt)
                 balance[period.code] += ph.measure
                 measures.append(ProfileHour(ph.date, ph.measure, False, 0.0))
 
@@ -163,7 +167,8 @@ with description('A profile with gaps'):
         balance = Counter()
         tariff = T20DHA()
         for ph in self.profile.measures:
-            period = tariff.get_period_by_date(ph.date)
+            dt = ph.date - timedelta(minutes=1)
+            period = tariff.get_period_by_date(dt)
             balance[period.code] += ph.measure
         expect(len(self.profile.gaps)).to(be_above(0))
 
@@ -205,7 +210,8 @@ with description('A complete profile with different energy than balance'):
         )
 
         for ph in self.profile.measures:
-            period = tariff.get_period_by_date(ph.date)
+            dt = ph.date - timedelta(minutes=1)
+            period = tariff.get_period_by_date(dt)
             complete_hours[period.code] += 1
 
         for period in complete_hours:
@@ -215,7 +221,8 @@ with description('A complete profile with different energy than balance'):
         tariff = T20DHA()
         balance = Counter()
         for ph in self.profile.measures:
-            period = tariff.get_period_by_date(ph.date)
+            dt = ph.date - timedelta(minutes=1)
+            period = tariff.get_period_by_date(dt)
             balance[period.code] += ph.measure
         with vcr.use_cassette('spec/fixtures/ree/201503-201504.yaml'):
             profile = self.profile.estimate(tariff, balance)
@@ -238,7 +245,8 @@ with description('A complete profile with different energy than balance'):
                 )
 
                 for ph in profile.measures:
-                    period = tariff.get_period_by_date(ph.date)
+                    dt = ph.date - timedelta(minutes=1)
+                    period = tariff.get_period_by_date(dt)
                     balance[period.code] += ph.measure
 
                 balance[period.code] -= 940
@@ -251,7 +259,8 @@ with description('A complete profile with different energy than balance'):
                 balance = Counter()
 
                 for ph in profile.measures:
-                    period = tariff.get_period_by_date(ph.date)
+                    dt = ph.date - timedelta(minutes=1)
+                    period = tariff.get_period_by_date(dt)
                     balance[period.code] += ph.measure
 
                 balance[period.code] += 360
@@ -267,7 +276,8 @@ with description('A complete profile with different energy than balance'):
                 balance = Counter()
 
                 for ph in self.profile.measures:
-                    period = tariff.get_period_by_date(ph.date)
+                    dt = ph.date - timedelta(minutes=1)
+                    period = tariff.get_period_by_date(dt)
                     balance[period.code] += ph.measure
 
                 balance[period.code] += 10
@@ -280,7 +290,8 @@ with description('A complete profile with different energy than balance'):
 
                 adjusted_balance = Counter()
                 for ph in profile.measures:
-                    period = tariff.get_period_by_date(ph.date)
+                    dt = ph.date - timedelta(minutes=1)
+                    period = tariff.get_period_by_date(dt)
                     adjusted_balance[period.code] += ph.measure
 
                 for period in adjusted_balance:
