@@ -1085,7 +1085,7 @@ class T61TD(T30TD):
     def __init__(self, **kwargs):
         super(T61TD, self).__init__(**kwargs)
         self.code = '6.1TD'
-        self.cof = None
+        self.cof = '3.0TD'
         self.min_power = 0
         self.max_power = 100000
         self.require_summer_winter_hours = False
@@ -1098,6 +1098,7 @@ class T62TD(T61TD):
     def __init__(self, **kwargs):
         super(T62TD, self).__init__(**kwargs)
         self.code = '6.2TD'
+        self.cof = None
 
 
 class T63TD(T61TD):
@@ -1105,6 +1106,7 @@ class T63TD(T61TD):
     def __init__(self, **kwargs):
         super(T63TD, self).__init__(**kwargs)
         self.code = '6.3TD'
+        self.cof = None
 
 
 class T64TD(T61TD):
@@ -1112,6 +1114,7 @@ class T64TD(T61TD):
     def __init__(self, **kwargs):
         super(T64TD, self).__init__(**kwargs)
         self.code = '6.4TD'
+        self.cof = None
 
 
 # Vehículo Eléctrico
@@ -1120,6 +1123,7 @@ class T30TDVE(T30TD):
     def __init__(self, **kwargs):
         super(T30TDVE, self).__init__(**kwargs)
         self.code = '3.0TDVE'
+        self.cof = '3.0TDVE'
 
 
 class T61TDVE(T61TD):
