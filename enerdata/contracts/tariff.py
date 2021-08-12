@@ -1131,6 +1131,7 @@ class T61TDVE(T61TD):
     def __init__(self, **kwargs):
         super(T61TDVE, self).__init__(**kwargs)
         self.code = '6.1TDVE'
+        self.cof = '3.0TDVE'
 
 
 class T1P(Tariff):
