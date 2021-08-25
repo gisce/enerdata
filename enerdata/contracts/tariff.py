@@ -1098,7 +1098,7 @@ class T62TD(T61TD):
     def __init__(self, **kwargs):
         super(T62TD, self).__init__(**kwargs)
         self.code = '6.2TD'
-        self.cof = None
+        self.cof = '3.0TD'
 
 
 class T63TD(T61TD):
