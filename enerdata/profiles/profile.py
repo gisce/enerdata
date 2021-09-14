@@ -650,7 +650,7 @@ class Profile(object):
         # Adjust to the balance
         profile = profile.adjust(tariff, balance, diff)
 
-        if hasattr(tariff, low_voltage_measure) and getattr(tariff, low_voltage_measure):
+        if hasattr(tariff, 'low_voltage_measure') and getattr(tariff, 'low_voltage_measure'):
             # Apply losses on new 6.XTD flag_low and old 3.1A LB
             profile.measures = tariff.apply_curve_losses(profile.measures)
             profile.measures = self.simple_dragger(profile.measures)
