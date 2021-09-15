@@ -1089,8 +1089,24 @@ class T61TD(T30TD):
         self.min_power = 0
         self.max_power = 100000
         self.require_summer_winter_hours = False
-
         self.type = 'AT'
+        self.losses = 0.04
+        kva = kwargs.pop('kva', False)
+        if kva:
+            if not isinstance(kva, (int, float)):
+                raise ValueError('kva must be an enter value')
+            self.low_voltage_measure = True
+            self.kva = kva
+        else:
+            self.low_voltage_measure = False
+
+    def apply_curve_losses(self, measures):
+        for idx, measure in enumerate(measures):
+            values = measure._asdict()
+            consumption = round(measure.measure * (1 + self.losses), 2) + round(0.01 * self.kva, 2)
+            values['measure'] = consumption
+            measures[idx] = measure._replace(**values)
+        return measures
 
 
 class T62TD(T61TD):

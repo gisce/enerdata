@@ -1990,6 +1990,13 @@ with description("TD tariffs"):
             assert self.tarifa.get_number_of_periods() == 6
             assert not self.tarifa.has_holidays_periods
 
+        with it('with losses have a trafo kva and losses_coeff'):
+            kwargs = {'kva': 50}
+            self.tarifa = T61TD(**kwargs)
+            assert self.tarifa.losses == 0.04
+            assert self.tarifa.kva == 50
+            assert self.tarifa.low_voltage_measure
+
     # Tariff 6.2TD
     with context("6.2TD"):
         with before.all:
