@@ -142,6 +142,9 @@ class Profiler(object):
             measures.setdefault(m.period.code, [])
             measures[m.period.code].append(m)
         measures_intervals = EnergyMeasure.intervals(_measures)
+        # Detect single day profiling case
+        if len(measures_intervals) == 1:
+            measures_intervals.append(measures_intervals[-1])  # duplicate measure date to do not skip loop below
         logger.debug('Profiling {0} intervals'.format(len(measures_intervals)))
         for idx, measure_date in enumerate(measures_intervals):
             if idx + 1 == len(measures_intervals):
@@ -166,7 +169,7 @@ class Profiler(object):
                 if hour.hour == 0:
                     d -= timedelta(days=1)
                 # To take the first measure
-                if d == start:
+                if d == start and len(set(measures_intervals)) != 1:  # if single day case, do not regress date
                     d += timedelta(days=1)
                 fake_m = Measure(d, period, 0)
                 pos = bisect.bisect_left(measures.get(period.code, []), fake_m)
