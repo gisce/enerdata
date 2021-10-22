@@ -16,3 +16,8 @@ with description('REE Calendar'):
         cal = REECalendar()
         expect(cal.is_holiday(date(2017, 1, 6))).to(be_false)
         expect(cal.is_holiday(date(2017, 4, 14))).to(be_false)
+
+    with it('must have epiphany as holiday from 2022'):
+        cal = REECalendar()
+        expect(cal.is_holiday(date(2022, 1, 6))).to(be_true)
+        expect(cal.is_holiday(date(2021, 1, 6))).to(be_false)
