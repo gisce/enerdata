@@ -638,7 +638,7 @@ class Profile(object):
                         continue
                     values = measure._asdict()
                     values['valid'] = True
-                    if not energy_per_period[period]:
+                    if not balance[period]:
                         values['measure'] = dragger.drag(measure.measure * 0)
                     else:
                         values['measure'] = dragger.drag(measure.measure * (
