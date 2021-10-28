@@ -641,9 +641,12 @@ class Profile(object):
                     if not balance[period]:
                         values['measure'] = dragger.drag(measure.measure * 0)
                     else:
-                        values['measure'] = dragger.drag(measure.measure * (
-                            balance[period] / energy_per_period[period]
-                        ))
+                        try:
+                            values['measure'] = dragger.drag(measure.measure * (
+                                balance[period] / energy_per_period[period]
+                            ))
+                        except ZeroDivisionError:
+                            values['measure'] = dragger.drag(measure.measure * 0)
                     profile.measures[idx] = measure._replace(**values)
         return profile
 
