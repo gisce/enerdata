@@ -143,7 +143,7 @@ class Tariff(object):
     def get_period_by_date(self, date_time, holidays=None, magn='te'):
         station = get_station(date_time)
         if holidays is None:
-            holidays = []
+            holidays = get_holidays(date_time.year)
         date = date_time.date()
         if (calendar.weekday(date.year, date.month, date.day) in (5, 6)
                 or date in holidays):
