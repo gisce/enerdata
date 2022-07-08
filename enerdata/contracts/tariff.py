@@ -480,7 +480,7 @@ class TariffPeriod(object):
 
 
 class T20A(TariffPreTD):
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(T20A, self).__init__()
         self.code = '2.0A'
         self.cof = 'A'
@@ -491,6 +491,9 @@ class T20A(TariffPreTD):
         self.min_power = 0
         self.max_power = 10
         self.type = 'BT'
+
+        # set subsystem and periods by zone
+        self.geom_zone = kwargs.pop('geom_zone', '1')
 
     def correct_powers(self, powers):
         try:
@@ -583,7 +586,7 @@ class T21DHS(T20DHS):
 
 
 class T30A(TariffPreTD):
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(T30A, self).__init__()
         self.code = '3.0A'
         self.cof = 'C'
@@ -635,6 +638,9 @@ class T30A(TariffPreTD):
                 'P3', 'tp'
             )
         )
+
+        # set subsystem and periods by zone
+        self.geom_zone = kwargs.pop('geom_zone', '1')
 
 
 class T30ANoFestivos(T30A):
@@ -848,7 +854,7 @@ class T61A(TariffPreTD):
     """
     6.1A Tariff
     """
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(T61A, self).__init__()
         self.code = '6.1A'
         self.cof = 'C'
@@ -879,6 +885,9 @@ class T61A(TariffPreTD):
                 'P6', 'tp'
             ),
         )
+
+        # set subsystem and periods by zone
+        self.geom_zone = kwargs.pop('geom_zone', '1')
 
     @staticmethod
     def are_powers_normalized(powers):
