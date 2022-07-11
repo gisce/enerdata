@@ -1,7 +1,6 @@
-from enerdata.datetime import datetime
-from enerdata.datetime.timezone import TIMEZONE
-from enerdata.datetime.station import *
-
+# -*- coding: utf-8 -*-
+from enerdata.datetime.station import get_station, TIMEZONE, datetime
+from mamba import description, it
 
 with description('The station module'):
     with it('has to return the station by date'):

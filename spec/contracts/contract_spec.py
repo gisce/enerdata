@@ -1,6 +1,7 @@
-from expects.testing import failure
-
+# -*- coding: utf-8 -*-
 from enerdata.contracts.contract import *
+from expects.testing import failure
+from mamba import description, it, before, context
 
 
 with description('Creating a contract'):

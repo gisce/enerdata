@@ -1,12 +1,21 @@
-from enerdata.profiles.profile import *
-from enerdata.contracts.tariff import *
+# -*- coding: utf-8 -*-
+try:
+    from collections import Counter
+except ImportError:
+    from backport_collections import Counter
+from datetime import datetime, timedelta
+from enerdata.profiles.profile import ProfileHour, Profile
+from enerdata.contracts.tariff import T20DHA
+from enerdata.datetime.timezone import TIMEZONE
 from expects import *
+import bisect
 import vcr
 from decimal import Decimal
+from mamba import description, it, context, before
+import random
 
 with description('A profile with gaps'):
     with before.all:
-        import random
         measures = []
         start = TIMEZONE.localize(datetime(2015, 3, 1, 1))
         end = TIMEZONE.localize(datetime(2015, 4, 1, 0))
@@ -95,7 +104,6 @@ with description('A profile with gaps'):
         total_energy = sum(balance.values())
         expect(profile_estimated.total_consumption).to(equal(total_energy))
 
-
     with context('Is an empty profile'):
         with it('has to generate all the profile estimating'):
             balance = Counter()
@@ -177,11 +185,8 @@ with description('A profile with gaps'):
 
         expect(adjust_error).to(raise_error(Exception, 'Is not possible to adjust a profile with gaps'))
 
-
-
 with description('A complete profile with different energy than balance'):
     with before.all:
-        import random
         measures = []
         start = TIMEZONE.localize(datetime(2015, 3, 1, 1))
         end = TIMEZONE.localize(datetime(2015, 4, 1, 0))

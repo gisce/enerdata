@@ -1,4 +1,4 @@
-from enerdata.contracts import TariffPeriod
+from ..contracts import TariffPeriod
 
 
 class Measure(object):

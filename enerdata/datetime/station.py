@@ -1,5 +1,5 @@
-from enerdata.datetime import datetime
-from enerdata.datetime.timezone import TIMEZONE
+from datetime import datetime
+from .timezone import TIMEZONE
 
 
 def get_station(dt):

@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
+from datetime import datetime, timedelta
+from enerdata.contracts.tariff import *
 from expects.testing import failure
 from expects import *
-from enerdata.contracts.tariff import *
-from datetime import datetime, timedelta
 from enerdata.datetime.timezone import TIMEZONE
 from mamba import before, context, description, it
 

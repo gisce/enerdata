@@ -1,8 +1,8 @@
-from expects.testing import failure
+# -*- coding: utf-8 -*-
 from enerdata.metering.meter import *
 from enerdata.metering.measure import *
-
-from datetime import date
+from expects.testing import failure
+from mamba import description, it, context, before
 
 
 def generate_random_date():

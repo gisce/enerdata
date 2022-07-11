@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import calendar
 from datetime import datetime, timedelta
-from enerdata.contracts.normalized_power import NormalizedPower
-from enerdata.datetime.station import get_station
-from enerdata.datetime.holidays import get_holidays
-from enerdata.datetime.timezone import TIMEZONE
-from enerdata.datetime.work_and_holidays import get_num_of_workdays_holidays
-from enerdata.contracts.electrical_seasons import PERIODS_2x_BY_ELECTRIC_ZONE_CIR03_2020, \
+from .normalized_power import NormalizedPower
+from ..datetime.station import get_station
+from ..datetime.holidays import get_holidays
+from ..datetime.timezone import TIMEZONE
+from ..datetime.work_and_holidays import get_num_of_workdays_holidays
+from .electrical_seasons import PERIODS_2x_BY_ELECTRIC_ZONE_CIR03_2020, \
     PERIODS_3x_BY_ELECTRIC_ZONE_CIR03_2020, PERIODS_6x_BY_ELECTRIC_ZONE, DAYTYPE_BY_ELECTRIC_ZONE, \
     DAYTYPE_BY_ELECTRIC_ZONE_CIR03_2020, TARIFFS_START_DATE_STR, PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020
 
