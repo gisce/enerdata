@@ -23,6 +23,8 @@ from enerdata.datetime.solar_hour import convert_to_solar_hour
 
 from os import path
 import pandas as pd
+import requests
+
 
 logger = logging.getLogger(__name__)
 
@@ -203,6 +205,7 @@ class Profiler(object):
 class REEProfile(object):
     HOST = 'www.ree.es'
     PATH = '/sites/default/files/simel/perff'
+    GISCE_URL = 'https://github.com/gisce/ree_montly_profiles/blob/main/perff/'
     down_lock = Lock()
 
     _CACHE = {}
@@ -277,7 +280,37 @@ class REEProfile(object):
                 cls._CACHE[key] = cofs
                 return cofs
             else:
-                raise Exception('Profiles from REE not found')
+                try:
+                    import bz2
+                    perff_file = 'PERFF_%(key)s.0.bz2' % locals()
+                    r = requests.get(cls.GISCE_URL + perff_file, params={'raw': 'true'})
+                    c = StringIO(r.content)
+                    m = StringIO(bz2.decompress(c.read()))
+                    reader = csv.reader(m, delimiter=';')
+                    header = True
+                    cofs = []
+                    coeffs_list = get_tariff_coeffs_list(year, month)
+                    for vals in reader:
+                        if header:
+                            header = False
+                            continue
+                        if int(vals[3]) == 1:
+                            n_hour = 1
+                        dt = datetime(
+                            int(vals[0]), int(vals[1]), int(vals[2])
+                        )
+                        day = TIMEZONE.localize(dt, is_dst=bool(not int(vals[4])))
+                        day += timedelta(hours=n_hour)
+                        n_hour += 1
+                        cofs.append(Coefficent(
+                            TIMEZONE.normalize(day), dict(
+                                (k, float(vals[i])) for i, k in enumerate(coeffs_list, 5)
+                            ))
+                        )
+                    cls._CACHE[key] = cofs
+                    return cofs
+                except:
+                    raise Exception('Profiles from REE not found')
         finally:
             if conn is not None:
                 conn.close()

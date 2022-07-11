@@ -1,6 +1,6 @@
 from enerdata.profiles.profile import *
 from enerdata.datetime.station import *
-from enerdata.contracts.tariff import T20A
+from enerdata.contracts.tariff import T20A, T20TD
 
 
 ONE_MONTH_DATE_SET = ['1/2018']
@@ -136,10 +136,10 @@ with description('When profiling'):
         with it("must throw the exception of: Profiles from REE not found"):
             end_year = datetime.now().year
             end_month = datetime.now().month
-            start = TIMEZONE.localize(datetime(2018, 5, 1, 1))
+            start = TIMEZONE.localize(datetime(2022, 6, 1, 1))
             end = TIMEZONE.localize(datetime(end_year, end_month, 1, 0))
 
-            tariff = T20A()
+            tariff = T20TD()
             accumulated = 0
             balance = {
                 'P1': 6.8,
@@ -151,7 +151,7 @@ with description('When profiling'):
             try:
                 estimation = profile.estimate(tariff, balance)
             except Exception as err:
-                assert err.message != "Profiles from REE not found"
+                assert err.message == "Profiles from REE not found"
 
     with context("not habitual hours"):
         with it("must profile up to specific times"):
