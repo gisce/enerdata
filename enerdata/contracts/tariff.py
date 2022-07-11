@@ -502,9 +502,9 @@ class T20A(TariffPreTD):
         except:
             pass
 
-        norm_power = NormalizedPower().get_norm_powers(
+        norm_power = next(NormalizedPower().get_norm_powers(
             int(self.min_power * 1000), int(self.max_power * 1000)
-        ).next()
+        ))
 
         return [norm_power / 1000.0] * len(self.power_periods)
 

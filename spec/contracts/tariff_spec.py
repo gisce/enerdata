@@ -67,12 +67,12 @@ with context('A tariff'):
         assert self.tariff.get_number_of_periods() == 2
     with it('should return the periods of energy'):
         assert len(self.tariff.energy_periods) == 2
-        assert self.tariff.energy_periods.keys() == ['1', '2']
+        assert list(self.tariff.energy_periods.keys()) == ['1', '2']
     with it('should return the periods of power'):
         assert len(self.tariff.power_periods) == 0
         self.tariff.periods += (TariffPeriod('1', 'tp'),)
         assert len(self.tariff.power_periods) == 1
-        assert self.tariff.power_periods.keys() == ['1']
+        assert list(self.tariff.power_periods.keys()) == ['1']
     with it('should have 24h of range ours in its energy periods'):
         def set_periods():
             self.tariff.periods = (

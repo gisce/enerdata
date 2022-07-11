@@ -15,6 +15,7 @@ except ImportError:
     from io import StringIO
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
+from six import string_types
 
 from ..profiles import Dragger
 from ..contracts.tariff import Tariff, T30A_one_period, T31A_one_period, T31A
@@ -23,6 +24,7 @@ from ..metering.measure import Measure, EnergyMeasure
 from ..datetime.solar_hour import convert_to_solar_hour
 
 from os import path
+from six import BytesIO
 import pandas as pd
 import bz2
 import csv
@@ -260,8 +262,15 @@ class REEProfile(object):
             ))
             r = conn.getresponse()
             if r.getheader('Content-Type') == 'application/x-gzip':
-                c = StringIO(r.read())
-                m = StringIO(gzip.GzipFile(fileobj=c).read())
+                content = r.read()
+                try:
+                    c = StringIO(content)
+                    m = StringIO(gzip.GzipFile(fileobj=c).read())
+                except:
+                    c = BytesIO(content)
+                    n = BytesIO(gzip.GzipFile(fileobj=c).read())
+                    content = n.read().decode('iso8859-15')
+                    m = StringIO(content)
                 c.close()
                 reader = csv.reader(m, delimiter=';')
                 header = True
