@@ -4,6 +4,17 @@ except ImportError:
     from backport_collections import Counter
 from decimal import Decimal
 
+import math
+
+
+def my_round(x, d=0):
+    x = float(x)
+    p = 10 ** d
+    if x > 0:
+        return float(math.floor((x * p) + 0.5))/p
+    else:
+        return float(math.ceil((x * p) - 0.5))/p
+
 
 class Dragger(Counter):
 
@@ -13,6 +24,6 @@ class Dragger(Counter):
             return number
 
         number = Decimal(str(number)) + self[key]
-        aprox = int(round(number))
+        aprox = int(my_round(number))
         self[key] = number - aprox
         return aprox
