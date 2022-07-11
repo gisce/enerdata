@@ -281,7 +281,7 @@ class Tariff(object):
 class TariffPreTD(Tariff):
     """Energy DSO Tariff.
     """
-    def __init__(self, code=None):
+    def __init__(self, code=None, **kwargs):
         self.code = code
         self._periods = tuple()
         self.cof = None
@@ -480,8 +480,8 @@ class TariffPeriod(object):
 
 
 class T20A(TariffPreTD):
-    def __init__(self):
-        super(T20A, self).__init__()
+    def __init__(self, **kwargs):
+        super(T20A, self).__init__(**kwargs)
         self.code = '2.0A'
         self.cof = 'A'
         self.periods = (
@@ -491,6 +491,9 @@ class T20A(TariffPreTD):
         self.min_power = 0
         self.max_power = 10
         self.type = 'BT'
+
+        # set subsystem and periods by zone
+        self.geom_zone = kwargs.pop('geom_zone', '1')
 
     def correct_powers(self, powers):
         try:
@@ -507,8 +510,8 @@ class T20A(TariffPreTD):
 
 
 class T20DHA(T20A):
-    def __init__(self):
-        super(T20DHA, self).__init__()
+    def __init__(self, **kwargs):
+        super(T20DHA, self).__init__(**kwargs)
         self.code = '2.0DHA'
         self.cof = 'B'
         self.periods = (
@@ -529,8 +532,8 @@ class T20DHA(T20A):
 
 
 class T20DHS(T20DHA):
-    def __init__(self):
-        super(T20DHS, self).__init__()
+    def __init__(self, **kwargs):
+        super(T20DHS, self).__init__(**kwargs)
         self.code = '2.0DHS'
         self.cof = 'D'
         self.periods = (
@@ -556,8 +559,8 @@ class T20DHS(T20DHA):
 
 
 class T21A(T20A):
-    def __init__(self):
-        super(T21A, self).__init__()
+    def __init__(self, **kwargs):
+        super(T21A, self).__init__(**kwargs)
         self.code = '2.1A'
         self.cof = 'A'
         self.min_power = 10
@@ -565,8 +568,8 @@ class T21A(T20A):
 
 
 class T21DHA(T20DHA):
-    def __init__(self):
-        super(T21DHA, self).__init__()
+    def __init__(self, **kwargs):
+        super(T21DHA, self).__init__(**kwargs)
         self.code = '2.1DHA'
         self.cof = 'B'
         self.min_power = 10
@@ -574,8 +577,8 @@ class T21DHA(T20DHA):
 
 
 class T21DHS(T20DHS):
-    def __init__(self):
-        super(T21DHS, self).__init__()
+    def __init__(self, **kwargs):
+        super(T21DHS, self).__init__(**kwargs)
         self.code = '2.1DHS'
         self.cof = 'D'
         self.min_power = 10
@@ -583,8 +586,8 @@ class T21DHS(T20DHS):
 
 
 class T30A(TariffPreTD):
-    def __init__(self):
-        super(T30A, self).__init__()
+    def __init__(self, **kwargs):
+        super(T30A, self).__init__(**kwargs)
         self.code = '3.0A'
         self.cof = 'C'
         self.min_power = 15
@@ -636,10 +639,13 @@ class T30A(TariffPreTD):
             )
         )
 
+        # set subsystem and periods by zone
+        self.geom_zone = kwargs.pop('geom_zone', '1')
+
 
 class T30ANoFestivos(T30A):
-    def __init__(self):
-        super(T30ANoFestivos, self).__init__()
+    def __init__(self, **kwargs):
+        super(T30ANoFestivos, self).__init__(**kwargs)
         self.periods = (
             TariffPeriod(
                 'P1', 'te',
@@ -671,8 +677,8 @@ class T30A_one_period(T30A):
     """
     A 3.0A with one unique period
     """
-    def __init__(self):
-        super(T30A_one_period, self).__init__()
+    def __init__(self, **kwargs):
+        super(T30A_one_period, self).__init__(**kwargs)
         self.periods = (
             TariffPeriod('P1', 'te'),
             TariffPeriod('P1', 'tp')
@@ -683,8 +689,8 @@ class T31A(T30A):
     """
     3.1A Tariff patched with 3.1ALB
     """
-    def __init__(self, kva=None):
-        super(T31A, self).__init__()
+    def __init__(self, kva=None, **kwargs):
+        super(T31A, self).__init__(**kwargs)
         self.code = '3.1A'
         self.cof = 'C'
         self.min_power = 1
@@ -800,8 +806,8 @@ class T31A_one_period(T31A):
     """
     A 3.1A with one unique period
     """
-    def __init__(self):
-        super(T31A_one_period, self).__init__()
+    def __init__(self, **kwargs):
+        super(T31A_one_period, self).__init__(**kwargs)
         self.periods = (
             TariffPeriod('P1', 'te'),
             TariffPeriod('P1', 'tp')
@@ -809,8 +815,8 @@ class T31A_one_period(T31A):
 
 
 class T31ANoFestivos(T31A):
-    def __init__(self, kva=None):
-        super(T31ANoFestivos, self).__init__(kva=kva)
+    def __init__(self, kva=None, **kwargs):
+        super(T31ANoFestivos, self).__init__(kva=kva, **kwargs)
         self.hours_by_period = {
             'P1': 6,
             'P2': 10,
@@ -848,8 +854,8 @@ class T61A(TariffPreTD):
     """
     6.1A Tariff
     """
-    def __init__(self):
-        super(T61A, self).__init__()
+    def __init__(self, **kwargs):
+        super(T61A, self).__init__(**kwargs)
         self.code = '6.1A'
         self.cof = 'C'
         self.min_power = 450
@@ -880,6 +886,9 @@ class T61A(TariffPreTD):
             ),
         )
 
+        # set subsystem and periods by zone
+        self.geom_zone = kwargs.pop('geom_zone', '1')
+
     @staticmethod
     def are_powers_normalized(powers):
         # 6.1A doesn't need to have normalized powers
@@ -905,8 +914,8 @@ class T61B(T61A):
     """
     6.1B Tariff
     """
-    def __init__(self):
-        super(T61B, self).__init__()
+    def __init__(self, **kwargs):
+        super(T61B, self).__init__(**kwargs)
         self.code = '6.1B'
 
 
@@ -914,8 +923,8 @@ class T62(T61A):
     """
     6.2 Tariff
     """
-    def __init__(self):
-        super(T62, self).__init__()
+    def __init__(self, **kwargs):
+        super(T62, self).__init__(**kwargs)
         self.code = '6.2'
 
 
@@ -923,8 +932,8 @@ class T63(T61A):
     """
     6.3 Tariff
     """
-    def __init__(self):
-        super(T63, self).__init__()
+    def __init__(self, **kwargs):
+        super(T63, self).__init__(**kwargs)
         self.code = '6.3'
 
 
@@ -932,14 +941,14 @@ class T64(T61A):
     """
     6.4 Tariff
     """
-    def __init__(self):
-        super(T64, self).__init__()
+    def __init__(self, **kwargs):
+        super(T64, self).__init__(**kwargs)
         self.code = '6.4'
 
 
 class TRE(TariffPreTD):
-    def __init__(self):
-        super(TRE, self).__init__()
+    def __init__(self, **kwargs):
+        super(TRE, self).__init__(**kwargs)
         self.code = 'RE'
         self.cof = 'A'
 
