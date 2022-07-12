@@ -36,7 +36,7 @@ with description("A coeficient"):
             assert REEProfile._CACHE['201410'] == cofs
 
     with it("must check date and hour are used correctly"):
-        cofs = REEProfile.get(2022, 01)
+        cofs = REEProfile.get(2022, 1)
         # January must have 744 hours
         assert len(cofs) == (31 * 24)
         # January must have expected profile values
