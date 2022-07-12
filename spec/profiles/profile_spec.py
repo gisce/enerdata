@@ -35,6 +35,16 @@ with description("A coeficient"):
             assert cofs[(24 * 25) + 2][0].dst() == timedelta(0)
             assert REEProfile._CACHE['201410'] == cofs
 
+    with it("must check date and hour are used correctly"):
+        cofs = REEProfile.get(2022, 01)
+        # January must have 744 hours
+        assert len(cofs) == (31 * 24)
+        # January must have expected profile values
+        cof = cofs[0].cof
+        assert cof['2.0TD'] == 0.00011540446
+        assert cof['3.0TD'] == 6.989134e-05
+        assert cof['3.0TDVE'] == 4.090459e-05
+
     with it("must fail if the position does not exist"):
         c = Coefficients(self.cofs)
         def get_range_error():
