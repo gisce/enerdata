@@ -1,12 +1,12 @@
+# -*- coding: utf-8 -*-
 from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import *
-
 from expects import *
+from mamba import description, it, context, before
 import vcr
 
 
-class TGProfileHour(namedtuple('TGProfileHour',
-                               ProfileHour._fields + ('meta', ))):
+class TGProfileHour(namedtuple('TGProfileHour', ProfileHour._fields + ('meta', ))):
     __slots__ = ()
 
     def __lt__(self, other):

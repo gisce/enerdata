@@ -1,4 +1,4 @@
-from enerdata.calendars import REECalendar
+from ..calendars import REECalendar
 
 CALENDAR = REECalendar()
 

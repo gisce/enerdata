@@ -1,8 +1,8 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from expects import expect, raise_error
-
 from enerdata.contracts.normalized_power import NormalizedPower
 from enerdata.contracts.normalized_power import NORMALIZED_POWERS as OFFICIAL_NP
+from mamba import description, it, context
 
 NORMALIZED_POWERS = {
     330: ('1x220', '1.5')

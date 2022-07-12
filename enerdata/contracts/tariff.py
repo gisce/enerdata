@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 import calendar
 from datetime import datetime, timedelta
-from enerdata.contracts.normalized_power import NormalizedPower
-from enerdata.datetime.station import get_station
-from enerdata.datetime.holidays import get_holidays
-from enerdata.datetime.timezone import TIMEZONE
-from enerdata.datetime.work_and_holidays import get_num_of_workdays_holidays
-from enerdata.contracts.electrical_seasons import PERIODS_2x_BY_ELECTRIC_ZONE_CIR03_2020, \
+from .normalized_power import NormalizedPower
+from ..datetime.station import get_station
+from ..datetime.holidays import get_holidays
+from ..datetime.timezone import TIMEZONE
+from ..datetime.work_and_holidays import get_num_of_workdays_holidays
+from .electrical_seasons import PERIODS_2x_BY_ELECTRIC_ZONE_CIR03_2020, \
     PERIODS_3x_BY_ELECTRIC_ZONE_CIR03_2020, PERIODS_6x_BY_ELECTRIC_ZONE, DAYTYPE_BY_ELECTRIC_ZONE, \
     DAYTYPE_BY_ELECTRIC_ZONE_CIR03_2020, TARIFFS_START_DATE_STR, PERIODS_6x_BY_ELECTRIC_ZONE_CIR03_2020
+from ..profiles import my_round
 
 
 def check_range_hours(hours):
@@ -502,9 +503,9 @@ class T20A(TariffPreTD):
         except:
             pass
 
-        norm_power = NormalizedPower().get_norm_powers(
+        norm_power = next(NormalizedPower().get_norm_powers(
             int(self.min_power * 1000), int(self.max_power * 1000)
-        ).next()
+        ))
 
         return [norm_power / 1000.0] * len(self.power_periods)
 
@@ -772,16 +773,16 @@ class T31A(T30A):
             else:
                 cofs[period] = period_hours.get(period, 0) * workdays
         for period, consumption in balance.items():
-            consumptions[period] = round(
+            consumptions[period] = my_round(
                 consumption * (1 + self.losses), 2
-            ) + round(0.01 * cofs[period] * self.kva, 2)
+            ) + my_round(0.01 * cofs[period] * self.kva, 2)
 
         return consumptions
 
     def apply_curve_losses(self, measures):
         for idx, measure in enumerate(measures):
             values = measure._asdict()
-            consumption = round(measure.measure * (1 + self.losses), 2) + round(0.01 * self.kva, 2)
+            consumption = my_round(measure.measure * (1 + self.losses), 2) + my_round(0.01 * self.kva, 2)
             values['measure'] = consumption
             measures[idx] = measure._replace(**values)
         return measures
@@ -1112,7 +1113,7 @@ class T61TD(T30TD):
     def apply_curve_losses(self, measures):
         for idx, measure in enumerate(measures):
             values = measure._asdict()
-            consumption = round(measure.measure * (1 + self.losses), 2) + round(0.01 * self.kva, 2)
+            consumption = my_round(measure.measure * (1 + self.losses), 2) + my_round(0.01 * self.kva, 2)
             values['measure'] = consumption
             measures[idx] = measure._replace(**values)
         return measures

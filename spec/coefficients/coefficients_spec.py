@@ -1,10 +1,18 @@
-from enerdata.profiles.profile import *
-from enerdata.datetime.station import *
+# -*- coding: utf-8 -*-
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from enerdata.profiles.profile import REEProfile, Profile
 from enerdata.contracts.tariff import T20A, T20TD
+from enerdata.datetime.timezone import TIMEZONE
+from mamba import description, it, before, context
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 ONE_MONTH_DATE_SET = ['1/2018']
 DATE_SET = ['3/2018', '4/2018', '5/2018']
+
 
 class FakeClass(object):
     @classmethod
@@ -22,8 +30,6 @@ class FakeClass(object):
 
 
 def get_data_ranges(start, end):
-    from datetime import datetime
-    from dateutil.relativedelta import relativedelta
     cofs = []
     start = datetime(start.year, start.month, 1)
     end = datetime(end.year, end.month, 1)

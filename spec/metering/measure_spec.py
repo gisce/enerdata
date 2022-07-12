@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 from datetime import date
-
 from expects import *
 from expects.testing import failure
 from enerdata.metering.measure import *
+from mamba import description, it, context, before
 
 
 with description('Creating a measure'):

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import division
 
 import bisect
@@ -8,22 +9,32 @@ except ImportError:
     from backport_collections import namedtuple, Counter
 from datetime import datetime, date, timedelta
 from multiprocessing import Lock
-from six.moves import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
+from six import string_types
 
-from enerdata.profiles import Dragger
-from enerdata.contracts.tariff import (Tariff, T30A_one_period,
-                                       T31A_one_period, T31A)
-from enerdata.datetime.timezone import TIMEZONE
-from enerdata.metering.measure import Measure, EnergyMeasure
-from enerdata.datetime.holidays import get_holidays
-from enerdata.datetime.work_and_holidays import get_num_of_workdays_holidays
-from enerdata.datetime.solar_hour import convert_to_solar_hour
+from ..profiles import Dragger
+from ..contracts.tariff import Tariff, T30A_one_period, T31A_one_period, T31A
+from ..datetime.timezone import TIMEZONE
+from ..metering.measure import Measure, EnergyMeasure
+from ..datetime.solar_hour import convert_to_solar_hour
 
 from os import path
+from six import BytesIO
 import pandas as pd
+import bz2
+import csv
+import gzip
 import requests
+
+try:
+    import httplib
+except ImportError:
+    import http.client as httplib
 
 
 logger = logging.getLogger(__name__)
@@ -235,12 +246,11 @@ class REEProfile(object):
                 ssl._create_default_https_context = _create_unverified_https_context
         except ImportError:
             pass
+        conn = None
         try:
             cls.down_lock.acquire()
-            import csv
-            import httplib
+
             key = '%(year)s%(month)02i' % locals()
-            conn = None
             if key in cls._CACHE:
                 logger.debug('Using CACHE for REEProfile {0}'.format(key))
                 return cls._CACHE[key]
@@ -251,10 +261,16 @@ class REEProfile(object):
                 cls.PATH, perff_file
             ))
             r = conn.getresponse()
-            if r.msg.type == 'application/x-gzip':
-                import gzip
-                c = StringIO(r.read())
-                m = StringIO(gzip.GzipFile(fileobj=c).read())
+            if r.getheader('Content-Type') == 'application/x-gzip':
+                content = r.read()
+                try:
+                    c = StringIO(content)
+                    m = StringIO(gzip.GzipFile(fileobj=c).read())
+                except:
+                    c = BytesIO(content)
+                    n = BytesIO(gzip.GzipFile(fileobj=c).read())
+                    content = n.read().decode('iso8859-15')
+                    m = StringIO(content)
                 c.close()
                 reader = csv.reader(m, delimiter=';')
                 header = True
@@ -281,7 +297,6 @@ class REEProfile(object):
                 return cofs
             else:
                 try:
-                    import bz2
                     perff_file = 'PERFF_%(key)s.0.bz2' % locals()
                     r = requests.get(cls.GISCE_URL + perff_file, params={'raw': 'true'})
                     c = StringIO(r.content)

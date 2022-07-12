@@ -1,7 +1,7 @@
 import bisect
 from datetime import date
 
-from enerdata.metering.measure import *
+from .measure import *
 
 
 class Meter(object):

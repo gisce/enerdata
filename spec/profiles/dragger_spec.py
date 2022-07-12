@@ -1,13 +1,14 @@
-from decimal import Decimal
-
+# -*- coding: utf-8 -*-
 from enerdata.profiles.profile import *
 from expects import *
+from mamba import description, it, context
+
 
 with description('A dragger object'):
     with it('must return the integer of the number'):
         d = Dragger()
         aprox = d.drag(32.453)
-        expect(aprox).to(be(32))
+        expect(aprox).to(equal(32))
 
     with it('must keep the decimal part'):
         d = Dragger()
@@ -27,22 +28,20 @@ with description('A dragger object'):
         expect(d['key2']).to(equal(Decimal('0.3')))
 
         aprox = d.drag(1.4, key='key1')
-        expect(aprox).to(be(1))
+        expect(aprox).to(equal(1))
         expect(d['key1']).to(equal(Decimal('0')))
 
         aprox = d.drag(5.2, key='key2')
-        expect(aprox).to(be(6))
+        expect(aprox).to(equal(6))
         expect(d['key2']).to(equal(Decimal('-0.5')))
 
-
     with context('Has to use the drag of antecesor drag'):
-
         with context('If the current drag is >= 0.5'):
             with it('has to return number + 1 and drag will be < 0'):
                 d = Dragger()
                 aprox = d.drag(32.453)
                 aprox2 = d.drag(1.1)
-                expect(aprox2).to(be(2))
+                expect(aprox2).to(equal(2))
                 expect(d['default']).to(be_below_or_equal(0))
 
         with context('If the curren drag is < 0.5'):
@@ -50,7 +49,7 @@ with description('A dragger object'):
                 d = Dragger()
                 aprox = d.drag(32.453)
                 aprox2 = d.drag(1.046)
-                expect(aprox2).to(be(1))
+                expect(aprox2).to(equal(1))
 
         with context('if receives 0.5 and 0'):
             with it('has to drag -0.5 and return 1 and 0'):
@@ -61,5 +60,5 @@ with description('A dragger object'):
                 expect(dragging).to(equal(Decimal('-0.5')))
                 aprox = d.drag(0)
                 dragging = d['default']
-                expect(aprox).to(equal(0))
+                expect(aprox).to(equal(0.0))
                 expect(dragging).to(equal(Decimal('-0.5')))

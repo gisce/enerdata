@@ -1,5 +1,7 @@
-from expects import *
+# -*- coding: utf-8 -*-
 from enerdata.cups.cups import *
+from expects import *
+from mamba import description, it
 
 
 with description('Validating checksums'):

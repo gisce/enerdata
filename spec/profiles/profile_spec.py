@@ -1,13 +1,15 @@
+# -*- coding: utf-8 -*-
+from enerdata.profiles import my_round
 from enerdata.profiles.profile import *
 from enerdata.contracts.tariff import (T20A, T20DHA, T20DHS, T21A, T21DHA,
                                        T21DHS, T30A, T31A, T30A_one_period,
                                        T31A_one_period, TRE, T20TD, T30TD)
-from enerdata.datetime.holidays import get_holidays
 from enerdata.metering.measure import *
 from expects import *
+from mamba import description, it, context, before
+
 import vcr
 import random
-
 
 
 with description("A coeficient"):
@@ -32,6 +34,16 @@ with description("A coeficient"):
             # The second second hour in the 26th of October is not DST
             assert cofs[(24 * 25) + 2][0].dst() == timedelta(0)
             assert REEProfile._CACHE['201410'] == cofs
+
+    with it("must check date and hour are used correctly"):
+        cofs = REEProfile.get(2022, 1)
+        # January must have 744 hours
+        assert len(cofs) == (31 * 24)
+        # January must have expected profile values
+        cof = cofs[0].cof
+        assert cof['2.0TD'] == 0.00011540446
+        assert cof['3.0TD'] == 6.989134e-05
+        assert cof['3.0TDVE'] == 4.090459e-05
 
     with it("must fail if the position does not exist"):
         c = Coefficients(self.cofs)
@@ -902,7 +914,8 @@ with description("An estimation"):
 
             # [!] Last accumulated
             last_accumulated = estimation.measures[-1].accumulated
-            assert float(last_accumulated) == float(expected_last_accumulated), "Last accumulated '{}' must match the expected '{}'".format(last_accumulated, expected_last_accumulated)
+            assert '{:.6f}'.format(last_accumulated) == '{:.6f}'.format(expected_last_accumulated), \
+                "Last accumulated '{}' must match the expected '{}'".format(last_accumulated, expected_last_accumulated)
 
             # [!] Now estimate it using a by hour dragging
             # total energy will be +1kWh!
@@ -915,7 +928,7 @@ with description("An estimation"):
             total_estimated_by_hour = sum([x.measure for x in estimation.measures])
             last_accumulated_by_hour = estimation.measures[-1].accumulated
             assert total_expected <= total_estimated_by_hour <= total_expected + 1, "Total energy dragged by hour '{}' must match the expected +1 '{}'".format(total_estimated_by_hour, total_expected)
-            assert float(last_accumulated_by_hour) == float(expected_last_accumulated), "Last accumulated by hour '{}' must match the expected '{}'".format(last_accumulated_by_hour, expected_last_accumulated)
+            assert '{:.6f}'.format(float(last_accumulated_by_hour)) == '{:.6f}'.format(float(expected_last_accumulated)), "Last accumulated by hour '{}' must match the expected '{}'".format(last_accumulated_by_hour, expected_last_accumulated)
 
 
         with it("must handle incorrect accumulated values"):

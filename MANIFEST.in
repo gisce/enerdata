@@ -1,0 +1,4 @@
+include requirements.txt
+include requirements-dev.txt
+include profiles/data/*.csv
+include profiles/data/*.xlsx

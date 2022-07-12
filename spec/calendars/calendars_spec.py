@@ -1,9 +1,9 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from datetime import date
-
 from enerdata.calendars import REECalendar
-from workalendar.europe import Spain
 from expects import *
+from mamba import description, it
+from workalendar.europe import Spain
 
 
 with description('REE Calendar'):
