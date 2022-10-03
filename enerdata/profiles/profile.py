@@ -216,7 +216,7 @@ class Profiler(object):
 class REEProfile(object):
     HOST = 'www.ree.es'
     PATH = '/sites/default/files/simel/perff'
-    GISCE_URL = 'https://github.com/gisce/ree_montly_profiles/blob/main/perff/'
+    GISCE_URL = 'https://github.com/gisce/ree_monthly_profiles/blob/main/perff/'
     down_lock = Lock()
 
     _CACHE = {}
