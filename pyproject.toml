@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling>=1.8.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "enerdata"
+dynamic = ["version"]
+description = "A set of energy models"
+readme = "README.rst"
+license = "MIT"
+requires-python = ">=2.7"
+authors = [
+    { name = "GISCE-TI, S.L.", email = "devel@gisce.net" },
+]
+keywords = [
+    "Energy",
+    "Model",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Information Technology",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 2",
+    "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+]
+dependencies = [
+    "pytz",
+    "workalendar<8.0.0",
+    "pandas==0.23.4",
+    "requests",
+    "six",
+    "xlrd==1.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "mamba<0.11.0",
+    "expects",
+    "vcrpy",
+    "coveralls",
+    "build",
+]
+
+[project.urls]
+homepage = "http://code.gisce.net"
+
+[tool.hatch.version]
+path = "enerdata/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/enerdata",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "/enerdata",
+]
