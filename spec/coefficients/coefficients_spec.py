@@ -157,7 +157,7 @@ with description('When profiling'):
             try:
                 estimation = profile.estimate(tariff, balance)
             except Exception as err:
-                assert err.message == "Profiles from REE not found"
+                assert str(err) == "Profiles from REE not found"
 
     with context("not habitual hours"):
         with it("must profile up to specific times"):
