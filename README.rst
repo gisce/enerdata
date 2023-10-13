@@ -7,21 +7,6 @@ A set of energy models
 .. image:: https://github.com/gisce/enerdata/actions/workflows/python2.7-app.yml/badge.svg
     :target: https://github.com/gisce/enerdata/actions/workflows/python2.7-app.yml
 
-.. image:: https://github.com/gisce/enerdata/actions/workflows/python3.6-app.yml/badge.svg
-    :target: https://github.com/gisce/enerdata/actions/workflows/python3.6-app.yml
-
-.. image:: https://github.com/gisce/enerdata/actions/workflows/python3.7-app.yml/badge.svg
-    :target: https://github.com/gisce/enerdata/actions/workflows/python3.7-app.yml
-
-.. image:: https://github.com/gisce/enerdata/actions/workflows/python3.8-app.yml/badge.svg
-    :target: https://github.com/gisce/enerdata/actions/workflows/python3.8-app.yml
-
-.. image:: https://github.com/gisce/enerdata/actions/workflows/python3.9-app.yml/badge.svg
-    :target: https://github.com/gisce/enerdata/actions/workflows/python3.9-app.yml
-
-.. image:: https://github.com/gisce/enerdata/actions/workflows/python3.10-app.yml/badge.svg
-    :target: https://github.com/gisce/enerdata/actions/workflows/python3.10-app.yml
-
 .. image:: https://github.com/gisce/enerdata/actions/workflows/python3.11-app.yml/badge.svg
     :target: https://github.com/gisce/enerdata/actions/workflows/python3.11-app.yml
 
