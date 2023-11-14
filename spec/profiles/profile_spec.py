@@ -940,7 +940,7 @@ with description("An estimation"):
                 )
 
             # [!] Energy must match
-            assert total_expected <= total_estimated_by_hour <= total_expected, \
+            assert total_expected == total_estimated_by_hour, \
                 "Total energy dragged by hour '{}' must match the expected energy '{}'".format(
                     total_estimated_by_hour, total_expected
                 )
