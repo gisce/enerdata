@@ -900,7 +900,7 @@ with description("An estimation"):
 
             # [!] Now estimate it using a by hour dragging
             # This scenario will raise 14 kWh (+1 kWh) of total energy with an ending accumulated of -0.5
-            total_expected = round(sum(balance.values())) + 1
+            total_expected = my_round(sum(balance.values())) + 1
             expected_last_accumulated = Decimal(-0.5)
 
             self.profile = Profile(start, end, self.measures, accumulated=None, drag_by_periods=True)
@@ -926,7 +926,7 @@ with description("An estimation"):
 
             # [!] Now estimate it using a by hour dragging
             # This scenario will raise exactly 13 kWh of total energy with an ending accumulated of 0.3
-            total_expected = round(sum(balance.values()))
+            total_expected = my_round(sum(balance.values()))
             expected_last_accumulated = Decimal(0.3)
 
             self.profile = Profile(start, end, self.measures, accumulated=None, drag_by_periods=False)
