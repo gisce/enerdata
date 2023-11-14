@@ -636,7 +636,7 @@ class Profile(object):
                 dt = gap - timedelta(minutes=1)
                 period = tariff.get_period_by_date(dt)
 
-                drag_key = "default" if not self.drag_by_periods else period.code
+                drag_key = period.code if self.drag_by_periods else "default"
 
                 gap_cof = cofs.get(gap).cof[tariff.cof]
                 energy = energy_per_period[period.code]
