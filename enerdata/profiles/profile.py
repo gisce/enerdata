@@ -574,15 +574,11 @@ class Profile(object):
 
     def estimate(self, tariff, balance):
         assert isinstance(tariff, Tariff)
-        logger.debug('Estimating for tariff: {0}'.format(
-            tariff.code
-        ))
+        logger.debug('Estimating for tariff: {0}'.format(tariff.code))
 
         # Adapt balance for simplified T30A with just one period
         if isinstance(tariff, T30A_one_period) or isinstance(tariff, T31A_one_period):
-            balance = {
-                "P1": sum([values for values in balance.values()])
-            }
+            balance = {"P1": sum([values for values in balance.values()])}
         # Adapt T31A6P adding P4 to P1
         if isinstance(tariff, T31A) and balance.get('P4', 0) > 0:
             balance['P1'] += balance['P4']
@@ -593,13 +589,10 @@ class Profile(object):
         end = self.end_date
         # - REE cofs get from (year/month)
         # - Simel cofs get from (year/month/day hour) - can't substract one day
-        if self.first_day_of_month or not issubclass(self.profile_class,
-                                                     REEProfile):
+        if self.first_day_of_month or not issubclass(self.profile_class, REEProfile):
             cofs = self.profile_class.get_range(start, end)
         else:
-            cofs = self.profile_class.get_range(
-                start, end - relativedelta(days=1)
-            )
+            cofs = self.profile_class.get_range(start, end - relativedelta(days=1))
         cofs = Coefficients(cofs)
         cofs_per_period = Counter()
 
@@ -609,9 +602,7 @@ class Profile(object):
             gap_cof = cofs.get(dt)
             cofs_per_period[period.code] += gap_cof.cof[tariff.cof]
 
-        logger.debug('Coefficients per period calculated: {0}'.format(
-            cofs_per_period
-        ))
+        logger.debug('Coefficients per period calculated: {0}'.format(cofs_per_period))
 
         energy_per_period = self.get_estimable_consumption(tariff, balance)
         energy_per_period_rem = energy_per_period.copy()
@@ -630,9 +621,7 @@ class Profile(object):
             dragger.drag(self.accumulated, key=init_drag_key)
 
             for idx, gap in enumerate(self.gaps):
-                logger.debug('Gap {0}/{1}'.format(
-                    idx + 1, len(self.gaps)
-                ))
+                logger.debug('Gap {0}/{1}'.format(idx + 1, len(self.gaps)))
                 dt = gap - timedelta(minutes=1)
                 period = tariff.get_period_by_date(dt)
 

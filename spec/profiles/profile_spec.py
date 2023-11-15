@@ -900,7 +900,7 @@ with description("An estimation"):
 
             # [!] Now estimate it using a by hour dragging
             # This scenario will raise 14 kWh (+1 kWh) of total energy with an ending accumulated of -0.5
-            total_expected = my_round(sum(balance.values())) + 1
+            total_expected = my_round(sum(balance.values()))
             expected_last_accumulated = Decimal(-0.5)
 
             self.profile = Profile(start, end, self.measures, accumulated=None, drag_by_periods=True)
@@ -914,7 +914,7 @@ with description("An estimation"):
                 )
 
             # [!] Energy must match
-            assert total_expected <= total_estimated <= total_expected + 1, \
+            assert total_expected + 1 == total_estimated, \
                 "Total energy '{}' must match the expected + 1 '{}'".format(total_estimated, total_expected + 1)
 
             # [!] Last accumulated
