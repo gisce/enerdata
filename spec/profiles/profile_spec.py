@@ -887,49 +887,70 @@ with description("An estimation"):
 
     with context("with accumulated energy"):
         with it("must handle accumulated values"):
-            accumulated = Decimal(0.136)
-            drag_by_perdiod = True
-            self.profile = Profile(self.start, self.end, self.measures, accumulated, drag_by_perdiod)
-            tariff = T21DHS()
-            periods = tariff.energy_periods
+            start = TIMEZONE.localize(datetime(2022, 9, 1, 1))
+            end = TIMEZONE.localize(datetime(2022, 9, 5, 0))
 
-            # This scenario, with an initial accumulated of 0.636 will raise a -1 total energy with an ending accumulated of 0.2999999999978
-            total_expected = 0
+            tariff = T20TD()
+            periods = tariff.energy_periods
             balance = {
                 'P1': 6.8,
                 'P2': 3,
-                'P3': 3.5,
+                'P3': 3.5
             }
-            total_expected = round(sum(balance.values()))
-            expected_last_accumulated = Decimal(0.2999999999978)
 
+            # [!] Now estimate it using a by hour dragging
+            # This scenario will raise 14 kWh (+1 kWh) of total energy with an ending accumulated of -0.5
+            total_expected = my_round(sum(balance.values()))
+            expected_last_accumulated = Decimal(-0.5)
+
+            self.profile = Profile(start, end, self.measures, accumulated=None, drag_by_periods=True)
             estimation = self.profile.estimate(tariff, balance)
             total_estimated = sum([x.measure for x in estimation.measures])
 
             # [!] Number of hours must match
-            assert self.expected_number_of_hours == len(estimation.measures), "Number of hours '{}' must match the expected '{}'".format(len(estimation.measures), self.expected_number_of_hours)
+            assert self.expected_number_of_hours == len(estimation.measures), \
+                "Number of hours '{}' must match the expected '{}'".format(
+                    len(estimation.measures), self.expected_number_of_hours
+                )
 
             # [!] Energy must match
-            assert total_expected == total_estimated, "Total energy '{}' must match the expected '{}'".format(total_estimated, total_expected)
+            assert total_expected + 1 == total_estimated, \
+                "Total energy '{}' must match the expected + 1 '{}'".format(total_estimated, total_expected + 1)
 
             # [!] Last accumulated
             last_accumulated = estimation.measures[-1].accumulated
             assert '{:.6f}'.format(last_accumulated) == '{:.6f}'.format(expected_last_accumulated), \
-                "Last accumulated '{}' must match the expected '{}'".format(last_accumulated, expected_last_accumulated)
+                "Last accumulated '{}' must match the expected '{}'".format(
+                    last_accumulated, expected_last_accumulated
+                )
 
             # [!] Now estimate it using a by hour dragging
-            # total energy will be +1kWh!
-            drag_by_perdiod = False
-            # total_expected += 1
-            expected_last_accumulated = Decimal(-0.2000000000006)
+            # This scenario will raise exactly 13 kWh of total energy with an ending accumulated of 0.3
+            total_expected = my_round(sum(balance.values()))
+            expected_last_accumulated = Decimal(0.3)
 
-            self.profile = Profile(self.start, self.end, self.measures, accumulated, drag_by_perdiod)
+            self.profile = Profile(start, end, self.measures, accumulated=None, drag_by_periods=False)
             estimation = self.profile.estimate(tariff, balance)
             total_estimated_by_hour = sum([x.measure for x in estimation.measures])
-            last_accumulated_by_hour = estimation.measures[-1].accumulated
-            assert total_expected <= total_estimated_by_hour <= total_expected + 1, "Total energy dragged by hour '{}' must match the expected +1 '{}'".format(total_estimated_by_hour, total_expected)
-            assert '{:.6f}'.format(float(last_accumulated_by_hour)) == '{:.6f}'.format(float(expected_last_accumulated)), "Last accumulated by hour '{}' must match the expected '{}'".format(last_accumulated_by_hour, expected_last_accumulated)
 
+            # [!] Number of hours must match
+            assert self.expected_number_of_hours == len(estimation.measures), \
+                "Number of hours '{}' must match the expected '{}'".format(
+                    len(estimation.measures), self.expected_number_of_hours
+                )
+
+            # [!] Energy must match
+            assert total_expected == total_estimated_by_hour, \
+                "Total energy dragged by hour '{}' must match the expected energy '{}'".format(
+                    total_estimated_by_hour, total_expected
+                )
+
+            # [!] Last accumulated
+            last_accumulated_by_hour = estimation.measures[-1].accumulated
+            assert '{:.6f}'.format(float(last_accumulated_by_hour)) == '{:.6f}'.format(float(expected_last_accumulated)), \
+                "Last accumulated by hour '{}' must match the expected '{}'".format(
+                    last_accumulated_by_hour, expected_last_accumulated
+                )
 
         with it("must handle incorrect accumulated values"):
             it_breaks = False
