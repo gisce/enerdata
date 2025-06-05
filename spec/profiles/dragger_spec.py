@@ -62,3 +62,17 @@ with description('A dragger object'):
                 dragging = d['default']
                 expect(aprox).to(equal(0.0))
                 expect(dragging).to(equal(Decimal('-0.5')))
+        with context('Curve in W to kW'):
+            with it('Must be the same total +/- 1 kW'):
+                import json
+                with open('spec/fixtures/curves/curve.json', 'r') as fj:
+                    orig_W = json.load(fj)
+                #orig_W = [0, 0, 0, 0, 208, 292, 292, 208]
+                total_W = sum(orig_W)
+                curve_kW = []
+                d = Dragger()
+                for value in orig_W:
+                    curve_kW.append(d.drag(round(value / 1000.0, 3)))
+                total_kW = sum(curve_kW)
+                diff = abs((total_kW * 1000) - total_W)
+                expect(diff).to(be_below_or_equal(1000))
