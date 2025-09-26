@@ -28,3 +28,33 @@ Any date instance must be localized. See ``enerdata.datetime.timezone.localize``
   
   
 Default timezone is set to ``Europe/Madrid``. It can be changed overriding the TIMEZONE definition.
+
+--------------
+Development
+--------------
+
+To setup the project for development (**fist you must activate the virtualenv**):
+
+.. code-block:: bash
+
+    pip install coveralls
+    pip install -e .
+    pip install -r requirements-dev.txt
+
+--------------
+Run tests
+--------------
+
+To run tests:
+
+``If you specify a concrete file, it will run only that file``
+
+.. code-block:: bash
+
+  mamba [file]
+
+To run tests with coverage:
+
+.. code-block:: bash
+
+  mamba --enable-coverage [file]
