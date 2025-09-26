@@ -1459,6 +1459,17 @@ with description("TD tariffs"):
             assert self.tarifa.get_number_of_periods() == 3
             assert not self.tarifa.has_holidays_periods
 
+        with it('should allow to check if a set of powers is correct'):
+            expect(lambda: self.tarifa.evaluate_powers([-10, 5])).to(raise_error(NotPositivePower))
+            expect(lambda: self.tarifa.evaluate_powers([0, 5])).to(raise_error(NotPositivePower))
+            expect(lambda: self.tarifa.evaluate_powers([5.55, 5])).to(raise_error(NotNormalizedPower))
+            expect(lambda: self.tarifa.evaluate_powers([5.5])).to(raise_error(IncorrectPowerNumber, 'Expected 2 power(s) and got 1'))
+            expect(lambda: self.tarifa.evaluate_powers([100, 200])).to(raise_error(IncorrectMaxPower))
+            assert self.tarifa.evaluate_powers([5, 7])
+            expect(lambda: self.tarifa.evaluate_powers([0, 0], allow_zero_power=True)).to(raise_error(IncorrectMaxPower, 'Power 0 is not between 0 and 15'))
+            assert self.tarifa.evaluate_powers([0, 10], allow_zero_power=True)
+            assert self.tarifa.evaluate_powers([10, 0], allow_zero_power=True)
+
         with it('should have correct energy period on holiday winter data'):
             dia = self.winter_holiday_day
             assert self.tarifa.get_period_by_date(dia, self.holidays).code == 'P3'
