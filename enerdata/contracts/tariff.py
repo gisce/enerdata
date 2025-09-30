@@ -233,9 +233,11 @@ class Tariff(object):
             return True
 
     @staticmethod
-    def are_powers_normalized(powers):
+    def are_powers_normalized(powers, allow_zero_power=False):
         np = NormalizedPower()
         for power in powers:
+            if allow_zero_power and power == 0:
+                continue
             if not np.is_normalized(int(power * 1000)):
                 return False
 
@@ -261,8 +263,10 @@ class Tariff(object):
 
         return errors
 
-    def evaluate_powers(self, powers):
-        if min(powers) <= 0:
+    def evaluate_powers(self, powers, allow_zero_power=False):
+        if not allow_zero_power and min(powers) <= 0:
+            raise NotPositivePower()
+        if allow_zero_power and min(powers) < 0:
             raise NotPositivePower()
         if not len(self.power_periods) == len(powers):
             raise IncorrectPowerNumber(len(powers), len(self.power_periods))
@@ -270,7 +274,7 @@ class Tariff(object):
             raise IncorrectMaxPower(max(powers), self.min_power, self.max_power)
         if not self.is_minimum_powers_correct(min(powers)):
             raise IncorrectMinPower(min(powers), self.min_power, self.max_power)
-        if not self.are_powers_normalized(powers):
+        if not self.are_powers_normalized(powers, allow_zero_power=allow_zero_power):
             raise NotNormalizedPower()
 
         return True
