@@ -414,7 +414,7 @@ class TariffPreTD(Tariff):
 
         return errors
 
-    def evaluate_powers(self, powers):
+    def evaluate_powers(self, powers, allow_zero_power=False):
         if min(powers) <= 0:
             raise NotPositivePower()
         if not len(self.power_periods) == len(powers):
@@ -791,8 +791,8 @@ class T31A(T30A):
             measures[idx] = measure._replace(**values)
         return measures
 
-    def evaluate_powers(self, powers):
-        super(T31A, self).evaluate_powers(powers)
+    def evaluate_powers(self, powers, allow_zero_power=False):
+        super(T31A, self).evaluate_powers(powers, allow_zero_power=allow_zero_power)
 
         if not are_powers_ascending(powers):
             raise NotAscendingPowers()
@@ -899,8 +899,8 @@ class T61A(TariffPreTD):
         # 6.1A doesn't need to have normalized powers
         return True
 
-    def evaluate_powers(self, powers):
-        super(T61A, self).evaluate_powers(powers)
+    def evaluate_powers(self, powers, allow_zero_power=False):
+        super(T61A, self).evaluate_powers(powers, allow_zero_power=allow_zero_power)
 
         if not are_powers_ascending(powers):
             raise NotAscendingPowers()
