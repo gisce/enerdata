@@ -1163,6 +1163,12 @@ class T61TDVE(T61TD):
         self.code = '6.1TDVE'
         self.cof = '3.0TDVE'
 
+class T62TDVE(T62TD):
+    """Classe que implementa la Tarifa 6.1TDVE."""
+    def __init__(self, **kwargs):
+        super(T62TDVE, self).__init__(**kwargs)
+        self.code = '6.2TDVE'
+        self.cof = '3.0TDVE'
 
 class T1P(Tariff):
     def __init__(self):
