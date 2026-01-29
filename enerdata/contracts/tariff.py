@@ -1164,6 +1164,14 @@ class T61TDVE(T61TD):
         self.cof = '3.0TDVE'
 
 
+class T62TDVE(T62TD):
+    """Classe que implementa la Tarifa 6.2TDVE."""
+    def __init__(self, **kwargs):
+        super(T62TDVE, self).__init__(**kwargs)
+        self.code = '6.2TDVE'
+        self.cof = None
+
+
 class T1P(Tariff):
     def __init__(self):
         super(T1P, self).__init__()
@@ -1264,6 +1272,7 @@ def get_tariff_by_code(code):
         '6.3TD': T63TD,
         '6.4TD': T64TD,
         '3.0TDVE': T30TDVE,
-        '6.1TDVE': T61TDVE
+        '6.1TDVE': T61TDVE,
+        '6.2TDVE': T62TDVE
     }
     return available.get(code, None)
