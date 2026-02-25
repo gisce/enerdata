@@ -1,0 +1,78 @@
+name: BUMP Version
+on:
+  push:
+    # For copy pase proposes, change this variable
+    branches: [ master ]
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+env:
+  # For copy pase proposes, change this variable
+  VERSION_FILE: enerdata/__init__.py
+
+permissions:
+  actions: write
+  checks: write
+  contents: write
+  deployments: write
+  issues: write
+  pull-requests: write
+  statuses: read
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.event.head_commit.message, 'Bump to v') }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PUB_MASTER_PUSH_TOKEN }}
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install python packages
+        run: |
+          pip install --upgrade bump2version
+          pip install --upgrade giscemultitools
+
+      - name: Get PR info
+        env:
+          GITHUB_TOKEN: ${{ secrets.RO_GH_ACTIONS_TOKEN }}
+        run: |
+          echo 'PR_INFO<<EOF' >> $GITHUB_ENV
+          gisce_github get-commits-sha-from-merge-commit --owner ${{ github.repository_owner }} --repository ${{ github.event.repository.name }} --sha ${{ github.sha }} >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+
+      - name: Bump Version
+        run: |
+          pr_labels=$( echo '${{ env.PR_INFO }}' | jq -r '.pullRequest.labels' )
+          is_minor=false
+          is_major=false
+          is_patch=false
+          for label in echo $( echo $pr_labels | jq -r '.[].name' ); do
+            if [[ $label == 'minor' ]]; then
+              is_minor=true
+            elif [[ $label == 'major' ]]; then
+              is_major=true
+            elif [[ $label == 'patch' ]]; then
+              is_patch=true
+            fi
+          done
+          VERSION_TYPE=false
+          if [[ $is_major == true ]]; then
+            VERSION_TYPE="major"
+          elif [[ $is_minor == true ]]; then
+            VERSION_TYPE="minor"
+          elif [[ $is_patch == true ]]; then
+            VERSION_TYPE="patch"
+          fi
+          if [[ $VERSION_TYPE != false ]]; then
+            git config user.name Release Bot
+            git config user.email github-actions@github.com
+            bump2version $VERSION_TYPE --tag --commit -m "Bump to v{new_version}" $VERSION_FILE
+            git push origin master --tags
+          fi
