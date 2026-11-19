@@ -9,34 +9,46 @@ on:
   pull_request:
     branches: [ master ]
 
+permissions:
+  contents: read
+
 jobs:
   build:
 
-    runs-on: ubuntu-22.04
-    strategy:
-      # You can use PyPy versions in python-version.
-      # For example, pypy2 and pypy3
-      fail-fast: false
-      matrix:
-        python-version: [ "2.7" ]
+    runs-on: ubuntu-24.04
+    container: ubuntu:22.04
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Install Python 2.7
+      - name: Install system dependencies
         run: |
-          sudo apt update
-          sudo apt install python2 python-pip
-          sudo update-alternatives --install /usr/bin/python python /usr/bin/python2 1
-          sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
-          printf '1\n' | sudo update-alternatives --config python
-          cd /usr/bin
-          sudo ln -s /usr/bin/pip2 ./pip
+          apt-get update
+          apt-get install -y \
+            git \
+            ca-certificates \
+            python2 \
+            python2-dev \
+            python-pip \
+            build-essential
+
+      - uses: actions/checkout@v7
+
+      - name: Set up Python 2.7
+        run: |
+          python2 -m pip install "virtualenv==20.15.1"
+          python2 -m virtualenv --no-download /opt/py27
+          echo "/opt/py27/bin" >> "$GITHUB_PATH"
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools
-          pip install coveralls
-          pip install -e .
-          pip install -r requirements-dev.txt
+          python --version
+          python -m pip install --upgrade \
+            "pip==20.3.4" \
+            "setuptools==44.1.1" \
+            "wheel==0.37.1"
+          python -m pip install -r requirements-dev.txt
+          python -m pip install -e .
+          python -m pip check
+
       - name: Test with mamba
         run: |
           mamba --enable-coverage
