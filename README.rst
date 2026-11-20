@@ -7,8 +7,8 @@ A set of energy models
 .. image:: https://github.com/gisce/enerdata/actions/workflows/python2.7-app.yml/badge.svg
     :target: https://github.com/gisce/enerdata/actions/workflows/python2.7-app.yml
 
-.. image:: https://github.com/gisce/enerdata/actions/workflows/python3.11-app.yml/badge.svg
-    :target: https://github.com/gisce/enerdata/actions/workflows/python3.11-app.yml
+.. image:: https://github.com/gisce/enerdata/actions/workflows/python3.13-app.yml/badge.svg
+    :target: https://github.com/gisce/enerdata/actions/workflows/python3.13-app.yml
 
 .. image:: https://coveralls.io/repos/github/gisce/enerdata/badge.svg?branch=master
     :target: https://coveralls.io/github/gisce/enerdata?branch=master

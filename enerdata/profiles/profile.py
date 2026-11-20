@@ -364,7 +364,7 @@ class REProfile(object):
                 hour = solar_hour.hour
             else:
                 hour = 24
-            coff_value = float(df[df[key] == month][hour])
+            coff_value = float(df.loc[df[key] == month, hour].iloc[0])
             coff = Coefficent(start, {'A': coff_value})
             cofs.append(coff)
             start += relativedelta(hours=1)
@@ -432,7 +432,7 @@ class REProfileHydraulic(REProfile):
         cofs = []
         while start <= end:
             month = cls.translate_month[start.month]
-            coff_value = float(df[df['MES'] == month]['Factor de funcionamiento'])
+            coff_value = float(df.loc[df['MES'] == month, 'Factor de funcionamiento'].values.item())
             coff = Coefficent(start, {'A': coff_value})
             cofs.append(coff)
             start += relativedelta(hours=1)

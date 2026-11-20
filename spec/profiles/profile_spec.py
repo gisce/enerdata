@@ -9,6 +9,7 @@ from expects import *
 from mamba import description, it, context, before
 
 import vcr
+import math
 import random
 
 
@@ -682,8 +683,8 @@ with description('A profile'):
 
     with it('has to be displayed with useful information'):
         expr = (
-            '<Profile \(2015-03-01 01:00:00\+\d{2}:\d{2} - '
-            '2015-04-01 00:00:00\+\d{2}:\d{2}\) \d+h \d+kWh>'
+            r'<Profile \(2015-03-01 01:00:00\+\d{2}:\d{2} - '
+            r'2015-04-01 00:00:00\+\d{2}:\d{2}\) \d+h \d+kWh>'
         )
         expect(self.profile.__repr__()).to(match(expr))
 
@@ -840,22 +841,27 @@ with description("An estimation"):
             }
 
             estimation = profile.estimate(the_tariff, initial_balance)
+
+            # Estimation must not apply losses automatically
+            total_without_losses = math.fsum(x.measure for x in estimation.measures)
+
+            assert abs(total_without_losses - sum(initial_balance.values())) < 1e-6, "losses applied during estimation"
+
+            # Apply losses explicitly
             estimation.measures = the_tariff.apply_curve_losses(estimation.measures)
 
-            # by total
-            total = sum([x.measure for x in estimation.measures])
-            total_hours = len([x.date for x in estimation.measures])
+            total = math.fsum(x.measure for x in estimation.measures)
+            total_hours = len(estimation.measures)
 
-            # by period
-            res = the_tariff.apply_31A_LB_cof(
-                initial_balance, fake_contract['start'], fake_contract['end']
-            )
-            sum_periods = sum([x for x in res.values()])
+            # Apply losses by period
+            res = the_tariff.apply_31A_LB_cof(initial_balance, fake_contract['start'], fake_contract['end'])
+            sum_periods = math.fsum(res.values())
 
             assert fake_contract['expected_hours'] == total_hours, "has not profiled all hours"
 
-            assert int(total) + 1 == fake_contract['expected_profiled'], "total not profiled correctly"
-            assert int(sum_periods) != total, "total per period applied losses on estimate"
+            assert abs(total - fake_contract['expected_profiled']) < 1e-6, "total not profiled correctly"
+
+            assert abs(sum_periods - total) < 1e-6, "total per period differs from total profiled"
 
         with it("must apply losses separately"):
             fake_contract = {
